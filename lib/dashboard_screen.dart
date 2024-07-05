@@ -52,6 +52,7 @@ class Inventory extends StatefulWidget {
 
 class _InventoryState extends State<Inventory> {
   late Future<List<InventoryItem>> _futureInventory;
+   bool _sortByLatest = true; // Default to sorting by latest date
 
   @override
   void initState() {
@@ -65,7 +66,7 @@ class _InventoryState extends State<Inventory> {
     });
   }
 
-  Future<List<InventoryItem>> _fetchInventoryData() async {
+ Future<List<InventoryItem>> _fetchInventoryData() async {
     try {
       final db = await mongo.Db.create(INVENTORY_CONN_URL);
       await db.open();
@@ -79,6 +80,14 @@ class _InventoryState extends State<Inventory> {
 
       List<InventoryItem> inventoryItems =
           results.map((data) => InventoryItem.fromJson(data)).toList();
+      // Sort inventory items based on _sortByLatest flag
+      inventoryItems.sort((a, b) {
+        if (_sortByLatest) {
+          return b.date.compareTo(a.date); // Sort by latest to oldest
+        } else {
+          return a.date.compareTo(b.date); // Sort by oldest to latest
+        }
+      });
       return inventoryItems;
     } catch (e) {
       print('Error fetching inventory data: $e');
@@ -344,9 +353,26 @@ class _InventoryState extends State<Inventory> {
               color: Colors.white,
             ),
             onPressed: () {
-              // Manually refresh inventory data
               _fetchData();
             },
+          ),
+          PopupMenuButton<String>(
+            onSelected: (value) {
+              setState(() {
+                _sortByLatest = value == 'latestToOldest';
+                _fetchData(); // Reload data based on new sort order
+              });
+            },
+            itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
+              PopupMenuItem<String>(
+                value: 'latestToOldest',
+                child: Text('Sort by Latest to Oldest'),
+              ),
+              PopupMenuItem<String>(
+                value: 'oldestToLatest',
+                child: Text('Sort by Oldest to Latest'),
+              ),
+            ],
           ),
         ],
         userName: widget.userName,
@@ -369,7 +395,7 @@ class _InventoryState extends State<Inventory> {
           Icons.assignment_add,
           color: Colors.white,
         ),
-        backgroundColor: Colors.green, // Customize the background color
+        backgroundColor: Colors.green,
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
     );
@@ -393,6 +419,7 @@ class RTV extends StatefulWidget {
 
 class _RTVState extends State<RTV> {
   late Future<List<ReturnToVendor>> _futureRTV;
+   bool _sortByLatest = true; // Default to sorting by latest date
 
   @override
   void initState() {
@@ -420,6 +447,14 @@ class _RTVState extends State<RTV> {
 
       List<ReturnToVendor> rtvItems =
           results.map((data) => ReturnToVendor.fromJson(data)).toList();
+          // Sort inventory items based on _sortByLatest flag
+      rtvItems.sort((a, b) {
+        if (_sortByLatest) {
+          return b.date.compareTo(a.date); // Sort by latest to oldest
+        } else {
+          return a.date.compareTo(b.date); // Sort by oldest to latest
+        }
+      });
       return rtvItems;
     } catch (e) {
       print('Error fetching RTV data: $e');
@@ -587,6 +622,24 @@ class _RTVState extends State<RTV> {
               // Manually refresh RTV data
               _fetchData();
             },
+          ),
+          PopupMenuButton<String>(
+            onSelected: (value) {
+              setState(() {
+                _sortByLatest = value == 'latestToOldest';
+                _fetchData(); // Reload data based on new sort order
+              });
+            },
+            itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
+              PopupMenuItem<String>(
+                value: 'latestToOldest',
+                child: Text('Sort by Latest to Oldest'),
+              ),
+              PopupMenuItem<String>(
+                value: 'oldestToLatest',
+                child: Text('Sort by Oldest to Latest'),
+              ),
+            ],
           ),
         ],
         userName: widget.userName,
