@@ -32,6 +32,7 @@ class _SignUpState extends State<SignUp> {
   var selectedRemarks = 'REGULAR'; // Default choice
   var branchController = TextEditingController(text: 'Branch');
   bool isActivate = false;
+  int type = 1;
 
   String? fnameError;
   String? lnameError;
@@ -286,7 +287,8 @@ class _SignUpState extends State<SignUp> {
               contactNumController.text,
               branchController.text,
               selectedRemarks,
-              isActivate);
+              isActivate,
+              type);
         }
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -352,7 +354,10 @@ class _SignUpState extends State<SignUp> {
   String contact_num,
   String branch,
   String remarks,
-  bool isActivate
+  bool isActivate,
+  int type,
+
+
 ) async {
   final plainPassword = pass; // Store the plain text password for hashing
   final hashedPassword = await hashPassword(plainPassword);
@@ -368,6 +373,8 @@ class _SignUpState extends State<SignUp> {
     'accountNameBranchManning': branch,
     'remarks': remarks,
     'isActivate': isActivate, // Keep as boolean
+    'type': type
+
   };
 
   // Send OTP after successfully preparing user data
@@ -376,7 +383,7 @@ class _SignUpState extends State<SignUp> {
 
 Future<void> _sendOtp(String email, Map<String, dynamic> userData) async {
   final response = await http.post(
-    Uri.parse('http://localhost:8080/send-otp-register'),
+    Uri.parse('http://192.168.50.217:8080/send-otp-register'),
     headers: <String, String>{
       'Content-Type': 'application/json; charset=UTF-8',
     },
@@ -386,7 +393,16 @@ Future<void> _sendOtp(String email, Map<String, dynamic> userData) async {
   );
 
   if (response.statusCode == 200) {
-    final receivedOtp = jsonDecode(response.body)['code'];
+    // Print the full response body to debug
+    print('Response body: ${response.body}');
+
+    // Ensure the response body is in the expected format
+    final responseBody = jsonDecode(response.body);
+    final receivedOtp = responseBody['code'];
+
+    // Print the received OTP to debug
+    print('Received OTP: $receivedOtp');
+
     Navigator.push(
       context,
       MaterialPageRoute(
@@ -404,6 +420,8 @@ Future<void> _sendOtp(String email, Map<String, dynamic> userData) async {
     );
   }
 }
+
+
 
 
 
