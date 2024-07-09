@@ -8,7 +8,7 @@ import 'dbHelper/mongodbDraft.dart'; // Replace with your login screen import
 
 class OTPVerificationScreen extends StatefulWidget {
   final String email;
-  final String otp;
+  final dynamic otp;
   final Map<String, dynamic> userData;
 
   OTPVerificationScreen({
@@ -24,7 +24,13 @@ class OTPVerificationScreen extends StatefulWidget {
 class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
   TextEditingController otpController = TextEditingController();
 
- @override
+  @override
+  void initState() {
+    super.initState();
+    print('OTP passed to screen: ${widget.otp}');  // Debug print to check OTP value
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
@@ -112,6 +118,9 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
   void _verifyOTP() async {
     String enteredOTP = otpController.text.trim();
 
+    print('Entered OTP: $enteredOTP');
+    print('Received OTP: ${widget.otp}');  // Debug print to check OTP value
+
     if (enteredOTP == widget.otp) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Account verified')),
@@ -145,6 +154,7 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
         password: userData['password'],
         accountNameBranchManning: userData['accountNameBranchManning'],
         isActivate: userData['isActivate'],
+        type: userData['type'] ?? 1
       );
 
       var result = await MongoDatabase.insert(data);

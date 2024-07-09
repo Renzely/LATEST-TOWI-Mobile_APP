@@ -22,6 +22,7 @@ String welcomeToJson(MongoDemo data) => json.encode(data.toJson());
     String password;
     String accountNameBranchManning;
     bool isActivate;
+    dynamic type;
 
     MongoDemo({
       required this.remarks,
@@ -35,6 +36,7 @@ String welcomeToJson(MongoDemo data) => json.encode(data.toJson());
       required this.password,
       required this.accountNameBranchManning,
       required this.isActivate,
+      required this.type
     });
 
   factory MongoDemo.fromJson(Map<String, dynamic> json) {
@@ -50,6 +52,7 @@ String welcomeToJson(MongoDemo data) => json.encode(data.toJson());
       password: json['password'],
       accountNameBranchManning: json['accountNameBranchManning'],
       isActivate: json['isActivate'],
+      type: json['type'] ?? 1
     );
   }
 
@@ -64,7 +67,8 @@ String welcomeToJson(MongoDemo data) => json.encode(data.toJson());
         'username': username,
         'password': password,
         'accountNameBranchManning': accountNameBranchManning,
-        'isActivate': isActivate
+        'isActivate': isActivate,
+        'type': type
       };
 }
 

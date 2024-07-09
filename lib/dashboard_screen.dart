@@ -78,7 +78,7 @@ class _InventoryState extends State<Inventory> {
 
       await db.close();
 
-      List<InventoryItem> inventoryItems =
+      List<InventoryItem> inventoryItems = 
           results.map((data) => InventoryItem.fromJson(data)).toList();
       // Sort inventory items based on _sortByLatest flag
       inventoryItems.sort((a, b) {
