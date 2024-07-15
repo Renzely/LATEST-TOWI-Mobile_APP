@@ -22,7 +22,7 @@ String welcomeToJson(MongoDemo data) => json.encode(data.toJson());
     String password;
     String accountNameBranchManning;
     bool isActivate;
-    dynamic type;
+    int type;
 
     MongoDemo({
       required this.remarks,
@@ -52,7 +52,7 @@ String welcomeToJson(MongoDemo data) => json.encode(data.toJson());
       password: json['password'],
       accountNameBranchManning: json['accountNameBranchManning'],
       isActivate: json['isActivate'],
-      type: json['type'] ?? 1
+      type: json['type']
     );
   }
 
@@ -107,6 +107,7 @@ class InventoryItem {
   dynamic offtake;
   final double inventoryDaysLevel;
   dynamic noOfDaysOOS;
+  final List<Map<String, dynamic>> expiryFields;
 
   InventoryItem({
     required this.id,
@@ -129,6 +130,7 @@ class InventoryItem {
     required this.offtake,
     required this.inventoryDaysLevel,
     required this.noOfDaysOOS,
+    required this.expiryFields
   });
 
   factory InventoryItem.fromJson(Map<String, dynamic> json) => InventoryItem(
@@ -154,6 +156,10 @@ class InventoryItem {
             ? double.parse(json['inventoryDaysLevel'].toStringAsFixed(2))
             : 0.0, // Default value if null
         noOfDaysOOS: json['noOfDaysOOS'] ?? 0,
+          expiryFields: (json['expiryFields'] as List<dynamic>?)
+              ?.map((item) => item as Map<String, dynamic>)
+              .toList() ??
+          [], // Ensure expiryFields is not null
       );
 
   Map<String, dynamic> toJson() => {
@@ -177,6 +183,7 @@ class InventoryItem {
         'offtake': offtake,
         'inventoryDaysLevel': inventoryDaysLevel,
         'noOfDaysOOS': noOfDaysOOS,
+        'expiryFields': expiryFields,
       };
   void _saveToDatabase(InventoryItem newItem) async {
     // Connect to your MongoDB database
@@ -205,6 +212,7 @@ class InventoryItem {
 
 class ReturnToVendor {
   ObjectId id;
+  String inputId;
   String userEmail;
   String date;
   String merchandiserName;
@@ -217,6 +225,7 @@ class ReturnToVendor {
   String pullOutReason;
 
   ReturnToVendor({
+    required this.inputId,
     required this.id,
     required this.userEmail,
     required this.date,
@@ -232,6 +241,7 @@ class ReturnToVendor {
 
   factory ReturnToVendor.fromJson(Map<String, dynamic> json) => ReturnToVendor(
         id: json['_id'] ?? ObjectId(),
+        inputId: json['inputId'] ?? '',
         userEmail: json['userEmail'] ?? '',
         date: json['date'] ?? '',
         merchandiserName: json['merchandiserName'] ?? '',
@@ -246,6 +256,7 @@ class ReturnToVendor {
 
   Map<String, dynamic> toJson() => {
         '_id': id,
+        "inputId": inputId,
         'userEmail': userEmail,
         'date': date,
         'merchandiserName': merchandiserName,

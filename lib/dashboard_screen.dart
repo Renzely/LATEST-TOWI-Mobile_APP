@@ -1,5 +1,6 @@
 // ignore_for_file: must_be_immutable, prefer_const_constructors, use_key_in_widget_constructors, prefer_const_constructors_in_immutables, library_private_types_in_public_api, unnecessary_string_interpolations, sort_child_properties_last, avoid_print, use_rethrow_when_possible, depend_on_referenced_packages
 
+import 'package:demo_app/editRTV_screen.dart';
 import 'package:demo_app/inventoryAdd_screen.dart';
 import 'package:demo_app/login_screen.dart';
 import 'package:demo_app/dbHelper/constant.dart';
@@ -51,8 +52,10 @@ class Inventory extends StatefulWidget {
 }
 
 class _InventoryState extends State<Inventory> {
+  int pageSize = 5;
+  int currentPage = 0;
   late Future<List<InventoryItem>> _futureInventory;
-   bool _sortByLatest = true; // Default to sorting by latest date
+  bool _sortByLatest = true; // Default to sorting by latest date
 
   @override
   void initState() {
@@ -66,7 +69,7 @@ class _InventoryState extends State<Inventory> {
     });
   }
 
- Future<List<InventoryItem>> _fetchInventoryData() async {
+  Future<List<InventoryItem>> _fetchInventoryData() async {
     try {
       final db = await mongo.Db.create(INVENTORY_CONN_URL);
       await db.open();
@@ -78,14 +81,14 @@ class _InventoryState extends State<Inventory> {
 
       await db.close();
 
-      List<InventoryItem> inventoryItems = 
+      List<InventoryItem> inventoryItems =
           results.map((data) => InventoryItem.fromJson(data)).toList();
       // Sort inventory items based on _sortByLatest flag
       inventoryItems.sort((a, b) {
         if (_sortByLatest) {
-          return b.date.compareTo(a.date); // Sort by latest to oldest
+          return b.week.compareTo(a.week); // Sort by latest to oldest
         } else {
-          return a.date.compareTo(b.date); // Sort by oldest to latest
+          return a.week.compareTo(b.week); // Sort by oldest to latest
         }
       });
       return inventoryItems;
@@ -95,7 +98,7 @@ class _InventoryState extends State<Inventory> {
     }
   }
 
-  @override
+ @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: SideBarLayout(
@@ -109,239 +112,337 @@ class _InventoryState extends State<Inventory> {
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting) {
                 return Center(
-                    child: CircularProgressIndicator(
-                  color: Colors.green, // This sets the color of the spinner
-                  backgroundColor: Colors.transparent,
-                ));
+                  child: CircularProgressIndicator(
+                    color: Colors.green,
+                    backgroundColor: Colors.transparent,
+                  ),
+                );
               } else if (snapshot.hasError) {
                 return Center(
                   child: Text('Error: ${snapshot.error}'),
                 );
               } else {
                 List<InventoryItem> inventoryItems = snapshot.data ?? [];
-                return ListView.builder(
-                  itemCount: inventoryItems.length,
-                  itemBuilder: (context, index) {
-                    InventoryItem item =
-                        inventoryItems.reversed.toList()[index];
-                    return ListTile(
-                      title: Text(
-                        item.week,
-                        style: TextStyle(
-                            fontWeight: FontWeight.bold, fontSize: 18),
+                if (inventoryItems.isEmpty) {
+                  return Center(
+                    child: Text(
+                      'No inventory created',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 18,
+                        color: Colors.black,
                       ),
-                      subtitle: Container(
-                        decoration: BoxDecoration(
-                          color: Colors.grey.shade200,
-                          border: Border.all(
-                            color: Colors.black,
-                            width: 1.0,
+                    ),
+                  );
+                } else {
+                  // Calculate total number of pages
+                  int totalPages = (inventoryItems.length / pageSize).ceil();
+
+                  // Ensure currentPage does not exceed totalPages
+                  currentPage = currentPage.clamp(0, totalPages - 1);
+
+                  // Calculate startIndex and endIndex for current page
+                  int startIndex = currentPage * pageSize;
+                  int endIndex = (currentPage + 1) * pageSize;
+
+                  // Slice the list based on current page and page size
+                  List<InventoryItem> currentPageItems = inventoryItems
+                      .reversed
+                      .toList()
+                      .sublist(startIndex, endIndex.clamp(0, inventoryItems.length));
+
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          IconButton(
+                            icon: Icon(Icons.arrow_back),
+                            onPressed: currentPage > 0
+                                ? () {
+                                    setState(() {
+                                      currentPage--;
+                                    });
+                                  }
+                                : null,
+                          ),
+                          Text(
+                            'Page ${currentPage + 1} of $totalPages',
+                            style: TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                          IconButton(
+                            icon: Icon(Icons.arrow_forward),
+                            onPressed: currentPage < totalPages - 1
+                                ? () {
+                                    setState(() {
+                                      currentPage++;
+                                    });
+                                  }
+                                : null,
+                          ),
+                        ],
+                      ),
+                    Expanded(
+                      child: ListView.builder(
+                        itemCount: currentPageItems.length,
+                        itemBuilder: (context, index) {
+                          InventoryItem item = currentPageItems[index];
+                          return ListTile(
+                            title: Text(
+                              item.week,
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 18,
+                              ),
+                            ),
+                            subtitle: Container(
+                              decoration: BoxDecoration(
+                                color: Colors.grey.shade200,
+                                border: Border.all(
+                                  color: Colors.black,
+                                  width: 1.0,
+                                ),
+                              ),
+                          padding: EdgeInsets.all(8.0),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Date: ',
+                                style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.black),
+                              ),
+                              Text(
+                                '${item.date}',
+                                style: TextStyle(color: Colors.black),
+                              ),
+                              SizedBox(height: 10),
+                              Text(
+                                'Input ID: ',
+                                style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.black),
+                              ),
+                              Text(
+                                '${item.inputId}',
+                                style: TextStyle(color: Colors.black),
+                              ),
+                              SizedBox(height: 10),
+                              Text(
+                                'Merchandiser: ',
+                                style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.black),
+                              ),
+                              Text(
+                                '${item.name}',
+                                style: TextStyle(color: Colors.black),
+                              ),
+                              SizedBox(height: 10),
+                              Text(
+                                'Account Name Branch Manning: ',
+                                style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.black),
+                              ),
+                              Text(
+                                '${item.accountNameBranchManning}',
+                                style: TextStyle(color: Colors.black),
+                              ),
+                              SizedBox(height: 10),
+                              Text(
+                                'Period: ',
+                                style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.black),
+                              ),
+                              Text(
+                                '${item.period}',
+                                style: TextStyle(color: Colors.black),
+                              ),
+                              SizedBox(height: 10),
+                              Text(
+                                'Month: ',
+                                style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.black),
+                              ),
+                              Text(
+                                '${item.month}',
+                                style: TextStyle(color: Colors.black),
+                              ),
+                              SizedBox(height: 10),
+                              Text(
+                                'Week: ',
+                                style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.black),
+                              ),
+                              Text(
+                                '${item.week}',
+                                style: TextStyle(color: Colors.black),
+                              ),
+                              SizedBox(height: 10),
+                              Text(
+                                'Category: ',
+                                style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.black),
+                              ),
+                              Text('${item.category}'),
+                              SizedBox(height: 10),
+                              Text(
+                                'SKU Description: ',
+                                style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.black),
+                              ),
+                              Text(
+                                '${item.skuDescription}',
+                                style: TextStyle(color: Colors.black),
+                              ),
+                              SizedBox(height: 10),
+                              Text(
+                                'Products: ',
+                                style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.black),
+                              ),
+                              Text(
+                                '${item.products}',
+                                style: TextStyle(color: Colors.black),
+                              ),
+                              SizedBox(height: 10),
+                              Text(
+                                'SKU Code: ',
+                                style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.black),
+                              ),
+                              Text(
+                                '${item.skuCode}',
+                                style: TextStyle(color: Colors.black),
+                              ),
+                              SizedBox(height: 10),
+                              Text(
+                                'Status: ',
+                                style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.black),
+                              ),
+                              Text(
+                                '${item.status}',
+                                style: TextStyle(color: Colors.black),
+                              ),
+                              SizedBox(height: 10),
+                              Text(
+                                'Beginning: ',
+                                style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.black),
+                              ),
+                              Text(
+                                '${item.beginning}',
+                                style: TextStyle(color: Colors.black),
+                              ),
+                              SizedBox(height: 10),
+                              Text(
+                                'Delivery: ',
+                                style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.black),
+                              ),
+                              Text(
+                                '${item.delivery}',
+                                style: TextStyle(color: Colors.black),
+                              ),
+                              SizedBox(height: 10),
+                              Text(
+                                'Ending: ',
+                                style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.black),
+                              ),
+                              Text(
+                                '${item.ending}',
+                                style: TextStyle(color: Colors.black),
+                              ),
+                              SizedBox(height: 10),
+                              Text(
+                                'Expiration: ',
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.black,
+                                ),
+                              ),
+                              SizedBox(height: 10),
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: item.expiryFields.map((expiry) {
+                                  return Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        'Expiry Date: ${expiry['expiryMonth']}',
+                                        style: TextStyle(color: Colors.black),
+                                      ),
+                                      Text(
+                                        'Quantity: ${expiry['expiryPcs']}',
+                                        style: TextStyle(color: Colors.black),
+                                      ),
+                                      SizedBox(
+                                          height:
+                                              10), // Adjust spacing as needed
+                                    ],
+                                  );
+                                }).toList(),
+                              ),
+                              SizedBox(height: 10),
+                              Text(
+                                'Offtake: ',
+                                style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.black),
+                              ),
+                              Text(
+                                '${item.offtake}',
+                                style: TextStyle(color: Colors.black),
+                              ),
+                              SizedBox(height: 10),
+                              Text(
+                                'Inventory Days Level: ',
+                                style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.black),
+                              ),
+                              Text(
+                                '${item.inventoryDaysLevel}',
+                                style: TextStyle(color: Colors.black),
+                              ),
+                              SizedBox(height: 10),
+                              Text(
+                                'Number of Days OOS: ',
+                                style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.black),
+                              ),
+                              Text(
+                                '${item.noOfDaysOOS}',
+                                style: TextStyle(color: Colors.black),
+                              ),
+                            ],
                           ),
                         ),
-                        padding: EdgeInsets.all(8.0),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Date: ',
-                              style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.black),
-                            ),
-                            Text(
-                              '${item.date}',
-                              style: TextStyle(color: Colors.black),
-                            ),
-                            SizedBox(height: 10),
-                            Text(
-                              'Input ID: ',
-                              style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.black),
-                            ),
-                            Text(
-                              '${item.inputId}',
-                              style: TextStyle(color: Colors.black),
-                            ),
-                            SizedBox(height: 10),
-                            Text(
-                              'Merchandiser: ',
-                              style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.black),
-                            ),
-                            Text(
-                              '${item.name}',
-                              style: TextStyle(color: Colors.black),
-                            ),
-                            SizedBox(height: 10),
-                            Text(
-                              'Account Name Branch Manning: ',
-                              style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.black),
-                            ),
-                            Text(
-                              '${item.accountNameBranchManning}',
-                              style: TextStyle(color: Colors.black),
-                            ),
-                            SizedBox(height: 10),
-                            Text(
-                              'Period: ',
-                              style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.black),
-                            ),
-                            Text(
-                              '${item.period}',
-                              style: TextStyle(color: Colors.black),
-                            ),
-                            SizedBox(height: 10),
-                            Text(
-                              'Month: ',
-                              style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.black),
-                            ),
-                            Text(
-                              '${item.month}',
-                              style: TextStyle(color: Colors.black),
-                            ),
-                            SizedBox(height: 10),
-                            Text(
-                              'Week: ',
-                              style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.black),
-                            ),
-                            Text(
-                              '${item.week}',
-                              style: TextStyle(color: Colors.black),
-                            ),
-                            SizedBox(height: 10),
-                            Text(
-                              'Category: ',
-                              style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.black),
-                            ),
-                            Text('${item.category}'),
-                            SizedBox(height: 10),
-                            Text(
-                              'SKU Description: ',
-                              style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.black),
-                            ),
-                            Text(
-                              '${item.skuDescription}',
-                              style: TextStyle(color: Colors.black),
-                            ),
-                            SizedBox(height: 10),
-                            Text(
-                              'Products: ',
-                              style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.black),
-                            ),
-                            Text(
-                              '${item.products}',
-                              style: TextStyle(color: Colors.black),
-                            ),
-                            SizedBox(height: 10),
-                            Text(
-                              'SKU Code: ',
-                              style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.black),
-                            ),
-                            Text(
-                              '${item.skuCode}',
-                              style: TextStyle(color: Colors.black),
-                            ),
-                            SizedBox(height: 10),
-                            Text(
-                              'Status: ',
-                              style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.black),
-                            ),
-                            Text(
-                              '${item.status}',
-                              style: TextStyle(color: Colors.black),
-                            ),
-                            SizedBox(height: 10),
-                            Text(
-                              'Beginning: ',
-                              style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.black),
-                            ),
-                            Text(
-                              '${item.beginning}',
-                              style: TextStyle(color: Colors.black),
-                            ),
-                            SizedBox(height: 10),
-                            Text(
-                              'Delivery: ',
-                              style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.black),
-                            ),
-                            Text(
-                              '${item.delivery}',
-                              style: TextStyle(color: Colors.black),
-                            ),
-                            SizedBox(height: 10),
-                            Text(
-                              'Ending: ',
-                              style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.black),
-                            ),
-                            Text(
-                              '${item.ending}',
-                              style: TextStyle(color: Colors.black),
-                            ),
-                            SizedBox(height: 10),
-                            Text(
-                              'Offtake: ',
-                              style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.black),
-                            ),
-                            Text(
-                              '${item.offtake}',
-                              style: TextStyle(color: Colors.black),
-                            ),
-                            SizedBox(height: 10),
-                            Text(
-                              'Inventory Days Level: ',
-                              style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.black),
-                            ),
-                            Text(
-                              '${item.inventoryDaysLevel}',
-                              style: TextStyle(color: Colors.black),
-                            ),
-                            SizedBox(height: 10),
-                            Text(
-                              'Number of Days OOS: ',
-                              style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.black),
-                            ),
-                            Text(
-                              '${item.noOfDaysOOS}',
-                              style: TextStyle(color: Colors.black),
-                            ),
-                          ],
-                        ),
-                      ),
-                    );
-                  },
+                      );
+                    },
+                  ))
+                  ]
                 );
+  
+                }
               }
             },
           ),
@@ -419,7 +520,7 @@ class RTV extends StatefulWidget {
 
 class _RTVState extends State<RTV> {
   late Future<List<ReturnToVendor>> _futureRTV;
-   bool _sortByLatest = true; // Default to sorting by latest date
+  bool _sortByLatest = true; // Default to sorting by latest date
 
   @override
   void initState() {
@@ -447,7 +548,7 @@ class _RTVState extends State<RTV> {
 
       List<ReturnToVendor> rtvItems =
           results.map((data) => ReturnToVendor.fromJson(data)).toList();
-          // Sort inventory items based on _sortByLatest flag
+      // Sort inventory items based on _sortByLatest flag
       rtvItems.sort((a, b) {
         if (_sortByLatest) {
           return b.date.compareTo(a.date); // Sort by latest to oldest
@@ -487,127 +588,168 @@ class _RTVState extends State<RTV> {
                 );
               } else {
                 List<ReturnToVendor> rtvItems = snapshot.data ?? [];
-                return ListView.builder(
-                  itemCount: rtvItems.length,
-                  itemBuilder: (context, index) {
-                    ReturnToVendor item = rtvItems.reversed.toList()[index];
-                    return ListTile(
-                      subtitle: Container(
-                        decoration: BoxDecoration(
-                          color: Colors.grey.shade200,
-                          border: Border.all(
-                            color: Colors.black,
-                            width: 1.0,
+                if (rtvItems.isEmpty) {
+                  return Center(
+                    child: Text(
+                      'No RTV created',
+                      style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 18,
+                          color: Colors.black),
+                    ),
+                  );
+                } else {
+                  return ListView.builder(
+                    itemCount: rtvItems.length,
+                    itemBuilder: (context, index) {
+                      ReturnToVendor item = rtvItems.reversed.toList()[index];
+                         bool isEditable = item.quantity == "Pending" &&
+                      item.driverName == "Pending" &&
+                      item.plateNumber == "Pending" &&
+                      item.pullOutReason == "Pending";
+                      
+                      return ListTile(
+                        subtitle: Container(
+                          decoration: BoxDecoration(
+                            color: Colors.grey.shade200,
+                            border: Border.all(
+                              color: Colors.black,
+                              width: 1.0,
+                            ),
+                          ),
+                          padding: EdgeInsets.all(8.0),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Input ID: ',
+                                style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.black),
+                              ),
+                              Text(
+                                '${item.inputId}',
+                                style: TextStyle(color: Colors.black),
+                              ),
+                              SizedBox(height: 10),
+                              Text(
+                                'Date: ',
+                                style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.black),
+                              ),
+                              Text(
+                                '${item.date}',
+                                style: TextStyle(color: Colors.black),
+                              ),
+                              SizedBox(height: 10),
+                              Text(
+                                'Merchandiser: ',
+                                style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.black),
+                              ),
+                              Text(
+                                '${item.merchandiserName}',
+                                style: TextStyle(color: Colors.black),
+                              ),
+                              SizedBox(height: 10),
+                              Text(
+                                'Outlet: ',
+                                style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.black),
+                              ),
+                              Text(
+                                '${item.outlet}',
+                                style: TextStyle(color: Colors.black),
+                              ),
+                              SizedBox(height: 10),
+                              Text(
+                                'Category: ',
+                                style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.black),
+                              ),
+                              Text(
+                                '${item.category}',
+                                style: TextStyle(color: Colors.black),
+                              ),
+                              SizedBox(height: 10),
+                              Text(
+                                'Item: ',
+                                style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.black),
+                              ),
+                              Text(
+                                '${item.item}',
+                                style: TextStyle(color: Colors.black),
+                              ),
+                              SizedBox(height: 10),
+                              Text(
+                                'Quantity: ',
+                                style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.black),
+                              ),
+                              Text(
+                                '${item.quantity}',
+                                style: TextStyle(color: Colors.black),
+                              ),
+                              SizedBox(height: 10),
+                              Text(
+                                'Driver\'s Name: ',
+                                style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.black),
+                              ),
+                              Text(
+                                '${item.driverName}',
+                                style: TextStyle(color: Colors.black),
+                              ),
+                              SizedBox(height: 10),
+                              Text(
+                                'Plate Number: ',
+                                style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.black),
+                              ),
+                              Text(
+                                '${item.plateNumber}',
+                                style: TextStyle(color: Colors.black),
+                              ),
+                              SizedBox(height: 10),
+                              Text(
+                                'Pull Out Reason: ',
+                                style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.black),
+                              ),
+                              Text(
+                                '${item.pullOutReason}',
+                                style: TextStyle(color: Colors.black),
+                              ),
+                            ],
                           ),
                         ),
-                        padding: EdgeInsets.all(8.0),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Date: ',
-                              style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.black),
-                            ),
-                            Text(
-                              '${item.date}',
-                              style: TextStyle(color: Colors.black),
-                            ),
-                            SizedBox(height: 10),
-                            Text(
-                              'Merchandiser: ',
-                              style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.black),
-                            ),
-                            Text(
-                              '${item.merchandiserName}',
-                              style: TextStyle(color: Colors.black),
-                            ),
-                            SizedBox(height: 10),
-                            Text(
-                              'Outlet: ',
-                              style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.black),
-                            ),
-                            Text(
-                              '${item.outlet}',
-                              style: TextStyle(color: Colors.black),
-                            ),
-                            SizedBox(height: 10),
-                            Text(
-                              'Category: ',
-                              style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.black),
-                            ),
-                            Text(
-                              '${item.category}',
-                              style: TextStyle(color: Colors.black),
-                            ),
-                            SizedBox(height: 10),
-                            Text(
-                              'Item: ',
-                              style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.black),
-                            ),
-                            Text(
-                              '${item.item}',
-                              style: TextStyle(color: Colors.black),
-                            ),
-                            SizedBox(height: 10),
-                            Text(
-                              'Quantity: ',
-                              style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.black),
-                            ),
-                            Text(
-                              '${item.quantity}',
-                              style: TextStyle(color: Colors.black),
-                            ),
-                            SizedBox(height: 10),
-                            Text(
-                              'Driver\'s Name: ',
-                              style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.black),
-                            ),
-                            Text(
-                              '${item.driverName}',
-                              style: TextStyle(color: Colors.black),
-                            ),
-                            SizedBox(height: 10),
-                            Text(
-                              'Plate Number: ',
-                              style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.black),
-                            ),
-                            Text(
-                              '${item.plateNumber}',
-                              style: TextStyle(color: Colors.black),
-                            ),
-                            SizedBox(height: 10),
-                            Text(
-                              'Pull Out Reason: ',
-                              style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.black),
-                            ),
-                            Text(
-                              '${item.pullOutReason}',
-                              style: TextStyle(color: Colors.black),
-                            ),
-                          ],
-                        ),
-                      ),
-                    );
-                  },
-                );
+                        trailing: isEditable
+                            ? IconButton(
+                                icon: Icon(Icons.edit, color: Colors.black),
+                                onPressed: () {
+                                  Navigator.of(context).push(MaterialPageRoute(
+                                    builder: (context) => EditRTVScreen(item: item),
+                                  ));
+                                },
+                              )
+                            : IconButton(
+                                icon: Icon(Icons.edit, color: Colors.grey),
+                                onPressed: null,
+                              ),
+                      );
+                    },
+                  );
+                }
               }
             },
           ),

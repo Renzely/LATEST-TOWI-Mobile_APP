@@ -168,9 +168,8 @@ class _AddInventoryState extends State<AddInventory> {
                               Expanded(
                                 child: TextFormField(
                                   controller: _dateController,
-                                  // readOnly: true,
+                                  readOnly: true,
                                   decoration: InputDecoration(
-                                    enabled: false,
                                   ),
                                 ),
                               ),
@@ -186,7 +185,7 @@ class _AddInventoryState extends State<AddInventory> {
                         SizedBox(height: 8),
                         TextFormField(
                           initialValue: generateInputID(),
-                          enabled: false,
+                          readOnly: true,
                           decoration: InputDecoration(
                             hintText: 'Auto-generated Input ID',
                           ),
@@ -201,7 +200,7 @@ class _AddInventoryState extends State<AddInventory> {
                         TextFormField(
                           initialValue:
                               '${widget.userName} ${widget.userLastName}',
-                          enabled: false,
+                          readOnly: true,
                           decoration: InputDecoration(),
                         ),
                         SizedBox(height: 16),
@@ -896,9 +895,7 @@ class _AddInventoryState extends State<AddInventory> {
                             SizedBox(height: 8),
                             TextFormField(
                               controller: _monthController,
-                              decoration: InputDecoration(
-                                enabled: false,
-                              ),
+                             readOnly: true,
                             ),
                             SizedBox(height: 8),
                             Text(
@@ -908,9 +905,7 @@ class _AddInventoryState extends State<AddInventory> {
                             ),
                             TextFormField(
                               controller: _weekController,
-                              decoration: InputDecoration(
-                                enabled: false,
-                              ),
+                              readOnly: true,
                             ),
                           ],
                         ],
@@ -1067,80 +1062,83 @@ class _SKUInventoryState extends State<SKUInventory> {
   TextEditingController _accountNameController = TextEditingController();
   TextEditingController _productsController = TextEditingController();
   TextEditingController _skuCodeController = TextEditingController();
+  List<Widget> _expiryFields = [];
+  List<Map<String, dynamic>> _expiryFieldsValues = [];
 
-  void _saveInventoryItem() {
-    // Ensure _versionSelected, _statusSelected, and _selectedNumberOfDaysOOS are initialized properly
-    String AccountManning = _selectedaccountname ?? '';
-    String period = _selectedPeriod ?? '';
-    String Version = _versionSelected ?? '';
-    String status = _statusSelected ?? ''; // Ensure _statusSelected is not null
-    String SKUDescription = _selectedDropdownValue ?? '';
-    String product = _productDetails ?? '';
-    String skucode = _skuCode ?? '';
-    int numberOfDaysOOS = _selectedNumberOfDaysOOS ?? 0;
+void _saveInventoryItem() {
+  String AccountManning = _selectedaccountname ?? '';
+  String period = _selectedPeriod ?? '';
+  String Version = _versionSelected ?? '';
+  String status = _statusSelected ?? '';
+  String SKUDescription = _selectedDropdownValue ?? '';
+  String product = _productDetails ?? '';
+  String skucode = _skuCode ?? '';
+  int numberOfDaysOOS = _selectedNumberOfDaysOOS ?? 0;
 
-    // Parse the numeric fields from text controllers
-    int beginning = int.tryParse(_beginningController.text) ?? 0;
-    int delivery = int.tryParse(_deliveryController.text) ?? 0;
-    int ending = int.tryParse(_endingController.text) ?? 0;
+  int beginning = int.tryParse(_beginningController.text) ?? 0;
+  int delivery = int.tryParse(_deliveryController.text) ?? 0;
+  int ending = int.tryParse(_endingController.text) ?? 0;
 
-    // Compute offtake
-    int offtake = beginning + delivery - ending;
+  int offtake = beginning + delivery - ending;
+  double inventoryDaysLevel = 0;
 
-    // Initialize inventoryDaysLevel to zero
-    double inventoryDaysLevel = 0;
-
-    // Check if status is "Not Carried" or "Delisted"
-    if (status != "Not Carried" && status != "Delisted") {
-      // Compute inventoryDaysLevel only if status is not "Not Carried" or "Delisted"
-      if (offtake != 0 && ending != double.infinity && !ending.isNaN) {
-        inventoryDaysLevel = ending / (offtake / 7);
-      }
+  if (status != "Not Carried" && status != "Delisted") {
+    if (offtake != 0 && ending != double.infinity && !ending.isNaN) {
+      inventoryDaysLevel = ending / (offtake / 7);
     }
+  }
 
-    //CATEGORY
-    dynamic ncValue = 'NC'; // Set value for Not Carried
-    dynamic delistedValue = 'Delisted'; // Set value for Delisted
 
-    dynamic beginningValue = status == 'Not Carried' ? ncValue : beginning;
-    dynamic deliveryValue = status == 'Not Carried' ? ncValue : delivery;
-    dynamic endingValue = status == 'Not Carried' ? ncValue : ending;
-    dynamic offtakeValue = status == 'Not Carried' ? ncValue : offtake;
-    dynamic noOfDaysOOSValue =
-        status == 'Not Carried' ? ncValue : numberOfDaysOOS;
+  dynamic ncValue = 'NC';
+  dynamic delistedValue = 'Delisted';
+  dynamic beginningValue = beginning;
+  dynamic deliveryValue = delivery;
+  dynamic endingValue = ending;
+  dynamic offtakeValue = offtake;
+  dynamic noOfDaysOOSValue = numberOfDaysOOS;
 
-// If status is Delisted, assign Delisted value to the relevant fields
-    if (status == 'Delisted') {
-      beginningValue = delistedValue;
-      deliveryValue = delistedValue;
-      endingValue = delistedValue;
-      offtakeValue = delistedValue;
-      noOfDaysOOSValue = delistedValue;
-    }
+if (status == 'Delisted') {
+    beginningValue = delistedValue;
+    deliveryValue = delistedValue;
+    endingValue = delistedValue;
+    offtakeValue = delistedValue;
+    noOfDaysOOSValue = delistedValue;
+    _expiryFieldsValues = [{'expiryMonth': delistedValue, 'expiryPcs': delistedValue}];
+  } else if (status == 'Not Carried') {
+    beginningValue = ncValue;
+    deliveryValue = ncValue;
+    endingValue = ncValue;
+    offtakeValue = ncValue;
+    noOfDaysOOSValue = ncValue;
+    _expiryFieldsValues = [{'expiryMonth': ncValue, 'expiryPcs': ncValue}];
+
+  }
     // Create a new InventoryItem from form inputs
     InventoryItem newItem = InventoryItem(
-      id: ObjectId(), // You might want to generate this based on your DB setup
-      userEmail: widget.userEmail,
-      date: DateFormat('yyyy-MM-dd')
-          .format(DateTime.now()), // Assuming current date for simplicity
-      inputId: widget.inputid,
-      name: '${widget.userName} ${widget.userLastName}',
-      accountNameBranchManning: widget.selectedAccount,
-      period: widget.SelectedPeriod,
-      month: widget.selectedMonth,
-      week: widget.selectedWeek,
-      category: Version,
-      skuDescription: SKUDescription,
-      products: product,
-      skuCode: skucode,
-      status: status,
-      beginning: beginningValue,
-      delivery: deliveryValue,
-      ending: endingValue,
-      offtake: offtakeValue,
-      inventoryDaysLevel: inventoryDaysLevel.toDouble(),
-      noOfDaysOOS: noOfDaysOOSValue,
-    );
+        id:
+            ObjectId(), // You might want to generate this based on your DB setup
+        userEmail: widget.userEmail,
+        date: DateFormat('yyyy-MM-dd')
+            .format(DateTime.now()), // Assuming current date for simplicity
+        inputId: widget.inputid,
+        name: '${widget.userName} ${widget.userLastName}',
+        accountNameBranchManning: widget.selectedAccount,
+        period: widget.SelectedPeriod,
+        month: widget.selectedMonth,
+        week: widget.selectedWeek,
+        category: Version,
+        skuDescription: SKUDescription,
+        products: product,
+        skuCode: skucode,
+        status: status,
+        beginning: beginningValue,
+        delivery: deliveryValue,
+        ending: endingValue,
+        offtake: offtakeValue,
+        inventoryDaysLevel: inventoryDaysLevel.toDouble(),
+        noOfDaysOOS: noOfDaysOOSValue,
+        expiryFields: _expiryFieldsValues
+        );
 
     // Save the new inventory item to the database
     _saveToDatabase(newItem);
@@ -1190,6 +1188,54 @@ class _SKUInventoryState extends State<SKUInventory> {
       return items;
     }
   }
+
+    void _addExpiryField() {
+    setState(() {
+      if (_expiryFields.length < 6) {
+        int index = _expiryFields.length;
+        _expiryFields.add(
+          ExpiryField(
+            index: index,
+            onExpiryFieldChanged: (month, pcs, index) {
+              _updateExpiryField(
+                  index, {'expiryMonth': month, 'expiryPcs': pcs});
+            },
+            onDeletePressed: () {
+              _removeExpiryField(index);
+            },
+          ),
+        );
+        _expiryFieldsValues.add({'expiryMonth': '', 'expiryPcs': 0});
+      }
+    });
+  }
+
+  void _removeExpiryField(int index) {
+    setState(() {
+      _expiryFields.removeAt(index);
+      _expiryFieldsValues.removeAt(index);
+
+      // Update the index of remaining fields
+      for (int i = index; i < _expiryFields.length; i++) {
+        _expiryFields[i] = ExpiryField(
+          index: i,
+          onExpiryFieldChanged: (month, pcs, index) {
+            _updateExpiryField(index, {'expiryMonth': month, 'expiryPcs': pcs});
+          },
+          onDeletePressed: () {
+            _removeExpiryField(i);
+          },
+        );
+      }
+    });
+  }
+  
+  void _updateExpiryField(int index, Map<String, dynamic> newValue) {
+    setState(() {
+      _expiryFieldsValues[index] = newValue;
+    });
+  }
+
 
   Map<String, List<String>> _categoryToSkuDescriptions = {
     'V1': [
@@ -1629,6 +1675,7 @@ class _SKUInventoryState extends State<SKUInventory> {
     });
   }
 
+
   void _toggleDelistedTextField(String status) {
     setState(() {
       _statusSelected = status;
@@ -1654,6 +1701,7 @@ class _SKUInventoryState extends State<SKUInventory> {
     _offtakeController.addListener(_calculateInventoryDaysLevel);
     checkSaveEnabled();
   }
+
 
   @override
   void dispose() {
@@ -1727,8 +1775,8 @@ class _SKUInventoryState extends State<SKUInventory> {
                   ),
                   TextField(
                     controller: _accountNameController,
+                    readOnly: true,
                     decoration: InputDecoration(
-                      enabled: false,
                       hintText: widget.selectedWeek,
                     ),
                   ),
@@ -1738,8 +1786,8 @@ class _SKUInventoryState extends State<SKUInventory> {
                   ),
                   TextField(
                     controller: _accountNameController,
+                    readOnly: true,
                     decoration: InputDecoration(
-                      enabled: false,
                       hintText: widget.selectedMonth,
                     ),
                   ),
@@ -1750,8 +1798,8 @@ class _SKUInventoryState extends State<SKUInventory> {
                   ),
                   TextField(
                     controller: _accountNameController,
-                    decoration: InputDecoration(
-                        enabled: false, hintText: widget.selectedAccount),
+                    readOnly: true,
+                    decoration: InputDecoration( hintText: widget.selectedAccount),
                   ),
                   SizedBox(height: 20),
                   Text(
@@ -1843,9 +1891,9 @@ class _SKUInventoryState extends State<SKUInventory> {
                                 fontWeight: FontWeight.bold, fontSize: 16),
                           ),
                           TextField(
-                            enabled: false,
                             controller:
                                 _productsController, // Assigning controller
+                                readOnly: true,
                             decoration: InputDecoration(
                               hintText: _productDetails,
                             ),
@@ -1857,7 +1905,7 @@ class _SKUInventoryState extends State<SKUInventory> {
                                 fontWeight: FontWeight.bold, fontSize: 16),
                           ),
                           TextField(
-                            enabled: false,
+                            readOnly: true,
                             controller:
                                 _skuCodeController, // Assigning controller
                             decoration: InputDecoration(
@@ -1980,13 +2028,52 @@ class _SKUInventoryState extends State<SKUInventory> {
                       onChanged: (_) =>
                           checkSaveEnabled(), // Call checkSaveEnabled on change
                     ),
+      
+                    SizedBox(height: 10),
+                    if (_showCarriedTextField) 
+                            OutlinedButton(
+                              onPressed: _addExpiryField,
+                              style: OutlinedButton.styleFrom(
+                                side:
+                                    BorderSide(width: 2.0, color: Colors.green),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(4),
+                                ),
+                              ),
+                              child: Text(
+                                'Add Expiry',
+                                style: TextStyle(color: Colors.black),
+                              ),
+                            ),
+                            SizedBox(height: 10),
+                            if (_expiryFields.isNotEmpty)
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                children: [
+                                  for (int i = 0; i < _expiryFields.length; i++)
+                                    Row(
+                                      mainAxisAlignment: MainAxisAlignment
+                                          .center, // Align rows to center
+                                      children: [
+                                        Expanded(child: _expiryFields[i]),
+                                        IconButton(
+                                          icon:
+                                              Icon(Icons.remove_circle_outline),
+                                          onPressed: () {
+                                            _removeExpiryField(i);
+                                          },
+                                        ),
+                                      ],
+                                    ),
+                                ],
+                              ),
                   if (_showCarriedTextField)
                     TextField(
                       controller: _offtakeController,
                       keyboardType: TextInputType.number,
                       inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                      readOnly: true,
                       decoration: InputDecoration(
-                        enabled: false,
                         labelText: 'Offtake',
                         labelStyle: TextStyle(
                           fontWeight: FontWeight.bold,
@@ -1999,8 +2086,8 @@ class _SKUInventoryState extends State<SKUInventory> {
                       controller: _inventoryDaysLevelController,
                       keyboardType: TextInputType.number,
                       inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                      readOnly: true,
                       decoration: InputDecoration(
-                        enabled: false,
                         labelText: 'Inventory days Level',
                         labelStyle: TextStyle(
                           fontWeight: FontWeight.bold,
@@ -2131,6 +2218,107 @@ class _SKUInventoryState extends State<SKUInventory> {
               child: Text(value),
             );
           }).toList(),
+        ),
+      ],
+    );
+  }
+}
+
+class ExpiryField extends StatefulWidget {
+  final int index;
+  final Function(String, int, int) onExpiryFieldChanged;
+  final VoidCallback onDeletePressed;
+
+  ExpiryField({
+    required this.index,
+    required this.onExpiryFieldChanged,
+    required this.onDeletePressed,
+  });
+
+  @override
+  _ExpiryFieldState createState() => _ExpiryFieldState();
+}
+
+class _ExpiryFieldState extends State<ExpiryField> {
+  String? _selectedMonth;
+  final TextEditingController _expiryController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    _expiryController.addListener(_onExpiryFieldChanged);
+  }
+
+  @override
+  void dispose() {
+    _expiryController.removeListener(_onExpiryFieldChanged);
+    _expiryController.dispose();
+    super.dispose();
+  }
+
+  void _onExpiryFieldChanged() {
+    if (_selectedMonth != null) {
+      widget.onExpiryFieldChanged(_selectedMonth!,
+          int.tryParse(_expiryController.text) ?? 0, widget.index);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Month of Expiry',
+          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
+        ),
+        SizedBox(height: 10),
+        DropdownButton<String>(
+          value: _selectedMonth,
+          onChanged: (String? newValue) {
+            setState(() {
+              _selectedMonth = newValue;
+            });
+            _onExpiryFieldChanged();
+          },
+          hint: Text('Select Month'),
+          items: [
+            DropdownMenuItem<String>(
+              value: '1 Month',
+              child: Text('1 month'),
+            ),
+            DropdownMenuItem<String>(
+              value: '2 Months',
+              child: Text('2 months'),
+            ),
+            DropdownMenuItem<String>(
+              value: '3 months',
+              child: Text('3 months'),
+            ),
+            DropdownMenuItem<String>(
+              value: '4 months',
+              child: Text('4 months'),
+            ),
+            DropdownMenuItem<String>(
+              value: '5 months',
+              child: Text('5 months'),
+            ),
+            DropdownMenuItem<String>(
+              value: '6 months',
+              child: Text('6 months'),
+            ),
+          ],
+        ),
+        Text(
+          'PCS of Expiry',
+          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
+        ),
+        TextField(
+          controller: _expiryController,
+          decoration: InputDecoration(
+            hintText: 'Enter PCS of expiry ',
+          ),
+          keyboardType: TextInputType.number,
         ),
       ],
     );
