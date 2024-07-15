@@ -191,7 +191,7 @@ class _ForgotPasswordState extends State<ForgotPassword> {
     );
   }
 
-  Future<void> _sendOtpForgotPass(String email) async {
+  Future<void> _sendOtpForgotPass(String emailAddress) async {
   try {
     final response = await http.post(
       Uri.parse('http://192.168.50.217:8080/send-otp-forgotpassword'),
@@ -199,7 +199,7 @@ class _ForgotPasswordState extends State<ForgotPassword> {
         'Content-Type': 'application/json; charset=UTF-8',
       },
       body: jsonEncode(<String, String>{
-        'email': email,
+        'emailAddress': emailAddress,
       }),
     );
 

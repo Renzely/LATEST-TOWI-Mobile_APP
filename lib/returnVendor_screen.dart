@@ -32,8 +32,11 @@ class _ReturnVendorState extends State<ReturnVendor> {
   String plateNumber = '';
   String pullOutReason = '';
   String selectedCategory = '';
+  String inputId = '';
   List<String> outletOptions = [];
   List<String> itemOptions = [];
+  bool isPending = true;
+  bool isSaveEnabled = false; // Ensure this is initialized properly
 
   // Add fetchOutlets method to fetch outlets from the database
   Future<void> fetchOutlets() async {
@@ -108,6 +111,7 @@ class _ReturnVendorState extends State<ReturnVendor> {
     }
     updateItemOptions(selectedCategory);
     fetchOutlets(); // Call fetchOutlets when the widget is initialized
+    inputId = generateInputID();
   }
 
   void updateItemOptions(String category) {
@@ -199,7 +203,14 @@ class _ReturnVendorState extends State<ReturnVendor> {
     });
   }
 
-  bool isSaveEnabled = false;
+  String generateInputID() {
+    var timestamp = DateTime.now().millisecondsSinceEpoch;
+    var random =
+        Random().nextInt(10000); // Generate a random number between 0 and 9999
+    var paddedRandom =
+        random.toString().padLeft(4, '0'); // Ensure it has 4 digits
+    return '2000$paddedRandom';
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -220,6 +231,19 @@ class _ReturnVendorState extends State<ReturnVendor> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                SizedBox(height: 16),
+                Text(
+                  'Input ID',
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                ),
+                SizedBox(height: 8),
+                TextFormField(
+                  initialValue: generateInputID(),
+                  enabled: false,
+                  decoration: InputDecoration(
+                    hintText: 'Auto-generated Input ID',
+                  ),
+                ),
                 Text(
                   'Date',
                   style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
@@ -268,7 +292,7 @@ class _ReturnVendorState extends State<ReturnVendor> {
                     );
                   }).toList(),
                   onChanged: outletOptions.length == 1
-                      ? null // Disable the dropdown if there's only one outlet
+                      ? null
                       : (String? newValue) {
                           if (newValue != null) {
                             setState(() {
@@ -279,132 +303,164 @@ class _ReturnVendorState extends State<ReturnVendor> {
                 ),
                 SizedBox(height: 16),
                 Text(
-                  'Category',
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                ),
-                SizedBox(height: 10),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children:
-                      _categoryToSkuDescriptions.keys.map((String category) {
-                    return OutlinedButton(
-                      onPressed: () => _toggleDropdown(category),
-                      style: OutlinedButton.styleFrom(
-                        side: BorderSide(
-                          width: 2.0,
-                          color: selectedCategory == category
-                              ? Colors.green
-                              : Colors.blueGrey
-                                  .shade200, // Highlight selected category
-                        ),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(4),
-                        ),
-                      ),
-                      child: Text(
-                        category,
-                        style: TextStyle(color: Colors.black),
-                      ),
-                    );
-                  }).toList(),
-                ),
-                SizedBox(height: 16),
-                Text(
-                  'Item',
+                  'Pending or Not Pending',
                   style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                 ),
                 SizedBox(height: 10),
                 DropdownButtonFormField<String>(
-                  value: selectedItem,
-                  items: itemOptions.map((String item) {
+                  value: isPending ? 'Pending' : 'Not Pending',
+                  items: ['Pending', 'Not Pending'].map((String value) {
                     return DropdownMenuItem<String>(
-                      value: item,
-                      child: SizedBox(
-                        width: 350, // Adjust the width to fit your UI
-                        child: Tooltip(
-                          message:
-                              item, // Display the full item name as tooltip
-                          child: Text(
-                            item,
-                            overflow: TextOverflow
-                                .ellipsis, // Truncate long item names
-                          ),
-                        ),
-                      ),
+                      value: value,
+                      child: Text(value),
                     );
                   }).toList(),
                   onChanged: (String? newValue) {
                     if (newValue != null) {
                       setState(() {
-                        selectedItem = newValue;
+                        isPending = newValue == 'Pending';
                       });
                     }
                   },
                 ),
-                SizedBox(height: 16),
-                Text(
-                  'Quantity',
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                ),
-                TextFormField(
-                  decoration: InputDecoration(
-                    hintText: 'Input Quantity',
+                  SizedBox(height: 16),
+                      Text(
+                        'Category',
+                        style: TextStyle(
+                            fontWeight: FontWeight.bold, fontSize: 16),
+                      ),
+                      SizedBox(height: 10),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        children: _categoryToSkuDescriptions.keys
+                            .map((String category) {
+                          return OutlinedButton(
+                            onPressed: () => _toggleDropdown(category),
+                            style: OutlinedButton.styleFrom(
+                              side: BorderSide(
+                                width: 2.0,
+                                color: selectedCategory == category
+                                    ? Colors.green
+                                    : Colors.blueGrey.shade200,
+                              ),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                            ),
+                            child: Text(
+                              category,
+                              style: TextStyle(color: Colors.black),
+                            ),
+                          );
+                        }).toList(),
+                      ),
+                      SizedBox(height: 16),
+                      Text(
+                        'Item',
+                        style: TextStyle(
+                            fontWeight: FontWeight.bold, fontSize: 16),
+                      ),
+                      SizedBox(height: 10),
+                      DropdownButtonFormField<String>(
+                        value: selectedItem,
+                        items: itemOptions.map((String item) {
+                          return DropdownMenuItem<String>(
+                            value: item,
+                            child: SizedBox(
+                              width: 350,
+                              child: Tooltip(
+                                message: item,
+                                child: Text(
+                                  item,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                            ),
+                          );
+                        }).toList(),
+                        onChanged: (String? newValue) {
+                          if (newValue != null) {
+                            setState(() {
+                              selectedItem = newValue;
+                            });
+                          }
+                        },
+                      ),
+                if (!isPending)
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                    
+                      SizedBox(height: 16),
+                      Text(
+                        'Quantity',
+                        style: TextStyle(
+                            fontWeight: FontWeight.bold, fontSize: 16),
+                      ),
+                      TextFormField(
+                        decoration: InputDecoration(
+                          hintText: 'Input Quantity',
+                        ),
+                        onChanged: (value) {
+                          setState(() {
+                            quantity = value;
+                            checkSaveEnabled();
+                          });
+                        },
+                      ),
+                      SizedBox(height: 16),
+                      Text(
+                        'Driver\'s Name',
+                        style: TextStyle(
+                            fontWeight: FontWeight.bold, fontSize: 16),
+                      ),
+                      TextFormField(
+                        decoration: InputDecoration(
+                          hintText: 'Input Driver\'s Name',
+                        ),
+                        onChanged: (value) {
+                          setState(() {
+                            driverName = value;
+                            checkSaveEnabled();
+                          });
+                        },
+                      ),
+                      SizedBox(height: 16),
+                      Text(
+                        'Plate Number',
+                        style: TextStyle(
+                            fontWeight: FontWeight.bold, fontSize: 16),
+                      ),
+                      TextFormField(
+                        decoration: InputDecoration(
+                          hintText: 'Input Plate Number',
+                        ),
+                        onChanged: (value) {
+                          setState(() {
+                            plateNumber = value;
+                            checkSaveEnabled();
+                          });
+                        },
+                      ),
+                      SizedBox(height: 16),
+                      Text(
+                        'Pull Out Reason',
+                        style: TextStyle(
+                            fontWeight: FontWeight.bold, fontSize: 16),
+                      ),
+                      TextFormField(
+                        decoration: InputDecoration(
+                          hintText: 'Input Pull Out Reason',
+                        ),
+                        onChanged: (value) {
+                          setState(() {
+                            pullOutReason = value;
+                            checkSaveEnabled();
+                          });
+                        },
+                      ),
+                    ],
                   ),
-                  onChanged: (value) {
-                    setState(() {
-                      quantity = value;
-                      checkSaveEnabled();
-                    });
-                  },
-                ),
-                SizedBox(height: 16),
-                Text(
-                  'Driver\'s Name',
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                ),
-                TextFormField(
-                  decoration: InputDecoration(
-                    hintText: 'Input Driver\'s Name',
-                  ),
-                  onChanged: (value) {
-                    setState(() {
-                      driverName = value;
-                      checkSaveEnabled();
-                    });
-                  },
-                ),
-                SizedBox(height: 16),
-                Text(
-                  'Plate Number',
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                ),
-                TextFormField(
-                  decoration: InputDecoration(
-                    hintText: 'Input Plate Number',
-                  ),
-                  onChanged: (value) {
-                    setState(() {
-                      plateNumber = value;
-                      checkSaveEnabled();
-                    });
-                  },
-                ),
-                SizedBox(height: 16),
-                Text(
-                  'Pull Out Reason',
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                ),
-                TextFormField(
-                  decoration: InputDecoration(
-                    hintText: 'Input Pull Out Reason',
-                  ),
-                  onChanged: (value) {
-                    setState(() {
-                      pullOutReason = value;
-                      checkSaveEnabled();
-                    });
-                  },
-                ),
                 SizedBox(height: 16),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -435,12 +491,14 @@ class _ReturnVendorState extends State<ReturnVendor> {
                       ),
                     ),
                     ElevatedButton(
-                      onPressed:
-                          isSaveEnabled ? _confirmSaveReturnToVendor : null,
+                      onPressed: isPending
+                          ? _confirmSaveReturnToVendor
+                          : (isSaveEnabled ? _confirmSaveReturnToVendor : null),
                       style: ElevatedButton.styleFrom(
                         padding: EdgeInsets.symmetric(vertical: 15),
-                        backgroundColor:
-                            isSaveEnabled ? Colors.green : Colors.grey,
+                        backgroundColor: (isSaveEnabled || isPending)
+                            ? Colors.green
+                            : Colors.grey,
                         minimumSize: Size(150, 50),
                       ),
                       child: Text(
@@ -525,15 +583,16 @@ class _ReturnVendorState extends State<ReturnVendor> {
       final document = {
         '_id': objectId,
         'userEmail': widget.userEmail,
+        'inputId': inputId,
         'date': DateFormat('yyyy-MM-dd').format(selectedDate),
         'merchandiserName': '${widget.userName} ${widget.userLastName}',
         'outlet': selectedOutlet,
         'category': selectedCategory,
         'item': selectedItem,
-        'quantity': quantity,
-        'driverName': driverName.toString(),
-        'plateNumber': plateNumber.toString(),
-        'pullOutReason': pullOutReason.toString(),
+        'quantity': isPending ? 'Pending' : quantity,
+        'driverName': isPending ? 'Pending' : driverName.toString(),
+        'plateNumber': isPending ? 'Pending' : plateNumber.toString(),
+        'pullOutReason': isPending ? 'Pending' : pullOutReason.toString(),
       };
 
       // Insert the document into the collection

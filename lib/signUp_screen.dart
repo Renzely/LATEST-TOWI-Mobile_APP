@@ -382,6 +382,7 @@ class _SignUpState extends State<SignUp> {
 }
 
 Future<void> _sendOtp(String email, Map<String, dynamic> userData) async {
+
   final response = await http.post(
     Uri.parse('http://192.168.50.217:8080/send-otp-register'),
     headers: <String, String>{
@@ -393,22 +394,14 @@ Future<void> _sendOtp(String email, Map<String, dynamic> userData) async {
   );
 
   if (response.statusCode == 200) {
-    // Print the full response body to debug
-    print('Response body: ${response.body}');
-
-    // Ensure the response body is in the expected format
-    final responseBody = jsonDecode(response.body);
-    final receivedOtp = responseBody['code'];
-
-    // Print the received OTP to debug
-    print('Received OTP: $receivedOtp');
+    final receivedOtp = jsonDecode(response.body)['code'];
 
     Navigator.push(
       context,
       MaterialPageRoute(
         builder: (context) => OTPVerificationScreen(
           email: email,
-          otp: receivedOtp,
+          otp: receivedOtp.toString(),
           userData: userData,
         ),
       ),
@@ -420,8 +413,6 @@ Future<void> _sendOtp(String email, Map<String, dynamic> userData) async {
     );
   }
 }
-
-
 
 
 
