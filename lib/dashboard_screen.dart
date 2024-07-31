@@ -6,12 +6,15 @@ import 'package:demo_app/login_screen.dart';
 import 'package:demo_app/dbHelper/constant.dart';
 import 'package:demo_app/dbHelper/mongodb.dart';
 import 'package:demo_app/dbHelper/mongodbDraft.dart';
+import 'package:demo_app/provider.dart';
 import 'package:demo_app/returnVendor_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'dart:async';
 import 'package:mongo_dart/mongo_dart.dart' as mongo;
+import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
 
 class Dashboard extends StatelessWidget {
   final String userName;
@@ -28,13 +31,251 @@ class Dashboard extends StatelessWidget {
   Widget build(BuildContext context) {
     return SideBarLayout(
       title: "Dashboard",
-      mainContent: DateTimeWidget(),
+      mainContent: Column(
+        children: [
+          DateTimeWidget(),
+          AttendanceWidget(userEmail: userEmail), // Pass the userEmail here
+        ],
+      ),
       userName: userName,
       userLastName: userLastName,
       userEmail: userEmail,
     );
   }
 }
+
+class AttendanceWidget extends StatefulWidget {
+  final String userEmail;
+
+  AttendanceWidget({required this.userEmail});
+
+  @override
+  _AttendanceWidgetState createState() => _AttendanceWidgetState();
+}
+
+class _AttendanceWidgetState extends State<AttendanceWidget> {
+  @override
+  void initState() {
+    super.initState();
+    _initializeAttendanceStatus();
+      
+  }
+
+  void _initializeAttendanceStatus() async {
+    final attendanceModel = Provider.of<AttendanceModel>(context, listen: false);
+    var attendanceStatus = await MongoDatabase.getAttendanceStatus(widget.userEmail);
+
+    if (attendanceStatus != null) {
+      String? timeInFormatted = _formatTime(attendanceStatus['timeIn']);
+      String? timeOutFormatted = _formatTime(attendanceStatus['timeOut']);
+
+      attendanceModel.updateTimeIn(timeInFormatted!);
+      attendanceModel.updateTimeOut(timeOutFormatted!);
+
+      attendanceModel.setIsTimeInRecorded(attendanceStatus['timeIn'] != null);
+      attendanceModel.setIsTimeOutRecorded(attendanceStatus['timeOut'] != null);
+    }
+  }
+
+  String? _formatTime(String? time) {
+    if (time == null) return null;
+    try {
+      DateTime dateTime = DateTime.parse(time);
+      return DateFormat('h:mm a').format(dateTime);
+    } catch (e) {
+      print('Error formatting time: $e');
+      return null;
+    }
+  }
+
+  Future<bool> _showConfirmationDialog(String action) async {
+  // Show the dialog and wait for the result
+  final bool? result = await showDialog<bool>(
+    context: context,
+    barrierDismissible: false,
+    builder: (BuildContext context) {
+      return AlertDialog(
+        title: Text('Confirm $action'),
+        content: Text('Are you sure you want to $action?'),
+        actions: <Widget>[
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            child: Text('Confirm'),
+          ),
+        ],
+      );
+    },
+  );
+
+  // Return the result or false if the result is null
+  return result ?? false;
+}
+
+
+  Future<void> _confirmAndRecordTimeIn(BuildContext context) async {
+    bool confirmed = await _showConfirmationDialog('Time In');
+    if (confirmed) {
+      _recordTimeIn(context);
+    }
+  }
+
+  Future<void> _confirmAndRecordTimeOut(BuildContext context) async {
+    bool confirmed = await _showConfirmationDialog('Time Out');
+    if (confirmed) {
+      _recordTimeOut(context);
+    }
+  }
+
+
+ void _recordTimeIn(BuildContext context) async {
+  final attendanceModel = Provider.of<AttendanceModel>(context, listen: false);
+  String currentTimeIn = DateFormat('h:mm a').format(DateTime.now());
+
+  try {
+    var result = await MongoDatabase.logTimeIn(widget.userEmail);
+    if (result == "Success") {
+      attendanceModel.updateTimeIn(currentTimeIn);
+      attendanceModel.setIsTimeInRecorded(true);
+      print('Time In recorded successfully for ${widget.userEmail}');
+    } else {
+      print('Failed to record Time In for ${widget.userEmail}');
+    }
+  } catch (e) {
+    print('Error recording time in: $e');
+  }
+}
+
+
+void _recordTimeOut(BuildContext context) async {
+  final attendanceModel = Provider.of<AttendanceModel>(context, listen: false);
+  String currentTimeOut = DateFormat('h:mm a').format(DateTime.now());
+
+  try {
+    var result = await MongoDatabase.logTimeOut(widget.userEmail);
+    if (result == "Success") {
+      attendanceModel.updateTimeOut(currentTimeOut);
+      attendanceModel.setIsTimeOutRecorded(true);
+      print('Time Out recorded successfully for ${widget.userEmail}');
+    } else {
+      print('Failed to record Time Out for ${widget.userEmail}');
+    }
+  } catch (e) {
+    print('Error recording time out: $e');
+  }
+}
+
+
+  @override
+  Widget build(BuildContext context) {
+    return Consumer<AttendanceModel>(
+      builder: (context, attendanceModel, child) {
+        return Container(
+          padding: EdgeInsets.symmetric(vertical: 20),
+          child: Column(
+            children: [
+              SizedBox(height: 20),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  Column(
+                    children: [
+                      Text(
+                        "TIME IN",
+                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                      ),
+                      SizedBox(height: 20),
+                      ElevatedButton(
+                        onPressed: !attendanceModel.isTimeInRecorded
+                            ? () => _confirmAndRecordTimeIn(context)
+                            : null,
+                        style: ButtonStyle(
+                          padding: MaterialStateProperty.all<EdgeInsetsGeometry>(
+                            const EdgeInsets.symmetric(vertical: 15),
+                          ),
+                          minimumSize: MaterialStateProperty.all<Size>(
+                            const Size(150, 50),
+                          ),
+                          backgroundColor: MaterialStateProperty.resolveWith<Color>(
+                            (states) {
+                              if (!attendanceModel.isTimeInRecorded) {
+                                return Colors.green;
+                              } else {
+                                return Colors.grey;
+                              }
+                            },
+                          ),
+                        ),
+                        child: const Text(
+                          "Time In",
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                          ),
+                        ),
+                      ),
+                      SizedBox(height: 30),
+                      Text("Time In: ${attendanceModel.timeIn ?? 'Not recorded'}"),
+                    ],
+                  ),
+                  Column(
+                    children: [
+                      Text(
+                        "TIME OUT",
+                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                      ),
+                      SizedBox(height: 20),
+                      ElevatedButton(
+                        onPressed: attendanceModel.isTimeInRecorded && !attendanceModel.isTimeOutRecorded
+                            ? () => _confirmAndRecordTimeOut(context)
+                            : null,
+                        style: ButtonStyle(
+                          padding: MaterialStateProperty.all<EdgeInsetsGeometry>(
+                            const EdgeInsets.symmetric(vertical: 15),
+                          ),
+                          minimumSize: MaterialStateProperty.all<Size>(
+                            const Size(150, 50),
+                          ),
+                          backgroundColor: MaterialStateProperty.resolveWith<Color>(
+                            (states) {
+                              if (attendanceModel.isTimeInRecorded && !attendanceModel.isTimeOutRecorded) {
+                                return Colors.green;
+                              } else {
+                                return Colors.grey;
+                              }
+                            },
+                          ),
+                        ),
+                        child: const Text(
+                          "Time Out",
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                          ),
+                        ),
+                      ),
+                      SizedBox(height: 30),
+                      Text("Time Out: ${attendanceModel.timeOut ?? 'Not recorded'}"),
+                    ],
+                  ),
+                ],
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+}
+
+
+
+
 
 class Inventory extends StatefulWidget {
   final String userName;
@@ -864,6 +1105,8 @@ class Setting extends StatelessWidget {
 }
 
 Future<void> _logout(BuildContext context) async {
+  final attendanceModel = Provider.of<AttendanceModel>(context, listen: false);
+  attendanceModel.reset();
   try {
     final prefs = await SharedPreferences.getInstance();
     await prefs.clear();

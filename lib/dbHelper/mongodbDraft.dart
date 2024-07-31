@@ -10,34 +10,36 @@ MongoDemo welcomeFromJson(String str) => MongoDemo.fromJson(json.decode(str));
 
 String welcomeToJson(MongoDemo data) => json.encode(data.toJson());
 
-  class MongoDemo {
-    final M.ObjectId id;
-    String remarks;
-    String firstName;
-    String middleName;
-    String lastName;
-    String emailAddress;
-    String contactNum;
-    String username;
-    String password;
-    String accountNameBranchManning;
-    bool isActivate;
-    int type;
+ class MongoDemo {
+  final M.ObjectId id;
+  String remarks;
+  String firstName;
+  String middleName;
+  String lastName;
+  String emailAddress;
+  String contactNum;
+  String username;
+  String password;
+  String accountNameBranchManning;
+  bool isActivate;
+  int type;
+  DateTime? timeOut; // Nullable DateTime
 
-    MongoDemo({
-      required this.remarks,
-      required this.id,
-      required this.firstName,
-      required this.middleName,
-      required this.lastName,
-      required this.emailAddress,
-      required this.contactNum,
-      required this.username,
-      required this.password,
-      required this.accountNameBranchManning,
-      required this.isActivate,
-      required this.type
-    });
+  MongoDemo({
+    required this.remarks,
+    required this.id,
+    required this.firstName,
+    required this.middleName,
+    required this.lastName,
+    required this.emailAddress,
+    required this.contactNum,
+    required this.username,
+    required this.password,
+    required this.accountNameBranchManning,
+    required this.isActivate,
+    required this.type,
+    this.timeOut,
+  });
 
   factory MongoDemo.fromJson(Map<String, dynamic> json) {
     return MongoDemo(
@@ -46,13 +48,14 @@ String welcomeToJson(MongoDemo data) => json.encode(data.toJson());
       firstName: json['firstName'],
       middleName: json['middleName'],
       lastName: json['lastName'],
-      emailAddress: json['emailAddress'], 
+      emailAddress: json['emailAddress'],
       contactNum: json['contactNum'],
       username: json['username'],
       password: json['password'],
       accountNameBranchManning: json['accountNameBranchManning'],
       isActivate: json['isActivate'],
-      type: json['type']
+      type: json['type'],
+      timeOut: json['timeOut'] != null ? DateTime.tryParse(json['timeOut']) : null,
     );
   }
 
@@ -62,13 +65,14 @@ String welcomeToJson(MongoDemo data) => json.encode(data.toJson());
         'firstName': firstName,
         'middleName': middleName,
         'lastName': lastName,
-        'emailAddress': emailAddress, // Updated field name
+        'emailAddress': emailAddress,
         'contactNum': contactNum,
         'username': username,
         'password': password,
         'accountNameBranchManning': accountNameBranchManning,
         'isActivate': isActivate,
-        'type': type
+        'type': type,
+        'timeOut': timeOut?.toIso8601String(), // Convert to string if not null
       };
 }
 
@@ -82,6 +86,35 @@ Future<String> hashPassword(String password) async {
   // Hash the password with the generated salt
   final hashedPassword = await BCrypt.hashpw(password, salt);
   return hashedPassword;
+}
+
+
+class TimeLog {
+  ObjectId id;
+  String userEmail;
+  DateTime timeIn;
+  DateTime? timeOut; // Nullable DateTime
+
+  TimeLog({
+    required this.id,
+    required this.userEmail,
+    required this.timeIn,
+    this.timeOut, required String date,
+  });
+
+  factory TimeLog.fromJson(Map<String, dynamic> json) => TimeLog(
+        id: json['_id'] ?? ObjectId(),
+        userEmail: json['userEmail'] ?? '',
+        timeIn: DateTime.parse(json['timeIn']),
+        timeOut: json['timeOut'] != null ? DateTime.tryParse(json['timeOut']) : null, date: '',
+      );
+
+  Map<String, dynamic> toJson() => {
+        '_id': id,
+        'userEmail': userEmail,
+        'timeIn': timeIn.toIso8601String(),
+        'timeOut': timeOut?.toIso8601String(), // Convert to string if not null
+      };
 }
 
 // // // INVENTORY DATABASE // // //
@@ -286,4 +319,6 @@ class ReturnToVendor {
 
     await db.close();
   }
+  
 }
+
