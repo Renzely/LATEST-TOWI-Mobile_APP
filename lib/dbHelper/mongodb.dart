@@ -152,5 +152,97 @@ class MongoDatabase {
     } finally {
       await close();
     }
+  } 
+
+
+static Future<String> logTimeIn(String userEmail) async {
+  try {
+    await connect();
+    var timeLogCollection = db.collection(USER_ATTENDANCE);
+    var todayDate = DateTime.now().toLocal().toIso8601String().substring(0, 10);
+
+    // Check if a record already exists for today
+    var existingRecord = await timeLogCollection.findOne(
+      where.eq('userEmail', userEmail).and(where.eq('date', todayDate)),
+    );
+
+    if (existingRecord == null) {
+      // No record exists, create a new one
+      var newLog = {
+        '_id': ObjectId(),
+        'userEmail': userEmail,
+        'timeIn': DateTime.now().toIso8601String(),
+        'timeOut': null,
+        'date': todayDate, // Store the date for easy retrieval
+      };
+      await timeLogCollection.insert(newLog);
+      return "Success";
+    } else {
+      return "Already checked in for today";
+    }
+  } catch (e) {
+    print('Error logging time in: $e');
+    return "Error";
+  } finally {
+    await close();
   }
+}
+
+
+static Future<String> logTimeOut(String userEmail) async {
+  try {
+    await connect();
+    var timeLogCollection = db.collection(USER_ATTENDANCE);
+    var currentTime = DateTime.now().toIso8601String();
+
+    // Perform the update
+    var result = await timeLogCollection.updateOne(
+      where.eq('userEmail', userEmail).and(where.eq('timeOut', null)),
+      modify.set('timeOut', currentTime),
+    );
+
+    // Print the result to inspect it
+    print('Update Result: $result');
+
+    // Check if the update was acknowledged and if any documents were modified
+    if (result.isAcknowledged) {
+      if (result.nModified != null && result.nModified > 0) {
+        return "Success";
+      } else {
+        return "No open time found";
+      }
+    } else {
+      return "Update not acknowledged";
+    }
+  } catch (e) {
+    print('Error logging time out: $e');
+    return "Error";
+  } finally {
+    await close();
+  }
+}
+
+
+
+
+static Future<Map<String, dynamic>?> getAttendanceStatus(String userEmail) async {
+  try {
+    await connect();
+    var timeLogCollection = db.collection(USER_ATTENDANCE);
+    var todayDate = DateTime.now().toLocal().toIso8601String().substring(0, 10);
+
+    // Fetch the record for today
+    var record = await timeLogCollection.findOne(
+      where.eq('userEmail', userEmail).and(where.eq('date', todayDate)),
+    );
+
+    return record;
+  } catch (e) {
+    print('Error fetching attendance status: $e');
+    return null;
+  } finally {
+    await close();
+  }
+}
+
 }

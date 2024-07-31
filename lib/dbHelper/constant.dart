@@ -10,6 +10,8 @@ const USER_INVENTORY = "TowiInventory";
 
 const USER_RTV = 'TowiReturnToVendor';
 
+const USER_ATTENDANCE = "TowiAttendances";
+
 
 
 // user = "TowiAppUser"

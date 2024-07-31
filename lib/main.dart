@@ -1,8 +1,10 @@
 // ignore_for_file: use_key_in_widget_constructors
 
 import 'package:demo_app/dbHelper/mongodb.dart';
+import 'package:demo_app/provider.dart';
 import 'package:flutter/material.dart';
 import 'package:demo_app/login_screen.dart'; // Import your LoginPage
+import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:demo_app/dashboard_screen.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -23,7 +25,8 @@ void main() async {
     userName: userName,
     userLastName: userLastName,
     userEmail: userEmail,
-  ));
+  )
+  );
 }
 
 class MyApp extends StatelessWidget {
@@ -39,20 +42,23 @@ class MyApp extends StatelessWidget {
     required this.userEmail,
   });
 
-  @override
-  Widget build(BuildContext context) => MaterialApp(
-        theme: ThemeData(
-          textTheme: GoogleFonts.robotoTextTheme(
-            Theme.of(context).textTheme,
+    @override
+  Widget build(BuildContext context) => ChangeNotifierProvider(
+        create: (_) => AttendanceModel(), // Provide AttendanceModel here
+        child: MaterialApp(
+          theme: ThemeData(
+            textTheme: GoogleFonts.robotoTextTheme(
+              Theme.of(context).textTheme,
+            ),
           ),
+          home: isLoggedIn
+              ? Dashboard(
+                  userName: userName,
+                  userLastName: userLastName,
+                  userEmail: userEmail,
+                )
+              : LoginPage(),
+          debugShowCheckedModeBanner: false,
         ),
-        home: isLoggedIn
-            ? Dashboard(
-                userName: userName,
-                userLastName: userLastName,
-                userEmail: userEmail,
-              )
-            : LoginPage(),
-        debugShowCheckedModeBanner: false,
       );
 }
