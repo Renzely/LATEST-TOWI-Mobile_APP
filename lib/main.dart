@@ -42,23 +42,25 @@ class MyApp extends StatelessWidget {
     required this.userEmail,
   });
 
-    @override
-  Widget build(BuildContext context) => ChangeNotifierProvider(
-        create: (_) => AttendanceModel(), // Provide AttendanceModel here
-        child: MaterialApp(
-          theme: ThemeData(
-            textTheme: GoogleFonts.robotoTextTheme(
-              Theme.of(context).textTheme,
-            ),
+  @override
+  Widget build(BuildContext context) {
+    return ChangeNotifierProvider(
+      create: (_) => AttendanceModel(), // Provide AttendanceModel here
+      child: MaterialApp(
+        theme: ThemeData(
+          textTheme: GoogleFonts.robotoTextTheme(
+            Theme.of(context).textTheme,
           ),
-          home: isLoggedIn
-              ? Dashboard(
-                  userName: userName,
-                  userLastName: userLastName,
-                  userEmail: userEmail,
-                )
-              : LoginPage(),
-          debugShowCheckedModeBanner: false,
         ),
-      );
+        home: isLoggedIn
+            ? Attendance(
+                userName: userName,
+                userLastName: userLastName,
+                userEmail: userEmail,
+              )
+            : LoginPage(),
+        debugShowCheckedModeBanner: false,
+      ),
+    );
+  }
 }

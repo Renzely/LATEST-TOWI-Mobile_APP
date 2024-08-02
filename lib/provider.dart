@@ -32,11 +32,10 @@ class AttendanceModel extends ChangeNotifier {
   }
 
   void reset() {
-  _timeIn = null;
-  _timeOut = null;
-  _isTimeInRecorded = false;
-  _isTimeOutRecorded = false;
-  notifyListeners();
-}
-
+    _timeIn = null;
+    _timeOut = null;
+    _isTimeInRecorded = false;
+    _isTimeOutRecorded = false;
+    notifyListeners();
+  }
 }
