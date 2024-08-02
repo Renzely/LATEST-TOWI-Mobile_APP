@@ -16,12 +16,12 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 
-class Dashboard extends StatelessWidget {
+class Attendance extends StatelessWidget {
   final String userName;
   final String userLastName;
   final String userEmail;
 
-  Dashboard({
+  Attendance({
     required this.userName,
     required this.userLastName,
     required this.userEmail,
@@ -30,7 +30,7 @@ class Dashboard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SideBarLayout(
-      title: "Dashboard",
+      title: "Attendance",
       mainContent: Column(
         children: [
           DateTimeWidget(),
@@ -185,7 +185,7 @@ void _recordTimeOut(BuildContext context) async {
                     children: [
                       Text(
                         "TIME IN",
-                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                        style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold),
                       ),
                       SizedBox(height: 20),
                       ElevatedButton(
@@ -194,10 +194,10 @@ void _recordTimeOut(BuildContext context) async {
                             : null,
                         style: ButtonStyle(
                           padding: MaterialStateProperty.all<EdgeInsetsGeometry>(
-                            const EdgeInsets.symmetric(vertical: 15),
+                            const EdgeInsets.symmetric(vertical: 30),
                           ),
                           minimumSize: MaterialStateProperty.all<Size>(
-                            const Size(150, 50),
+                            const Size(185, 50),
                           ),
                           backgroundColor: MaterialStateProperty.resolveWith<Color>(
                             (states) {
@@ -214,19 +214,23 @@ void _recordTimeOut(BuildContext context) async {
                           style: TextStyle(
                             color: Colors.white,
                             fontWeight: FontWeight.bold,
-                            fontSize: 16,
+                            fontSize: 20,
                           ),
                         ),
                       ),
                       SizedBox(height: 30),
-                      Text("Time In: ${attendanceModel.timeIn ?? 'Not recorded'}"),
+                      Text(style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 15,
+                          ),"Time In: ${attendanceModel.timeIn ?? 'Not recorded'}"),
+                      
                     ],
                   ),
                   Column(
                     children: [
                       Text(
                         "TIME OUT",
-                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                        style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold),
                       ),
                       SizedBox(height: 20),
                       ElevatedButton(
@@ -235,10 +239,10 @@ void _recordTimeOut(BuildContext context) async {
                             : null,
                         style: ButtonStyle(
                           padding: MaterialStateProperty.all<EdgeInsetsGeometry>(
-                            const EdgeInsets.symmetric(vertical: 15),
+                            const EdgeInsets.symmetric(vertical: 30),
                           ),
                           minimumSize: MaterialStateProperty.all<Size>(
-                            const Size(150, 50),
+                            const Size(185, 50),
                           ),
                           backgroundColor: MaterialStateProperty.resolveWith<Color>(
                             (states) {
@@ -255,12 +259,15 @@ void _recordTimeOut(BuildContext context) async {
                           style: TextStyle(
                             color: Colors.white,
                             fontWeight: FontWeight.bold,
-                            fontSize: 16,
+                            fontSize: 20,
                           ),
                         ),
                       ),
                       SizedBox(height: 30),
-                      Text("Time Out: ${attendanceModel.timeOut ?? 'Not recorded'}"),
+                      Text(style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 15,
+                          ),"Time Out: ${attendanceModel.timeOut ?? 'Not recorded'}"),
                     ],
                   ),
                 ],
@@ -327,9 +334,9 @@ class _InventoryState extends State<Inventory> {
       // Sort inventory items based on _sortByLatest flag
       inventoryItems.sort((a, b) {
         if (_sortByLatest) {
-          return b.week.compareTo(a.week); // Sort by latest to oldest
+          return a.date.compareTo(b.date); // Sort by latest to oldest
         } else {
-          return a.week.compareTo(b.week); // Sort by oldest to latest
+          return b.date.compareTo(a.date); // Sort by oldest to latest
         }
       });
       return inventoryItems;
@@ -792,9 +799,9 @@ class _RTVState extends State<RTV> {
       // Sort inventory items based on _sortByLatest flag
       rtvItems.sort((a, b) {
         if (_sortByLatest) {
-          return b.date.compareTo(a.date); // Sort by latest to oldest
+          return a.date.compareTo(b.date); // Sort by latest to oldest
         } else {
-          return a.date.compareTo(b.date); // Sort by oldest to latest
+          return b.date.compareTo(a.date); // Sort by oldest to latest
         }
       });
       return rtvItems;
@@ -1237,13 +1244,13 @@ class _SideBarLayoutState extends State<SideBarLayout> {
                 ),
                 ListTile(
                   leading: const Icon(
-                    Icons.home_outlined,
+                    Icons.account_circle_outlined,
                   ),
-                  title: const Text('Home'),
+                  title: const Text('Attendance'),
                   onTap: () {
                     Navigator.of(context).push(
                       MaterialPageRoute(
-                          builder: (context) => Dashboard(
+                          builder: (context) => Attendance(
                                 userName: widget.userName,
                                 userLastName: widget.userLastName,
                                 userEmail: widget.userEmail,
@@ -1349,16 +1356,16 @@ class _DateTimeWidgetState extends State<DateTimeWidget> {
           Text(
             formattedTime,
             style: TextStyle(
-              fontSize: 24,
+              fontSize: 70,
               fontWeight: FontWeight.bold,
               color: Colors.black,
             ),
           ),
-          SizedBox(height: 5),
+          SizedBox(height: 20),
           Text(
             '$formattedDate, $dayOfWeek',
             style: TextStyle(
-              fontSize: 16,
+              fontSize: 30,
               fontWeight: FontWeight.normal,
               color: Colors.black,
             ),

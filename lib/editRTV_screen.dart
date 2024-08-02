@@ -277,65 +277,64 @@ class _EditRTVScreenState extends State<EditRTVScreen> {
               ),
               SizedBox(height: 16),
               Text(
-                'Category',
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                
-              ),
-              SizedBox(height: 10),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children:
-                    _categoryToSkuDescriptions.keys.map((String category) {
-                  return OutlinedButton(
-                    onPressed: () => _toggleDropdown(category),
-                    style: OutlinedButton.styleFrom(
-                      side: BorderSide(
-                        width: 2.0,
-                        color: selectedCategory == category
-                            ? Colors.green
-                            : Colors.blueGrey.shade200,
-                      ),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-                    ),
-                    child: Text(
-                      category,
-                      style: TextStyle(color: Colors.black),
-                    ),
-                  );
-                }).toList(),
-              ),
-              SizedBox(height: 16),
-              Text(
-                'Item',
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-              ),
-              SizedBox(height: 10),
-              DropdownButtonFormField<String>(
-                value: selectedItem,
-                items: itemOptions.map((String item) {
-                  return DropdownMenuItem<String>(
-                    value: item,
-                    child: SizedBox(
-                      width: 350,
-                      child: Tooltip(
-                        message: item,
-                        child: Text(
-                          item,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                    ),
-                  );
-                }).toList(),
-                onChanged: (String? newValue) {
-                  setState(() {
-                    selectedItem = newValue!;
-                    _itemController.text = selectedItem;
-                  });
-                },
-              ),
+  'Category',
+  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+),
+SizedBox(height: 10),
+Row(
+  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+  children: _categoryToSkuDescriptions.keys.map((String category) {
+    return OutlinedButton(
+      onPressed: null, // Disable button interaction
+      style: OutlinedButton.styleFrom(
+        side: BorderSide(
+          width: 2.0,
+          color: selectedCategory == category
+              ? Colors.green
+              : Colors.blueGrey.shade200,
+        ),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(4),
+        ),
+      ),
+      child: Text(
+        category,
+        style: TextStyle(color: Colors.black),
+      ),
+    );
+  }).toList(),
+),
+
+            SizedBox(height: 16),
+Text(
+  'Item',
+  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+),
+SizedBox(height: 10),
+DropdownButtonFormField<String>(
+  value: selectedItem,
+  items: itemOptions.map((String item) {
+    return DropdownMenuItem<String>(
+      value: item,
+      child: SizedBox(
+        width: 350,
+        child: Tooltip(
+          message: item,
+          child: Text(
+            item,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ),
+      ),
+    );
+  }).toList(),
+  onChanged: null, // Disable the dropdown interaction
+  decoration: InputDecoration(
+    // Optionally adjust the decoration to indicate read-only state
+    enabled: false,
+  ),
+),
+
               SizedBox(height: 16),
               Text(
                 'Quantity',
