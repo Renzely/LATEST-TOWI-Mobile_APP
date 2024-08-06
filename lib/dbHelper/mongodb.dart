@@ -5,7 +5,6 @@ import 'package:demo_app/dbHelper/constant.dart';
 import 'package:demo_app/dbHelper/mongodbDraft.dart';
 import 'package:mongo_dart/mongo_dart.dart';
 
-
 class MongoDatabase {
   static var db, userCollection;
 
@@ -23,31 +22,28 @@ class MongoDatabase {
   }
 
   static Future<String> insert(MongoDemo data) async {
-  try {
-    if (db == null || !db.isConnected) {
-      await connect();
+    try {
+      if (db == null || !db.isConnected) {
+        await connect();
+      }
+      var userCollection = db.collection("TowiDb");
+      print('Inserting data: ${data.toJson()}');
+      await userCollection.insertOne(data.toJson());
+      return "Success";
+    } catch (e) {
+      print("Insertion failed: $e");
+      return "Error: $e";
+    } finally {
+      await close();
     }
-    var userCollection = db.collection("TowiDb");
-    print('Inserting data: ${data.toJson()}');
-    await userCollection.insertOne(data.toJson());
-    return "Success";
-  } catch (e) {
-    print("Insertion failed: $e");
-    return "Error: $e";
-  } finally {
-    await close();
   }
-}
 
-
-    static Future<List<Map<String, dynamic>>> getData() async {
+  static Future<List<Map<String, dynamic>>> getData() async {
     await connect();
     final arrdata = await userCollection.find().toList();
     await close();
     return arrdata;
   }
-
-
 
   static Future<Map<String, dynamic>?> getUserInfo() async {
     try {
@@ -98,8 +94,8 @@ class MongoDatabase {
     try {
       var db = await Db.create(MONGO_CONN_URL);
       await db.open();
-      var collection =
-          db.collection(USER_COLLECTION); // Ensure this is the correct collection
+      var collection = db
+          .collection(USER_COLLECTION); // Ensure this is the correct collection
       var branches = await collection.find().toList();
       await db.close();
       return branches;
@@ -107,9 +103,8 @@ class MongoDatabase {
       print("Error fetching branch data: $e");
       return [];
     }
-    
   }
-  
+
   static Future<void> updateItemInDatabase(ReturnToVendor updatedItem) async {
     if (db == null || !db!.isConnected) {
       await connect();
@@ -152,97 +147,100 @@ class MongoDatabase {
     } finally {
       await close();
     }
-  } 
-
-
-static Future<String> logTimeIn(String userEmail) async {
-  try {
-    await connect();
-    var timeLogCollection = db.collection(USER_ATTENDANCE);
-    var todayDate = DateTime.now().toLocal().toIso8601String().substring(0, 10);
-
-    // Check if a record already exists for today
-    var existingRecord = await timeLogCollection.findOne(
-      where.eq('userEmail', userEmail).and(where.eq('date', todayDate)),
-    );
-
-    if (existingRecord == null) {
-      // No record exists, create a new one
-      var newLog = {
-        '_id': ObjectId(),
-        'userEmail': userEmail,
-        'timeIn': DateTime.now().toIso8601String(),
-        'timeOut': null,
-        'date': todayDate, // Store the date for easy retrieval
-      };
-      await timeLogCollection.insert(newLog);
-      return "Success";
-    } else {
-      return "Already checked in for today";
-    }
-  } catch (e) {
-    print('Error logging time in: $e');
-    return "Error";
-  } finally {
-    await close();
   }
-}
 
+  static Future<String> logTimeIn(
+      String userEmail, String timeInLocation) async {
+    try {
+      await connect();
+      var timeLogCollection = db.collection(USER_ATTENDANCE);
+      var todayDate =
+          DateTime.now().toLocal().toIso8601String().substring(0, 10);
 
-static Future<String> logTimeOut(String userEmail) async {
-  try {
-    await connect();
-    var timeLogCollection = db.collection(USER_ATTENDANCE);
-    var currentTime = DateTime.now().toIso8601String();
+      // Check if a record already exists for today
+      var existingRecord = await timeLogCollection.findOne(
+        where.eq('userEmail', userEmail).and(where.eq('date', todayDate)),
+      );
 
-    // Perform the update
-    var result = await timeLogCollection.updateOne(
-      where.eq('userEmail', userEmail).and(where.eq('timeOut', null)),
-      modify.set('timeOut', currentTime),
-    );
-
-    // Print the result to inspect it
-    print('Update Result: $result');
-
-    // Check if the update was acknowledged and if any documents were modified
-    if (result.isAcknowledged) {
-      if (result.nModified != null && result.nModified > 0) {
+      if (existingRecord == null) {
+        // No record exists, create a new one
+        var newLog = {
+          '_id': ObjectId(),
+          'userEmail': userEmail,
+          'timeIn': DateTime.now().toIso8601String(),
+          'timeOut': null,
+          'timeInLocation': timeInLocation,
+          'timeOutLocation': null,
+          'date': todayDate, // Store the date for easy retrieval
+        };
+        await timeLogCollection.insert(newLog);
         return "Success";
       } else {
-        return "No open time found";
+        return "Already checked in for today";
       }
-    } else {
-      return "Update not acknowledged";
+    } catch (e) {
+      print('Error logging time in: $e');
+      return "Error";
+    } finally {
+      await close();
     }
-  } catch (e) {
-    print('Error logging time out: $e');
-    return "Error";
-  } finally {
-    await close();
   }
-}
 
+  static Future<String> logTimeOut(
+      String userEmail, String timeOutLocation) async {
+    try {
+      await connect();
+      var timeLogCollection = db.collection(USER_ATTENDANCE);
+      var currentTime = DateTime.now().toIso8601String();
 
+      // Perform the update
+      var result = await timeLogCollection.updateOne(
+        where.eq('userEmail', userEmail).and(where.eq('timeOut', null)),
+        modify
+            .set('timeOut', currentTime)
+            .set('timeOutLocation', timeOutLocation),
+      );
 
+      // Print the result to inspect it
+      print('Update Result: $result');
 
-static Future<Map<String, dynamic>?> getAttendanceStatus(String userEmail) async {
-  try {
-    await connect();
-    var timeLogCollection = db.collection(USER_ATTENDANCE);
-    var todayDate = DateTime.now().toLocal().toIso8601String().substring(0, 10);
-
-    // Fetch the record for today
-    var record = await timeLogCollection.findOne(
-      where.eq('userEmail', userEmail).and(where.eq('date', todayDate)),
-    );
-
-    return record;
-  } catch (e) {
-    print('Error fetching attendance status: $e');
-    return null;
-  } finally {
-    await close();
+      // Check if the update was acknowledged and if any documents were modified
+      if (result.isAcknowledged) {
+        if (result.nModified != null && result.nModified > 0) {
+          return "Success";
+        } else {
+          return "No open time found";
+        }
+      } else {
+        return "Update not acknowledged";
+      }
+    } catch (e) {
+      print('Error logging time out: $e');
+      return "Error";
+    } finally {
+      await close();
+    }
   }
-}
 
+  static Future<Map<String, dynamic>?> getAttendanceStatus(
+      String userEmail) async {
+    try {
+      await connect();
+      var timeLogCollection = db.collection(USER_ATTENDANCE);
+      var todayDate =
+          DateTime.now().toLocal().toIso8601String().substring(0, 10);
+
+      // Fetch the record for today
+      var record = await timeLogCollection.findOne(
+        where.eq('userEmail', userEmail).and(where.eq('date', todayDate)),
+      );
+
+      return record;
+    } catch (e) {
+      print('Error fetching attendance status: $e');
+      return null;
+    } finally {
+      await close();
+    }
+  }
 }
