@@ -10,7 +10,7 @@ MongoDemo welcomeFromJson(String str) => MongoDemo.fromJson(json.decode(str));
 
 String welcomeToJson(MongoDemo data) => json.encode(data.toJson());
 
- class MongoDemo {
+class MongoDemo {
   final M.ObjectId id;
   String remarks;
   String firstName;
@@ -55,7 +55,8 @@ String welcomeToJson(MongoDemo data) => json.encode(data.toJson());
       accountNameBranchManning: json['accountNameBranchManning'],
       isActivate: json['isActivate'],
       type: json['type'],
-      timeOut: json['timeOut'] != null ? DateTime.tryParse(json['timeOut']) : null,
+      timeOut:
+          json['timeOut'] != null ? DateTime.tryParse(json['timeOut']) : null,
     );
   }
 
@@ -76,7 +77,6 @@ String welcomeToJson(MongoDemo data) => json.encode(data.toJson());
       };
 }
 
-
 Future<String> hashPassword(String password) async {
   // Generate a random salt for each password
   final rounds =
@@ -88,25 +88,33 @@ Future<String> hashPassword(String password) async {
   return hashedPassword;
 }
 
-
 class TimeLog {
   ObjectId id;
   String userEmail;
   DateTime timeIn;
   DateTime? timeOut; // Nullable DateTime
+  String? timeInLocation; // Nullable location for time in
+  String? timeOutLocation; // Nullable location for time out
 
   TimeLog({
     required this.id,
     required this.userEmail,
     required this.timeIn,
-    this.timeOut, required String date,
+    this.timeOut,
+    required String date,
+    this.timeInLocation,
+    this.timeOutLocation,
   });
 
   factory TimeLog.fromJson(Map<String, dynamic> json) => TimeLog(
         id: json['_id'] ?? ObjectId(),
         userEmail: json['userEmail'] ?? '',
         timeIn: DateTime.parse(json['timeIn']),
-        timeOut: json['timeOut'] != null ? DateTime.tryParse(json['timeOut']) : null, date: '',
+        timeOut:
+            json['timeOut'] != null ? DateTime.tryParse(json['timeOut']) : null,
+        date: '',
+        timeInLocation: json['timeInLocation'],
+        timeOutLocation: json['timeOutLocation'],
       );
 
   Map<String, dynamic> toJson() => {
@@ -114,6 +122,8 @@ class TimeLog {
         'userEmail': userEmail,
         'timeIn': timeIn.toIso8601String(),
         'timeOut': timeOut?.toIso8601String(), // Convert to string if not null
+        'timeInLocation': timeInLocation,
+        'timeOutLocation': timeOutLocation,
       };
 }
 
@@ -142,29 +152,28 @@ class InventoryItem {
   dynamic noOfDaysOOS;
   final List<Map<String, dynamic>> expiryFields;
 
-  InventoryItem({
-    required this.id,
-    required this.userEmail,
-    required this.date,
-    required this.inputId,
-    required this.name,
-    required this.accountNameBranchManning,
-    required this.period,
-    required this.month,
-    required this.week,
-    required this.category,
-    required this.skuDescription,
-    required this.products,
-    required this.skuCode,
-    required this.status,
-    required this.beginning,
-    required this.delivery,
-    required this.ending,
-    required this.offtake,
-    required this.inventoryDaysLevel,
-    required this.noOfDaysOOS,
-    required this.expiryFields
-  });
+  InventoryItem(
+      {required this.id,
+      required this.userEmail,
+      required this.date,
+      required this.inputId,
+      required this.name,
+      required this.accountNameBranchManning,
+      required this.period,
+      required this.month,
+      required this.week,
+      required this.category,
+      required this.skuDescription,
+      required this.products,
+      required this.skuCode,
+      required this.status,
+      required this.beginning,
+      required this.delivery,
+      required this.ending,
+      required this.offtake,
+      required this.inventoryDaysLevel,
+      required this.noOfDaysOOS,
+      required this.expiryFields});
 
   factory InventoryItem.fromJson(Map<String, dynamic> json) => InventoryItem(
         id: json['_id'] ?? ObjectId(),
@@ -189,10 +198,10 @@ class InventoryItem {
             ? double.parse(json['inventoryDaysLevel'].toStringAsFixed(2))
             : 0.0, // Default value if null
         noOfDaysOOS: json['noOfDaysOOS'] ?? 0,
-          expiryFields: (json['expiryFields'] as List<dynamic>?)
-              ?.map((item) => item as Map<String, dynamic>)
-              .toList() ??
-          [], // Ensure expiryFields is not null
+        expiryFields: (json['expiryFields'] as List<dynamic>?)
+                ?.map((item) => item as Map<String, dynamic>)
+                .toList() ??
+            [], // Ensure expiryFields is not null
       );
 
   Map<String, dynamic> toJson() => {
@@ -319,6 +328,4 @@ class ReturnToVendor {
 
     await db.close();
   }
-  
 }
-

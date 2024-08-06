@@ -53,24 +53,25 @@ class _LoginPageState extends State<LoginPage> {
           prefs.setString('userEmail', userDetails['emailAddress'] ?? '');
 
           // Use pushReplacement to navigate to Dashboard or perform any other actions after successful login
-         Navigator.of(context).pushAndRemoveUntil(
-  MaterialPageRoute(
-    builder: (context) => SideBarLayout(
-      title: "TOWI",
-      mainContent: Column(
-        children: <Widget>[
-          DateTimeWidget(),
-          AttendanceWidget(userEmail: userDetails['emailAddress'] ?? '',),
-        ],
-      ),
-      userName: userDetails['firstName'] ?? '',
-      userLastName: userDetails['lastName'] ?? '',
-      userEmail: userDetails['emailAddress'] ?? '',
-    ),
-  ),
-  (Route<dynamic> route) => false,
-);
-
+          Navigator.of(context).pushAndRemoveUntil(
+            MaterialPageRoute(
+              builder: (context) => SideBarLayout(
+                title: "Attendance",
+                mainContent: Column(
+                  children: <Widget>[
+                    DateTimeWidget(),
+                    AttendanceWidget(
+                      userEmail: userDetails['emailAddress'] ?? '',
+                    ),
+                  ],
+                ),
+                userName: userDetails['firstName'] ?? '',
+                userLastName: userDetails['lastName'] ?? '',
+                userEmail: userDetails['emailAddress'] ?? '',
+              ),
+            ),
+            (Route<dynamic> route) => false,
+          );
         } else {
           setState(() {
             passwordErrorText = 'Invalid password';

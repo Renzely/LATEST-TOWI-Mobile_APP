@@ -20,6 +20,9 @@ dependencies:
   email_otp: ^2.1.2
   http: ^1.2.1
   provider: ^6.1.2
+  geolocator: ^11.1.0
+  bson: ^5.0.4
+  geocoding: ^3.0.0
 
 dev_dependencies:
   flutter_test:
