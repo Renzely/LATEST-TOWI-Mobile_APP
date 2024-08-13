@@ -1,4 +1,4 @@
-// ignore_for_file: prefer_final_fields, avoid_print, use_key_in_widget_constructors, prefer_const_constructors_in_immutables, library_private_types_in_public_api, prefer_const_constructors, sort_child_properties_last, prefer_const_literals_to_create_immutables, depend_on_referenced_packages, non_constant_identifier_names, unused_local_variable, use_build_context_synchronously, unused_element, avoid_unnecessary_containers
+// ignore_for_file: prefer_final_fields, avoid_print, use_key_in_widget_constructors, prefer_const_constructors_in_immutables, library_private_types_in_public_api, prefer_const_constructors, sort_child_properties_last, prefer_const_literals_to_create_immutables, depend_on_referenced_packages, non_constant_identifier_names, unused_local_variable, use_build_context_synchronously, unused_element, avoid_unnecessary_containers, must_be_immutable
 
 import 'dart:math';
 import 'package:demo_app/dbHelper/constant.dart';
@@ -15,11 +15,15 @@ class AddInventory extends StatefulWidget {
   final String userName;
   final String userLastName;
   final String userEmail;
+  String userContactNum;
+  String userMiddleName;
 
   AddInventory({
     required this.userName,
     required this.userLastName,
     required this.userEmail,
+    required this.userContactNum,
+    required this.userMiddleName,
   });
 
   @override
@@ -169,8 +173,7 @@ class _AddInventoryState extends State<AddInventory> {
                                 child: TextFormField(
                                   controller: _dateController,
                                   readOnly: true,
-                                  decoration: InputDecoration(
-                                  ),
+                                  decoration: InputDecoration(),
                                 ),
                               ),
                             ],
@@ -895,7 +898,7 @@ class _AddInventoryState extends State<AddInventory> {
                             SizedBox(height: 8),
                             TextFormField(
                               controller: _monthController,
-                             readOnly: true,
+                              readOnly: true,
                             ),
                             SizedBox(height: 8),
                             Text(
@@ -923,6 +926,8 @@ class _AddInventoryState extends State<AddInventory> {
                                       userName: widget.userName,
                                       userLastName: widget.userLastName,
                                       userEmail: widget.userEmail,
+                                      userContactNum: widget.userContactNum,
+                                      userMiddleName: widget.userMiddleName,
                                     ),
                                   ),
                                 );
@@ -957,6 +962,10 @@ class _AddInventoryState extends State<AddInventory> {
                                                     userLastName:
                                                         widget.userLastName,
                                                     userEmail: widget.userEmail,
+                                                    userContactNum:
+                                                        widget.userContactNum,
+                                                    userMiddleName:
+                                                        widget.userMiddleName,
                                                     selectedAccount:
                                                         _selectedAccount ?? '',
                                                     SelectedPeriod:
@@ -1025,16 +1034,21 @@ class SKUInventory extends StatefulWidget {
   final String selectedWeek;
   final String selectedMonth;
   final String inputid;
+  String userContactNum;
+  String userMiddleName;
 
-  SKUInventory(
-      {required this.userName,
-      required this.userLastName,
-      required this.userEmail,
-      required this.selectedAccount,
-      required this.SelectedPeriod,
-      required this.selectedWeek,
-      required this.selectedMonth,
-      required this.inputid});
+  SKUInventory({
+    required this.userName,
+    required this.userLastName,
+    required this.userEmail,
+    required this.selectedAccount,
+    required this.SelectedPeriod,
+    required this.selectedWeek,
+    required this.selectedMonth,
+    required this.inputid,
+    required this.userContactNum,
+    required this.userMiddleName,
+  });
 
   @override
   _SKUInventoryState createState() => _SKUInventoryState();
@@ -1049,6 +1063,9 @@ class _SKUInventoryState extends State<SKUInventory> {
   String? _versionSelected;
   String? _statusSelected;
   String? _selectedPeriod;
+  String? _remarksOOS;
+  String? _reasonOOS;
+  String? _selectedNoDeliveryOption;
   int? _selectedNumberOfDaysOOS;
   bool _showCarriedTextField = false;
   bool _showNotCarriedTextField = false;
@@ -1062,57 +1079,68 @@ class _SKUInventoryState extends State<SKUInventory> {
   TextEditingController _accountNameController = TextEditingController();
   TextEditingController _productsController = TextEditingController();
   TextEditingController _skuCodeController = TextEditingController();
+  TextEditingController _noPOController = TextEditingController();
+  TextEditingController _unservedController = TextEditingController();
+  TextEditingController _nodeliveryController = TextEditingController();
   List<Widget> _expiryFields = [];
   List<Map<String, dynamic>> _expiryFieldsValues = [];
+  bool _showNoPOTextField = false;
+  bool _showUnservedTextField = false;
+  bool _showNoDeliveryDropdown = false;
 
-void _saveInventoryItem() {
-  String AccountManning = _selectedaccountname ?? '';
-  String period = _selectedPeriod ?? '';
-  String Version = _versionSelected ?? '';
-  String status = _statusSelected ?? '';
-  String SKUDescription = _selectedDropdownValue ?? '';
-  String product = _productDetails ?? '';
-  String skucode = _skuCode ?? '';
-  int numberOfDaysOOS = _selectedNumberOfDaysOOS ?? 0;
+  void _saveInventoryItem() {
+    String AccountManning = _selectedaccountname ?? '';
+    String period = _selectedPeriod ?? '';
+    String Version = _versionSelected ?? '';
+    String status = _statusSelected ?? '';
+    String SKUDescription = _selectedDropdownValue ?? '';
+    String product = _productDetails ?? '';
+    String skucode = _skuCode ?? '';
+    String remarksOOS = _remarksOOS ?? '';
+    String reasonOOS = _reasonOOS ?? '';
+    int numberOfDaysOOS = _selectedNumberOfDaysOOS ?? 0;
 
-  int beginning = int.tryParse(_beginningController.text) ?? 0;
-  int delivery = int.tryParse(_deliveryController.text) ?? 0;
-  int ending = int.tryParse(_endingController.text) ?? 0;
+    int beginning = int.tryParse(_beginningController.text) ?? 0;
+    int delivery = int.tryParse(_deliveryController.text) ?? 0;
+    int ending = int.tryParse(_endingController.text) ?? 0;
 
-  int offtake = beginning + delivery - ending;
-  double inventoryDaysLevel = 0;
+    int offtake = beginning + delivery - ending;
+    double inventoryDaysLevel = 0;
 
-  if (status != "Not Carried" && status != "Delisted") {
-    if (offtake != 0 && ending != double.infinity && !ending.isNaN) {
-      inventoryDaysLevel = ending / (offtake / 7);
+    if (status != "Not Carried" && status != "Delisted") {
+      if (offtake != 0 && ending != double.infinity && !ending.isNaN) {
+        inventoryDaysLevel = ending / (offtake / 7);
+      }
     }
-  }
 
+    dynamic ncValue = 'NC';
+    dynamic delistedValue = 'Delisted';
+    dynamic beginningValue = beginning;
+    dynamic deliveryValue = delivery;
+    dynamic endingValue = ending;
+    dynamic offtakeValue = offtake;
+    dynamic noOfDaysOOSValue = numberOfDaysOOS;
 
-  dynamic ncValue = 'NC';
-  dynamic delistedValue = 'Delisted';
-  dynamic beginningValue = beginning;
-  dynamic deliveryValue = delivery;
-  dynamic endingValue = ending;
-  dynamic offtakeValue = offtake;
-  dynamic noOfDaysOOSValue = numberOfDaysOOS;
+    if (status == 'Delisted') {
+      beginningValue = delistedValue;
+      deliveryValue = delistedValue;
+      endingValue = delistedValue;
+      offtakeValue = delistedValue;
+      noOfDaysOOSValue = delistedValue;
+      _expiryFieldsValues = [
+        {'expiryMonth': delistedValue, 'expiryPcs': delistedValue}
+      ];
+    } else if (status == 'Not Carried') {
+      beginningValue = ncValue;
+      deliveryValue = ncValue;
+      endingValue = ncValue;
+      offtakeValue = ncValue;
+      noOfDaysOOSValue = ncValue;
+      _expiryFieldsValues = [
+        {'expiryMonth': ncValue, 'expiryPcs': ncValue}
+      ];
+    }
 
-if (status == 'Delisted') {
-    beginningValue = delistedValue;
-    deliveryValue = delistedValue;
-    endingValue = delistedValue;
-    offtakeValue = delistedValue;
-    noOfDaysOOSValue = delistedValue;
-    _expiryFieldsValues = [{'expiryMonth': delistedValue, 'expiryPcs': delistedValue}];
-  } else if (status == 'Not Carried') {
-    beginningValue = ncValue;
-    deliveryValue = ncValue;
-    endingValue = ncValue;
-    offtakeValue = ncValue;
-    noOfDaysOOSValue = ncValue;
-    _expiryFieldsValues = [{'expiryMonth': ncValue, 'expiryPcs': ncValue}];
-
-  }
     // Create a new InventoryItem from form inputs
     InventoryItem newItem = InventoryItem(
         id:
@@ -1137,8 +1165,9 @@ if (status == 'Delisted') {
         offtake: offtakeValue,
         inventoryDaysLevel: inventoryDaysLevel.toDouble(),
         noOfDaysOOS: noOfDaysOOSValue,
-        expiryFields: _expiryFieldsValues
-        );
+        expiryFields: _expiryFieldsValues,
+        remarksOOS: remarksOOS,
+        reasonOOS: reasonOOS);
 
     // Save the new inventory item to the database
     _saveToDatabase(newItem);
@@ -1181,6 +1210,7 @@ if (status == 'Delisted') {
         for (var doc in result) {
           items.add(InventoryItem.fromJson(doc));
         }
+
         await db.close();
       } catch (e) {
         print('Error fetching inventory items: $e');
@@ -1189,7 +1219,7 @@ if (status == 'Delisted') {
     }
   }
 
-    void _addExpiryField() {
+  void _addExpiryField() {
     setState(() {
       if (_expiryFields.length < 6) {
         int index = _expiryFields.length;
@@ -1229,13 +1259,12 @@ if (status == 'Delisted') {
       }
     });
   }
-  
+
   void _updateExpiryField(int index, Map<String, dynamic> newValue) {
     setState(() {
       _expiryFieldsValues[index] = newValue;
     });
   }
-
 
   Map<String, List<String>> _categoryToSkuDescriptions = {
     'V1': [
@@ -1665,16 +1694,19 @@ if (status == 'Delisted') {
       _showCarriedTextField = false;
       _showNotCarriedTextField = true;
       _showDelistedTextField = false;
+      _showNoDeliveryDropdown = false;
+      _showNoPOTextField = false;
+      _showUnservedTextField = false;
       _beginningController.clear();
       _deliveryController.clear();
       _endingController.clear();
       _offtakeController.clear();
+
       if (status == 'Not Carried' || status == 'Delisted') {
         _selectedNumberOfDaysOOS = 0;
       }
     });
   }
-
 
   void _toggleDelistedTextField(String status) {
     setState(() {
@@ -1682,6 +1714,9 @@ if (status == 'Delisted') {
       _showCarriedTextField = false;
       _showNotCarriedTextField = false;
       _showDelistedTextField = true;
+      _showNoDeliveryDropdown = false;
+      _showNoPOTextField = false;
+      _showUnservedTextField = false;
       _beginningController.clear();
       _deliveryController.clear();
       _endingController.clear();
@@ -1702,7 +1737,6 @@ if (status == 'Delisted') {
     checkSaveEnabled();
   }
 
-
   @override
   void dispose() {
     _beginningController.dispose();
@@ -1710,6 +1744,9 @@ if (status == 'Delisted') {
     _endingController.dispose();
     _offtakeController.dispose();
     _inventoryDaysLevelController.dispose();
+    _noPOController.dispose();
+    _unservedController.dispose();
+    _nodeliveryController.dispose();
     super.dispose();
   }
 
@@ -1731,13 +1768,33 @@ if (status == 'Delisted') {
   void checkSaveEnabled() {
     setState(() {
       if (_statusSelected == 'Carried') {
-        // Enable Save button only if beginning, delivery, and ending fields are filled
-        _isSaveEnabled = _beginningController.text.isNotEmpty &&
-            _deliveryController.text.isNotEmpty &&
-            _endingController.text.isNotEmpty;
+        if (_selectedNumberOfDaysOOS == 0) {
+          // Enable Save button when "0" is selected
+          _isSaveEnabled = true;
+        } else {
+          // Enable Save button only if the relevant fields are filled or criteria are met
+          _isSaveEnabled = _beginningController.text.isNotEmpty &&
+              _deliveryController.text.isNotEmpty &&
+              _endingController.text.isNotEmpty &&
+              (_remarksOOS == "No P.O" ||
+                  _remarksOOS == "Unserved" ||
+                  (_remarksOOS == "No Delivery" &&
+                      _selectedNoDeliveryOption != null));
+        }
       } else {
         // Enable Save button for "Not Carried" and "Delisted" categories
         _isSaveEnabled = true;
+      }
+    });
+  }
+
+  void RemarkSaveEnable() {
+    setState(() {
+      // Enable the Save button only if a reason is selected when No Delivery dropdown is shown
+      if (_showNoDeliveryDropdown) {
+        _isSaveEnabled = _selectedNoDeliveryOption != null;
+      } else {
+        _isSaveEnabled = true; // or other conditions based on your app logic
       }
     });
   }
@@ -1750,18 +1807,29 @@ if (status == 'Delisted') {
         debugShowCheckedModeBanner: false,
         home: Scaffold(
           appBar: AppBar(
-            backgroundColor: Colors.green[600],
-            elevation: 0,
-            title: Text(
-              'Inventory Input',
-              style:
-                  TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-            ),
-            leading: IconButton(
-              icon: Icon(Icons.arrow_back),
-              onPressed: () => Navigator.of(context).pop(),
-            ),
-          ),
+              backgroundColor: Colors.green[600],
+              elevation: 0,
+              title: Text(
+                'Inventory Input',
+                style:
+                    TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+              ),
+              leading: IconButton(
+                icon: Icon(Icons.arrow_back),
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => AddInventory(
+                              userName: widget.userName,
+                              userLastName: widget.userLastName,
+                              userEmail: widget.userEmail,
+                              userContactNum: widget.userContactNum,
+                              userMiddleName: widget.userMiddleName,
+                            )),
+                  );
+                },
+              )),
           body: Padding(
             padding: const EdgeInsets.all(12.0),
             child: SingleChildScrollView(
@@ -1799,7 +1867,8 @@ if (status == 'Delisted') {
                   TextField(
                     controller: _accountNameController,
                     readOnly: true,
-                    decoration: InputDecoration( hintText: widget.selectedAccount),
+                    decoration:
+                        InputDecoration(hintText: widget.selectedAccount),
                   ),
                   SizedBox(height: 20),
                   Text(
@@ -1893,7 +1962,7 @@ if (status == 'Delisted') {
                           TextField(
                             controller:
                                 _productsController, // Assigning controller
-                                readOnly: true,
+                            readOnly: true,
                             decoration: InputDecoration(
                               hintText: _productDetails,
                             ),
@@ -1915,6 +1984,7 @@ if (status == 'Delisted') {
                         ],
                       ],
                     ),
+                  SizedBox(height: 15),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
@@ -2028,45 +2098,45 @@ if (status == 'Delisted') {
                       onChanged: (_) =>
                           checkSaveEnabled(), // Call checkSaveEnabled on change
                     ),
-      
-                    SizedBox(height: 10),
-                    if (_showCarriedTextField) 
-                            OutlinedButton(
-                              onPressed: _addExpiryField,
-                              style: OutlinedButton.styleFrom(
-                                side:
-                                    BorderSide(width: 2.0, color: Colors.green),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(4),
-                                ),
+                  SizedBox(height: 10),
+                  if (_showCarriedTextField)
+                    Center(
+                      child: OutlinedButton(
+                        onPressed: _addExpiryField,
+                        style: OutlinedButton.styleFrom(
+                          side: BorderSide(width: 2.0, color: Colors.green),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                        ),
+                        child: Text(
+                          'Add Expiry',
+                          style: TextStyle(color: Colors.black),
+                        ),
+                      ),
+                    ),
+
+                  SizedBox(height: 10),
+                  if (_expiryFields.isNotEmpty)
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        for (int i = 0; i < _expiryFields.length; i++)
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment
+                                .center, // Align rows to center
+                            children: [
+                              Expanded(child: _expiryFields[i]),
+                              IconButton(
+                                icon: Icon(Icons.remove_circle_outline),
+                                onPressed: () {
+                                  _removeExpiryField(i);
+                                },
                               ),
-                              child: Text(
-                                'Add Expiry',
-                                style: TextStyle(color: Colors.black),
-                              ),
-                            ),
-                            SizedBox(height: 10),
-                            if (_expiryFields.isNotEmpty)
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.center,
-                                children: [
-                                  for (int i = 0; i < _expiryFields.length; i++)
-                                    Row(
-                                      mainAxisAlignment: MainAxisAlignment
-                                          .center, // Align rows to center
-                                      children: [
-                                        Expanded(child: _expiryFields[i]),
-                                        IconButton(
-                                          icon:
-                                              Icon(Icons.remove_circle_outline),
-                                          onPressed: () {
-                                            _removeExpiryField(i);
-                                          },
-                                        ),
-                                      ],
-                                    ),
-                                ],
-                              ),
+                            ],
+                          ),
+                      ],
+                    ),
                   if (_showCarriedTextField)
                     TextField(
                       controller: _offtakeController,
@@ -2096,28 +2166,116 @@ if (status == 'Delisted') {
                       ),
                     ),
                   if (_showCarriedTextField)
-                    if (_showCarriedTextField)
-                      DropdownButtonFormField<int>(
-                        decoration: InputDecoration(
-                          labelText: 'No. of Days OOS',
-                          labelStyle: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16, // Adjust size as needed
-                          ),
+                    DropdownButtonFormField<int>(
+                      decoration: InputDecoration(
+                        labelText: 'No. of Days OOS',
+                        labelStyle: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
                         ),
-                        value: _selectedNumberOfDaysOOS,
-                        onChanged: (newValue) {
-                          setState(() {
-                            _selectedNumberOfDaysOOS = newValue;
-                          });
-                        },
-                        items: List.generate(8, (index) {
-                          return DropdownMenuItem<int>(
-                            value: index,
-                            child: Text(index.toString()),
-                          );
-                        }),
                       ),
+                      value: _selectedNumberOfDaysOOS,
+                      onChanged: (newValue) {
+                        setState(() {
+                          _selectedNumberOfDaysOOS = newValue;
+
+                          // Reset the remarks and reason when OOS changes
+                          _remarksOOS = null;
+                          _selectedNoDeliveryOption = null;
+                          _reasonOOS = null;
+
+                          // Check if Save button should be enabled
+                          checkSaveEnabled();
+                        });
+                      },
+                      items: List.generate(8, (index) {
+                        return DropdownMenuItem<int>(
+                          value: index,
+                          child: Text(index.toString()),
+                        );
+                      }),
+                    ),
+                  SizedBox(height: 10),
+                  if (_selectedNumberOfDaysOOS != null &&
+                      _selectedNumberOfDaysOOS! > 0) ...[
+                    DropdownButtonFormField<String>(
+                      decoration: InputDecoration(
+                        labelText: 'Remarks',
+                        labelStyle: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                        ),
+                      ),
+                      value: _remarksOOS,
+                      onChanged: (newValue) {
+                        setState(() {
+                          _remarksOOS = newValue;
+
+                          // Show or hide the Select Reason dropdown based on the Remarks selection
+                          if (_remarksOOS == 'No Delivery') {
+                            _showNoDeliveryDropdown = true;
+                          } else {
+                            _showNoDeliveryDropdown = false;
+                            _selectedNoDeliveryOption = null;
+                            _reasonOOS = null;
+                          }
+
+                          // Check if Save button should be enabled
+                          checkSaveEnabled();
+                        });
+                      },
+                      items: [
+                        DropdownMenuItem<String>(
+                          value: 'No P.O',
+                          child: Text('No P.O'),
+                        ),
+                        DropdownMenuItem<String>(
+                          value: 'Unserved',
+                          child: Text('Unserved'),
+                        ),
+                        DropdownMenuItem<String>(
+                          value: 'No Delivery',
+                          child: Text('No Delivery'),
+                        ),
+                      ],
+                    ),
+                  ],
+                  if (_showNoDeliveryDropdown) ...[
+                    SizedBox(height: 10),
+                    DropdownButtonFormField<String>(
+                      decoration: InputDecoration(
+                        labelText: 'Select Reason',
+                        labelStyle: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                        ),
+                      ),
+                      value: _selectedNoDeliveryOption,
+                      onChanged: (newValue) {
+                        setState(() {
+                          _selectedNoDeliveryOption = newValue;
+                          _reasonOOS =
+                              newValue; // Set the ReasonOOS value based on selection
+                          checkSaveEnabled(); // Check if Save button should be enabled
+                        });
+                      },
+                      items: [
+                        DropdownMenuItem<String>(
+                          value: 'With S.O but without P.O',
+                          child: Text('With S.O but without P.O'),
+                        ),
+                        DropdownMenuItem<String>(
+                          value: 'With P.O but without Delivery',
+                          child: Text('With P.O but without Delivery'),
+                        ),
+                        DropdownMenuItem<String>(
+                          value: 'AR ISSUES',
+                          child: Text('AR ISSUES'),
+                        ),
+                      ],
+                    ),
+                  ],
+
                   SizedBox(height: 20),
                   if (_showCarriedTextField ||
                       _showNotCarriedTextField ||

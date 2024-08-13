@@ -11,11 +11,15 @@ class ReturnVendor extends StatefulWidget {
   final String userName;
   final String userLastName;
   final String userEmail;
+  final String userMiddleName;
+  final String userContactNum;
 
   ReturnVendor({
     required this.userName,
     required this.userLastName,
     required this.userEmail,
+    required this.userContactNum,
+    required this.userMiddleName,
   });
 
   @override
@@ -323,74 +327,71 @@ class _ReturnVendorState extends State<ReturnVendor> {
                     }
                   },
                 ),
-                  SizedBox(height: 16),
-                      Text(
-                        'Category',
-                        style: TextStyle(
-                            fontWeight: FontWeight.bold, fontSize: 16),
+                SizedBox(height: 16),
+                Text(
+                  'Category',
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                ),
+                SizedBox(height: 10),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children:
+                      _categoryToSkuDescriptions.keys.map((String category) {
+                    return OutlinedButton(
+                      onPressed: () => _toggleDropdown(category),
+                      style: OutlinedButton.styleFrom(
+                        side: BorderSide(
+                          width: 2.0,
+                          color: selectedCategory == category
+                              ? Colors.green
+                              : Colors.blueGrey.shade200,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(4),
+                        ),
                       ),
-                      SizedBox(height: 10),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                        children: _categoryToSkuDescriptions.keys
-                            .map((String category) {
-                          return OutlinedButton(
-                            onPressed: () => _toggleDropdown(category),
-                            style: OutlinedButton.styleFrom(
-                              side: BorderSide(
-                                width: 2.0,
-                                color: selectedCategory == category
-                                    ? Colors.green
-                                    : Colors.blueGrey.shade200,
-                              ),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(4),
-                              ),
-                            ),
-                            child: Text(
-                              category,
-                              style: TextStyle(color: Colors.black),
-                            ),
-                          );
-                        }).toList(),
+                      child: Text(
+                        category,
+                        style: TextStyle(color: Colors.black),
                       ),
-                      SizedBox(height: 16),
-                      Text(
-                        'Item',
-                        style: TextStyle(
-                            fontWeight: FontWeight.bold, fontSize: 16),
+                    );
+                  }).toList(),
+                ),
+                SizedBox(height: 16),
+                Text(
+                  'Item',
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                ),
+                SizedBox(height: 10),
+                DropdownButtonFormField<String>(
+                  value: selectedItem,
+                  items: itemOptions.map((String item) {
+                    return DropdownMenuItem<String>(
+                      value: item,
+                      child: SizedBox(
+                        width: 350,
+                        child: Tooltip(
+                          message: item,
+                          child: Text(
+                            item,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
                       ),
-                      SizedBox(height: 10),
-                      DropdownButtonFormField<String>(
-                        value: selectedItem,
-                        items: itemOptions.map((String item) {
-                          return DropdownMenuItem<String>(
-                            value: item,
-                            child: SizedBox(
-                              width: 350,
-                              child: Tooltip(
-                                message: item,
-                                child: Text(
-                                  item,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ),
-                            ),
-                          );
-                        }).toList(),
-                        onChanged: (String? newValue) {
-                          if (newValue != null) {
-                            setState(() {
-                              selectedItem = newValue;
-                            });
-                          }
-                        },
-                      ),
+                    );
+                  }).toList(),
+                  onChanged: (String? newValue) {
+                    if (newValue != null) {
+                      setState(() {
+                        selectedItem = newValue;
+                      });
+                    }
+                  },
+                ),
                 if (!isPending)
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                    
                       SizedBox(height: 16),
                       Text(
                         'Quantity',
@@ -473,6 +474,8 @@ class _ReturnVendorState extends State<ReturnVendor> {
                               userName: widget.userName,
                               userLastName: widget.userLastName,
                               userEmail: widget.userEmail,
+                              userContactNum: widget.userContactNum,
+                              userMiddleName: widget.userMiddleName,
                             ),
                           ),
                         );
