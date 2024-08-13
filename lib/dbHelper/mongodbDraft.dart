@@ -144,6 +144,8 @@ class InventoryItem {
   String products;
   String skuCode;
   String status; // Carried, Not Carried, Delisted
+  String remarksOOS;
+  String reasonOOS;
   dynamic beginning;
   dynamic delivery;
   dynamic ending;
@@ -173,7 +175,9 @@ class InventoryItem {
       required this.offtake,
       required this.inventoryDaysLevel,
       required this.noOfDaysOOS,
-      required this.expiryFields});
+      required this.expiryFields,
+      required this.remarksOOS,
+      required this.reasonOOS});
 
   factory InventoryItem.fromJson(Map<String, dynamic> json) => InventoryItem(
         id: json['_id'] ?? ObjectId(),
@@ -202,6 +206,8 @@ class InventoryItem {
                 ?.map((item) => item as Map<String, dynamic>)
                 .toList() ??
             [], // Ensure expiryFields is not null
+        remarksOOS: json['remarksOOS'] ?? '',
+        reasonOOS: json['reasonOOS'] ?? '',
       );
 
   Map<String, dynamic> toJson() => {
@@ -226,6 +232,8 @@ class InventoryItem {
         'inventoryDaysLevel': inventoryDaysLevel,
         'noOfDaysOOS': noOfDaysOOS,
         'expiryFields': expiryFields,
+        'remarksOOS': remarksOOS,
+        'reasonOOS': reasonOOS,
       };
   void _saveToDatabase(InventoryItem newItem) async {
     // Connect to your MongoDB database

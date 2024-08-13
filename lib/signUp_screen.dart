@@ -46,7 +46,7 @@ class _SignUpState extends State<SignUp> {
 
   @override
   Widget build(BuildContext context) {
-    List<String> remarksChoices = ['REGULAR', 'RELIVER', 'PROVISIONARY', 'FIX'];
+    List<String> remarksChoices = ['REGULAR', 'RELIVER', 'PROVISIONARY'];
     return Scaffold(
       backgroundColor: Colors.white,
       body: SingleChildScrollView(
@@ -269,51 +269,51 @@ class _SignUpState extends State<SignUp> {
                 ),
                 const SizedBox(height: 35), // Add space between fields
                 ElevatedButton(
-  onPressed: () async {
-    if (_validateFields()) {
-      if (passwordController.text == confirmPassController.text) {
-        if (await _checkEmailExists(addressController.text)) {
-          setState(() {
-            addressError = "Email Already Exists";
-          });
-        } else {
-          _signUp(
-              fnameController.text,
-              mnameController.text,
-              lnameController.text,
-              addressController.text,
-              usernameController.text,
-              passwordController.text,
-              contactNumController.text,
-              branchController.text,
-              selectedRemarks,
-              isActivate,
-              type);
-        }
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Passwords do not match")),
-        );
-      }
-    }
-  },
-  style: ElevatedButton.styleFrom(
-    padding: const EdgeInsets.symmetric(vertical: 15),
-    minimumSize: const Size(double.infinity, 50),
-    shape: RoundedRectangleBorder(
-      borderRadius: BorderRadius.circular(20),
-    ),
-  ),
-  child: Text(
-    'SUBMIT',
-    style: GoogleFonts.roboto(
-      color: Colors.green,
-      fontSize: 18,
-      fontWeight: FontWeight.bold,
-      
-    ),
-  ),
-),
+                  onPressed: () async {
+                    if (_validateFields()) {
+                      if (passwordController.text ==
+                          confirmPassController.text) {
+                        if (await _checkEmailExists(addressController.text)) {
+                          setState(() {
+                            addressError = "Email Already Exists";
+                          });
+                        } else {
+                          _signUp(
+                              fnameController.text,
+                              mnameController.text,
+                              lnameController.text,
+                              addressController.text,
+                              usernameController.text,
+                              passwordController.text,
+                              contactNumController.text,
+                              branchController.text,
+                              selectedRemarks,
+                              isActivate,
+                              type);
+                        }
+                      } else {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text("Passwords do not match")),
+                        );
+                      }
+                    }
+                  },
+                  style: ElevatedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 15),
+                    minimumSize: const Size(double.infinity, 50),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                  ),
+                  child: Text(
+                    'SUBMIT',
+                    style: GoogleFonts.roboto(
+                      color: Colors.green,
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
                 const SizedBox(height: 15),
                 Text(
                   "Already have an account? ",
@@ -344,86 +344,88 @@ class _SignUpState extends State<SignUp> {
     );
   }
 
- Future<void> _signUp(
-  String fName,
-  String mName,
-  String lName,
-  String emailAdd,
-  String userN,
-  String pass, // Plain text password
-  String contact_num,
-  String branch,
-  String remarks,
-  bool isActivate,
-  int type,
+  Future<void> _signUp(
+    String fName,
+    String mName,
+    String lName,
+    String emailAdd,
+    String userN,
+    String pass, // Plain text password
+    String contact_num,
+    String branch,
+    String remarks,
+    bool isActivate,
+    int type,
+  ) async {
+    final plainPassword = pass; // Store the plain text password for hashing
+    final hashedPassword = await hashPassword(plainPassword);
 
+    final userData = {
+      'firstName': fName,
+      'middleName': mName,
+      'lastName': lName,
+      'emailAddress': emailAdd, // Updated field name
+      'contactNum': contact_num,
+      'username': userN,
+      'password': hashedPassword,
+      'accountNameBranchManning': branch,
+      'remarks': remarks,
+      'isActivate': isActivate, // Keep as boolean
+      'type': type
+    };
 
-) async {
-  final plainPassword = pass; // Store the plain text password for hashing
-  final hashedPassword = await hashPassword(plainPassword);
-
-  final userData = {
-    'firstName': fName,
-    'middleName': mName,
-    'lastName': lName,
-    'emailAddress': emailAdd, // Updated field name
-    'contactNum': contact_num,
-    'username': userN,
-    'password': hashedPassword,
-    'accountNameBranchManning': branch,
-    'remarks': remarks,
-    'isActivate': isActivate, // Keep as boolean
-    'type': type
-
-  };
-
-  // Send OTP after successfully preparing user data
-  await _sendOtp(emailAdd, userData);
-}
-
-Future<void> _sendOtp(String email, Map<String, dynamic> userData) async {
-
-  final response = await http.post(
-    Uri.parse('http://192.168.50.217:8080/send-otp-register'),
-    headers: <String, String>{
-      'Content-Type': 'application/json; charset=UTF-8',
-    },
-    body: jsonEncode(<String, String>{
-      'email': email,
-    }),
-  );
-
-  if (response.statusCode == 200) {
-    final receivedOtp = jsonDecode(response.body)['code'];
-
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => OTPVerificationScreen(
-          email: email,
-          otp: receivedOtp.toString(),
-          userData: userData,
-        ),
-      ),
-    );
-  } else {
-    // Handle error
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Failed to send OTP. Please try again.')),
-    );
+    // Send OTP after successfully preparing user data
+    await _sendOtp(emailAdd, userData);
   }
-}
 
+  Future<void> _sendOtp(String email, Map<String, dynamic> userData) async {
+    final response = await http.post(
+      Uri.parse('http://192.168.50.55:8080/send-otp-register'),
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+      },
+      body: jsonEncode(<String, String>{
+        'email': email,
+      }),
+    );
 
+    if (response.statusCode == 200) {
+      final receivedOtp = jsonDecode(response.body)['code'];
+
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => OTPVerificationScreen(
+            email: email,
+            otp: receivedOtp.toString(),
+            userData: userData,
+          ),
+        ),
+      );
+    } else {
+      // Handle error
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to send OTP. Please try again.')),
+      );
+    }
+  }
 
   bool _validateFields() {
     setState(() {
-      fnameError = fnameController.text.isEmpty ? "First Name is required" : null;
-      lnameError = lnameController.text.isEmpty ? "Last Name is required" : null;
-      contactNumError = contactNumController.text.isEmpty ? "Contact Number is required" : null;
-      usernameError = usernameController.text.isEmpty ? "Username is required" : null;
-      passwordError = passwordController.text.isEmpty ? "Password is required" : null;
-      confirmPassError = confirmPassController.text.isEmpty ? "Confirm Password is required" : null;
+      fnameError =
+          fnameController.text.isEmpty ? "First Name is required" : null;
+      lnameError =
+          lnameController.text.isEmpty ? "Last Name is required" : null;
+      contactNumError = contactNumController.text.isEmpty
+          ? "Contact Number is required"
+          : null;
+      usernameError =
+          usernameController.text.isEmpty ? "Username is required" : null;
+      passwordError =
+          passwordController.text.isEmpty ? "Password is required" : null;
+      confirmPassError = confirmPassController.text.isEmpty
+          ? "Confirm Password is required"
+          : null;
 
       // Email validation
       if (addressController.text.isEmpty) {
@@ -450,7 +452,8 @@ Future<void> _sendOtp(String email, Map<String, dynamic> userData) async {
   }
 
   Future<bool> _checkEmailExists(String email) async {
-    var user = await MongoDatabase.userCollection.findOne({'emailAddress': email});
+    var user =
+        await MongoDatabase.userCollection.findOne({'emailAddress': email});
     return user != null;
   }
 }

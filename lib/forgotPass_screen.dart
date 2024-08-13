@@ -5,7 +5,6 @@ import 'package:demo_app/login_screen.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
-
 class ForgotPassword extends StatefulWidget {
   @override
   _ForgotPasswordState createState() => _ForgotPasswordState();
@@ -18,8 +17,6 @@ class _ForgotPasswordState extends State<ForgotPassword> {
   bool isOtpSent = false;
   String? otpMessage;
   String? otpErrorMessage;
-
-  
 
   @override
   Widget build(BuildContext context) {
@@ -169,7 +166,8 @@ class _ForgotPasswordState extends State<ForgotPassword> {
                         onTap: () {
                           Navigator.push(
                             context,
-                            MaterialPageRoute(builder: (context) => LoginPage()),
+                            MaterialPageRoute(
+                                builder: (context) => LoginPage()),
                           );
                         },
                         child: Text(
@@ -192,50 +190,48 @@ class _ForgotPasswordState extends State<ForgotPassword> {
   }
 
   Future<void> _sendOtpForgotPass(String emailAddress) async {
-  try {
-    final response = await http.post(
-      Uri.parse('http://192.168.50.217:8080/send-otp-forgotpassword'),
-      headers: <String, String>{
-        'Content-Type': 'application/json; charset=UTF-8',
-      },
-      body: jsonEncode(<String, String>{
-        'emailAddress': emailAddress,
-      }),
-    );
+    try {
+      final response = await http.post(
+        Uri.parse('http://192.168.50.55:8080/send-otp-forgotpassword'),
+        headers: <String, String>{
+          'Content-Type': 'application/json; charset=UTF-8',
+        },
+        body: jsonEncode(<String, String>{
+          'emailAddress': emailAddress,
+        }),
+      );
 
-    if (response.statusCode == 200) {
-      final receivedOtp = jsonDecode(response.body)['code'];
-      setState(() {
-        this.receivedOtp = receivedOtp;
-        isOtpSent = true;
-        otpMessage = 'OTP has been sent to your email.';
-        otpErrorMessage = null;
-      });
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('OTP has been sent to your email.')),
-      );
-    } else if (response.statusCode == 404) {
-      setState(() {
-        otpMessage = null;
-        otpErrorMessage = 'Email does not exist.';
-      });
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Email does not exist.')),
-      );
-    } else {
+      if (response.statusCode == 200) {
+        final receivedOtp = jsonDecode(response.body)['code'];
+        setState(() {
+          this.receivedOtp = receivedOtp;
+          isOtpSent = true;
+          otpMessage = 'OTP has been sent to your email.';
+          otpErrorMessage = null;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('OTP has been sent to your email.')),
+        );
+      } else if (response.statusCode == 404) {
+        setState(() {
+          otpMessage = null;
+          otpErrorMessage = 'Email does not exist.';
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Email does not exist.')),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to send OTP. Please try again.')),
+        );
+      }
+    } catch (e) {
+      print('Error sending OTP: $e');
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Failed to send OTP. Please try again.')),
       );
     }
-  } catch (e) {
-    print('Error sending OTP: $e');
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Failed to send OTP. Please try again.')),
-    );
   }
-}
-
-
 
   void _verifyOtp() {
     String enteredOtp = otpController.text.trim();
@@ -246,7 +242,8 @@ class _ForgotPasswordState extends State<ForgotPassword> {
       Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (context) => ChangePasswordScreen(email: emailController.text.trim()),
+          builder: (context) =>
+              ChangePasswordScreen(email: emailController.text.trim()),
         ),
       );
     } else {

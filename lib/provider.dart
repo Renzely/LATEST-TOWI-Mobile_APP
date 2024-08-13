@@ -6,10 +6,27 @@ class AttendanceModel extends ChangeNotifier {
   bool _isTimeInRecorded = false;
   bool _isTimeOutRecorded = false;
 
+  String _timeInLocation = 'No location';
+  String _timeOutLocation = 'No location';
+
   String? get timeIn => _timeIn;
   String? get timeOut => _timeOut;
+
+  String? get timeInLocation => _timeInLocation;
+  String? get timeOutLocation => _timeOutLocation;
+
   bool get isTimeInRecorded => _isTimeInRecorded;
   bool get isTimeOutRecorded => _isTimeOutRecorded;
+
+  void updateTimeInLocation(String location) {
+    _timeInLocation = location;
+    notifyListeners();
+  }
+
+  void updateTimeOutLocation(String location) {
+    _timeOutLocation = location;
+    notifyListeners();
+  }
 
   void updateTimeIn(String? timeIn) {
     _timeIn = timeIn;
@@ -36,6 +53,8 @@ class AttendanceModel extends ChangeNotifier {
     _timeOut = null;
     _isTimeInRecorded = false;
     _isTimeOutRecorded = false;
+    _timeInLocation = 'No location';
+    _timeOutLocation = 'No location';
     notifyListeners();
   }
 }

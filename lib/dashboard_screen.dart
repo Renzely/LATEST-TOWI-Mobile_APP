@@ -1,5 +1,4 @@
 // ignore_for_file: must_be_immutable, prefer_const_constructors, use_key_in_widget_constructors, prefer_const_constructors_in_immutables, library_private_types_in_public_api, unnecessary_string_interpolations, sort_child_properties_last, avoid_print, use_rethrow_when_possible, depend_on_referenced_packages
-
 import 'package:demo_app/editRTV_screen.dart';
 import 'package:demo_app/inventoryAdd_screen.dart';
 import 'package:demo_app/login_screen.dart';
@@ -21,11 +20,15 @@ class Attendance extends StatelessWidget {
   final String userName;
   final String userLastName;
   final String userEmail;
+  String userMiddleName;
+  String userContactNum;
 
   Attendance({
     required this.userName,
     required this.userLastName,
     required this.userEmail,
+    required this.userContactNum,
+    required this.userMiddleName,
   });
 
   @override
@@ -41,6 +44,8 @@ class Attendance extends StatelessWidget {
       userName: userName,
       userLastName: userLastName,
       userEmail: userEmail,
+      userContactNum: userContactNum,
+      userMiddleName: userMiddleName,
     );
   }
 }
@@ -55,8 +60,8 @@ class AttendanceWidget extends StatefulWidget {
 }
 
 class _AttendanceWidgetState extends State<AttendanceWidget> {
-  String? timeInLocation;
-  String? timeOutLocation;
+  String? timeInLocation = 'No location';
+  String? timeOutLocation = 'No location';
 
   @override
   void initState() {
@@ -67,6 +72,8 @@ class _AttendanceWidgetState extends State<AttendanceWidget> {
   void _initializeAttendanceStatus() async {
     final attendanceModel =
         Provider.of<AttendanceModel>(context, listen: false);
+
+    // Fetch attendance status from the database
     var attendanceStatus =
         await MongoDatabase.getAttendanceStatus(widget.userEmail);
 
@@ -84,14 +91,30 @@ class _AttendanceWidgetState extends State<AttendanceWidget> {
 
       attendanceModel.setIsTimeInRecorded(attendanceStatus['timeIn'] != null);
       attendanceModel.setIsTimeOutRecorded(attendanceStatus['timeOut'] != null);
-    }
 
-    // Load location data from SharedPreferences
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    setState(() {
-      timeInLocation = prefs.getString('timeInLocation');
-      timeOutLocation = prefs.getString('timeOutLocation');
-    });
+      String timeInLocation =
+          attendanceStatus['timeInLocation'] ?? 'No location';
+      String timeOutLocation =
+          attendanceStatus['timeOutLocation'] ?? 'No location';
+
+      attendanceModel.updateTimeInLocation(timeInLocation);
+      attendanceModel.updateTimeOutLocation(timeOutLocation);
+
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      await prefs.setString('timeInLocation', timeInLocation);
+      await prefs.setString('timeOutLocation', timeOutLocation);
+
+      setState(() {
+        this.timeInLocation = timeInLocation;
+        this.timeOutLocation = timeOutLocation;
+      });
+    } else {
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      setState(() {
+        timeInLocation = prefs.getString('timeInLocation') ?? 'No location';
+        timeOutLocation = prefs.getString('timeOutLocation') ?? 'No location';
+      });
+    }
   }
 
   String? _formatTime(String? time) {
@@ -156,14 +179,13 @@ class _AttendanceWidgetState extends State<AttendanceWidget> {
     String currentTimeIn = DateFormat('h:mm a').format(DateTime.now());
 
     Position? position = await _getCurrentLocation();
-    String location = '';
+    String location = 'No location';
     if (position != null) {
       location = await _getAddressFromLatLong(position);
       setState(() {
         timeInLocation = location;
       });
 
-      // Save location to SharedPreferences
       SharedPreferences prefs = await SharedPreferences.getInstance();
       await prefs.setString('timeInLocation', location);
     }
@@ -174,6 +196,7 @@ class _AttendanceWidgetState extends State<AttendanceWidget> {
         attendanceModel.updateTimeIn(currentTimeIn);
         attendanceModel.setIsTimeInRecorded(true);
         print('Time In recorded successfully for ${widget.userEmail}');
+        _showSnackbar(context, 'Time In recorded successfully');
       } else {
         print('Failed to record Time In for ${widget.userEmail}');
       }
@@ -188,14 +211,13 @@ class _AttendanceWidgetState extends State<AttendanceWidget> {
     String currentTimeOut = DateFormat('h:mm a').format(DateTime.now());
 
     Position? position = await _getCurrentLocation();
-    String location = '';
+    String location = 'No location';
     if (position != null) {
       location = await _getAddressFromLatLong(position);
       setState(() {
         timeOutLocation = location;
       });
 
-      // Save location to SharedPreferences
       SharedPreferences prefs = await SharedPreferences.getInstance();
       await prefs.setString('timeOutLocation', location);
     }
@@ -206,12 +228,22 @@ class _AttendanceWidgetState extends State<AttendanceWidget> {
         attendanceModel.updateTimeOut(currentTimeOut);
         attendanceModel.setIsTimeOutRecorded(true);
         print('Time Out recorded successfully for ${widget.userEmail}');
+        _showSnackbar(context, 'Time Out recorded successfully');
       } else {
         print('Failed to record Time Out for ${widget.userEmail}');
       }
     } catch (e) {
       print('Error recording time out: $e');
     }
+  }
+
+  void _showSnackbar(BuildContext context, String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        duration: Duration(seconds: 3),
+      ),
+    );
   }
 
   @override
@@ -265,14 +297,13 @@ class _AttendanceWidgetState extends State<AttendanceWidget> {
                   fontSize: 15,
                 ),
               ),
-              if (timeInLocation != null)
-                Text(
-                  "Location: $timeInLocation",
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 10,
-                  ),
+              Text(
+                "Location: $timeInLocation",
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 10,
                 ),
+              ),
               SizedBox(height: 40),
               Text(
                 "TIME OUT",
@@ -319,14 +350,13 @@ class _AttendanceWidgetState extends State<AttendanceWidget> {
                   fontSize: 15,
                 ),
               ),
-              if (timeOutLocation != null)
-                Text(
-                  "Location: $timeOutLocation",
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 10,
-                  ),
+              Text(
+                "Location: $timeOutLocation",
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 10,
                 ),
+              ),
             ],
           ),
         );
@@ -359,11 +389,15 @@ class Inventory extends StatefulWidget {
   final String userName;
   final String userLastName;
   final String userEmail;
+  final String userContactNum;
+  final String userMiddleName;
 
   const Inventory({
     required this.userName,
     required this.userLastName,
     required this.userEmail,
+    required this.userContactNum,
+    required this.userMiddleName,
   });
 
   @override
@@ -471,49 +505,69 @@ class _InventoryState extends State<Inventory> {
                           startIndex, endIndex.clamp(0, inventoryItems.length));
 
                   return Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            IconButton(
-                              icon: Icon(Icons.arrow_back),
-                              onPressed: currentPage > 0
-                                  ? () {
-                                      setState(() {
-                                        currentPage--;
-                                      });
-                                    }
-                                  : null,
-                            ),
-                            Text(
-                              'Page ${currentPage + 1} of $totalPages',
-                              style: TextStyle(fontWeight: FontWeight.bold),
-                            ),
-                            IconButton(
-                              icon: Icon(Icons.arrow_forward),
-                              onPressed: currentPage < totalPages - 1
-                                  ? () {
-                                      setState(() {
-                                        currentPage++;
-                                      });
-                                    }
-                                  : null,
-                            ),
-                          ],
-                        ),
-                        Expanded(
-                            child: ListView.builder(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          IconButton(
+                            icon: Icon(Icons.arrow_back),
+                            onPressed: currentPage > 0
+                                ? () {
+                                    setState(() {
+                                      currentPage--;
+                                    });
+                                  }
+                                : null,
+                          ),
+                          Text(
+                            'Page ${currentPage + 1} of $totalPages',
+                            style: TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                          IconButton(
+                            icon: Icon(Icons.arrow_forward),
+                            onPressed: currentPage < totalPages - 1
+                                ? () {
+                                    setState(() {
+                                      currentPage++;
+                                    });
+                                  }
+                                : null,
+                          ),
+                        ],
+                      ),
+                      Expanded(
+                        child: ListView.builder(
                           itemCount: currentPageItems.length,
                           itemBuilder: (context, index) {
                             InventoryItem item = currentPageItems[index];
                             return ListTile(
-                              title: Text(
-                                item.week,
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 18,
-                                ),
+                              title: Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Text(
+                                    item.week,
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 18,
+                                    ),
+                                  ),
+                                  IconButton(
+                                    icon: Icon(Icons.edit),
+                                    onPressed: () {
+                                      //     // Navigate to the edit screen with the selected item data
+                                      //     Navigator.push(
+                                      //       context,
+                                      //       MaterialPageRoute(
+                                      //         builder: (context) => EditInventory(
+                                      //           inventoryItem: item,
+                                      //         ),
+                                      //       ),
+                                      //     );
+                                    },
+                                  ),
+                                ],
                               ),
                               subtitle: Container(
                                 decoration: BoxDecoration(
@@ -755,13 +809,37 @@ class _InventoryState extends State<Inventory> {
                                       '${item.noOfDaysOOS}',
                                       style: TextStyle(color: Colors.black),
                                     ),
+                                    SizedBox(height: 10),
+                                    Text(
+                                      'Remarks: ',
+                                      style: TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.black),
+                                    ),
+                                    Text(
+                                      '${item.remarksOOS}',
+                                      style: TextStyle(color: Colors.black),
+                                    ),
+                                    SizedBox(height: 10),
+                                    Text(
+                                      'Reason: ',
+                                      style: TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.black),
+                                    ),
+                                    Text(
+                                      '${item.reasonOOS}',
+                                      style: TextStyle(color: Colors.black),
+                                    ),
                                   ],
                                 ),
                               ),
                             );
                           },
-                        ))
-                      ]);
+                        ),
+                      ),
+                    ],
+                  );
                 }
               }
             },
@@ -799,6 +877,8 @@ class _InventoryState extends State<Inventory> {
         userName: widget.userName,
         userLastName: widget.userLastName,
         userEmail: widget.userEmail,
+        userContactNum: widget.userContactNum,
+        userMiddleName: widget.userMiddleName,
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
@@ -808,6 +888,8 @@ class _InventoryState extends State<Inventory> {
                 userName: widget.userName,
                 userLastName: widget.userLastName,
                 userEmail: widget.userEmail,
+                userContactNum: widget.userContactNum,
+                userMiddleName: widget.userMiddleName,
               ),
             ),
           );
@@ -827,11 +909,15 @@ class RTV extends StatefulWidget {
   final String userName;
   final String userLastName;
   final String userEmail;
+  String userMiddleName;
+  String userContactNum;
 
   RTV({
     required this.userName,
     required this.userLastName,
     required this.userEmail,
+    required this.userContactNum,
+    required this.userMiddleName,
   });
 
   @override
@@ -860,7 +946,6 @@ class _RTVState extends State<RTV> {
       await db.open();
       final collection = db.collection(USER_RTV);
 
-      // Query only items that match the current user's email
       final List<Map<String, dynamic>> results =
           await collection.find({'userEmail': widget.userEmail}).toList();
 
@@ -868,12 +953,12 @@ class _RTVState extends State<RTV> {
 
       List<ReturnToVendor> rtvItems =
           results.map((data) => ReturnToVendor.fromJson(data)).toList();
-      // Sort inventory items based on _sortByLatest flag
+
       rtvItems.sort((a, b) {
         if (_sortByLatest) {
-          return a.date.compareTo(b.date); // Sort by latest to oldest
+          return b.date.compareTo(a.date); // Sort by latest to oldest
         } else {
-          return b.date.compareTo(a.date); // Sort by oldest to latest
+          return a.date.compareTo(b.date); // Sort by oldest to latest
         }
       });
       return rtvItems;
@@ -890,190 +975,281 @@ class _RTVState extends State<RTV> {
         title: "Return To Vendor",
         mainContent: RefreshIndicator(
           onRefresh: () async {
-            // Manually refresh RTV data
             _fetchData();
           },
           child: FutureBuilder<List<ReturnToVendor>>(
-            future: _futureRTV,
-            builder: (context, snapshot) {
-              if (snapshot.connectionState == ConnectionState.waiting) {
-                return Center(
-                    child: CircularProgressIndicator(
-                  color: Colors.green, // This sets the color of the spinner
-                  backgroundColor: Colors.transparent,
-                ));
-              } else if (snapshot.hasError) {
-                return Center(
-                  child: Text('Error: ${snapshot.error}'),
-                );
-              } else {
-                List<ReturnToVendor> rtvItems = snapshot.data ?? [];
-                if (rtvItems.isEmpty) {
+              future: _futureRTV,
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
                   return Center(
-                    child: Text(
-                      'No RTV created',
-                      style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 18,
-                          color: Colors.black),
-                    ),
+                      child: CircularProgressIndicator(
+                    color: Colors.green,
+                    backgroundColor: Colors.transparent,
+                  ));
+                } else if (snapshot.hasError) {
+                  return Center(
+                    child: Text('Error: ${snapshot.error}'),
                   );
                 } else {
-                  return ListView.builder(
-                    itemCount: rtvItems.length,
-                    itemBuilder: (context, index) {
-                      ReturnToVendor item = rtvItems.reversed.toList()[index];
-                      bool isEditable = item.quantity == "Pending" &&
-                          item.driverName == "Pending" &&
-                          item.plateNumber == "Pending" &&
-                          item.pullOutReason == "Pending";
+                  List<ReturnToVendor> rtvItems = snapshot.data ?? [];
+                  if (rtvItems.isEmpty) {
+                    return Center(
+                      child: Text(
+                        'No RTV created',
+                        style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 18,
+                            color: Colors.black),
+                      ),
+                    );
+                  } else {
+                    return ListView.builder(
+                        itemCount: rtvItems.length,
+                        itemBuilder: (context, index) {
+                          ReturnToVendor item = rtvItems[index];
+                          bool isEditable = item.quantity == "Pending" &&
+                              item.driverName == "Pending" &&
+                              item.plateNumber == "Pending" &&
+                              item.pullOutReason == "Pending";
 
-                      return ListTile(
-                        subtitle: Container(
-                          decoration: BoxDecoration(
-                            color: Colors.grey.shade200,
-                            border: Border.all(
-                              color: Colors.black,
-                              width: 1.0,
-                            ),
-                          ),
-                          padding: EdgeInsets.all(8.0),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'Input ID: ',
-                                style: TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.black),
+                          return ListTile(
+                              title: Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Text(
+                                    '${item.date}',
+                                    style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.black),
+                                  ),
+                                  isEditable
+                                      ? IconButton(
+                                          icon: Icon(Icons.edit,
+                                              color: Colors.black),
+                                          onPressed: () {
+                                            Navigator.of(context).push(
+                                              MaterialPageRoute(
+                                                builder: (context) =>
+                                                    EditRTVScreen(item: item),
+                                              ),
+                                            );
+                                          },
+                                        )
+                                      : IconButton(
+                                          icon: Icon(Icons.edit,
+                                              color: Colors.grey),
+                                          onPressed: null,
+                                        ),
+                                ],
                               ),
-                              Text(
-                                '${item.inputId}',
-                                style: TextStyle(color: Colors.black),
-                              ),
-                              SizedBox(height: 10),
-                              Text(
-                                'Date: ',
-                                style: TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.black),
-                              ),
-                              Text(
-                                '${item.date}',
-                                style: TextStyle(color: Colors.black),
-                              ),
-                              SizedBox(height: 10),
-                              Text(
-                                'Merchandiser: ',
-                                style: TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.black),
-                              ),
-                              Text(
-                                '${item.merchandiserName}',
-                                style: TextStyle(color: Colors.black),
-                              ),
-                              SizedBox(height: 10),
-                              Text(
-                                'Outlet: ',
-                                style: TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.black),
-                              ),
-                              Text(
-                                '${item.outlet}',
-                                style: TextStyle(color: Colors.black),
-                              ),
-                              SizedBox(height: 10),
-                              Text(
-                                'Category: ',
-                                style: TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.black),
-                              ),
-                              Text(
-                                '${item.category}',
-                                style: TextStyle(color: Colors.black),
-                              ),
-                              SizedBox(height: 10),
-                              Text(
-                                'Item: ',
-                                style: TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.black),
-                              ),
-                              Text(
-                                '${item.item}',
-                                style: TextStyle(color: Colors.black),
-                              ),
-                              SizedBox(height: 10),
-                              Text(
-                                'Quantity: ',
-                                style: TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.black),
-                              ),
-                              Text(
-                                '${item.quantity}',
-                                style: TextStyle(color: Colors.black),
-                              ),
-                              SizedBox(height: 10),
-                              Text(
-                                'Driver\'s Name: ',
-                                style: TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.black),
-                              ),
-                              Text(
-                                '${item.driverName}',
-                                style: TextStyle(color: Colors.black),
-                              ),
-                              SizedBox(height: 10),
-                              Text(
-                                'Plate Number: ',
-                                style: TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.black),
-                              ),
-                              Text(
-                                '${item.plateNumber}',
-                                style: TextStyle(color: Colors.black),
-                              ),
-                              SizedBox(height: 10),
-                              Text(
-                                'Pull Out Reason: ',
-                                style: TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.black),
-                              ),
-                              Text(
-                                '${item.pullOutReason}',
-                                style: TextStyle(color: Colors.black),
-                              ),
-                            ],
-                          ),
-                        ),
-                        trailing: isEditable
-                            ? IconButton(
-                                icon: Icon(Icons.edit, color: Colors.black),
-                                onPressed: () {
-                                  Navigator.of(context).push(MaterialPageRoute(
-                                    builder: (context) =>
-                                        EditRTVScreen(item: item),
-                                  ));
-                                },
-                              )
-                            : IconButton(
-                                icon: Icon(Icons.edit, color: Colors.grey),
-                                onPressed: null,
-                              ),
-                      );
-                    },
-                  );
+                              subtitle: Container(
+                                decoration: BoxDecoration(
+                                  color: Colors.grey.shade200,
+                                  border: Border.all(
+                                    color: Colors.black,
+                                    width: 1.0,
+                                  ),
+                                ),
+                                padding: EdgeInsets.all(8.0),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    RichText(
+                                      text: TextSpan(
+                                        children: [
+                                          TextSpan(
+                                            text: 'Input ID: ',
+                                            style: TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                              color: Colors.black,
+                                            ),
+                                          ),
+                                          TextSpan(
+                                            text: item.inputId,
+                                            style: TextStyle(
+                                              fontWeight: FontWeight.normal,
+                                              color: Colors.black,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    SizedBox(height: 10),
+                                    RichText(
+                                      text: TextSpan(
+                                        children: [
+                                          TextSpan(
+                                            text: 'Date: ',
+                                            style: TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                              color: Colors.black,
+                                            ),
+                                          ),
+                                          TextSpan(
+                                            text: item.date,
+                                            style: TextStyle(
+                                              fontWeight: FontWeight.normal,
+                                              color: Colors.black,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    SizedBox(height: 10),
+                                    RichText(
+                                      text: TextSpan(
+                                        children: [
+                                          TextSpan(
+                                            text: 'Outlet: ',
+                                            style: TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                              color: Colors.black,
+                                            ),
+                                          ),
+                                          TextSpan(
+                                            text: item.outlet,
+                                            style: TextStyle(
+                                              fontWeight: FontWeight.normal,
+                                              color: Colors.black,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    SizedBox(height: 10),
+                                    RichText(
+                                      text: TextSpan(
+                                        children: [
+                                          TextSpan(
+                                            text: 'Category: ',
+                                            style: TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                              color: Colors.black,
+                                            ),
+                                          ),
+                                          TextSpan(
+                                            text: item.category,
+                                            style: TextStyle(
+                                              fontWeight: FontWeight.normal,
+                                              color: Colors.black,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    SizedBox(height: 10),
+                                    RichText(
+                                      text: TextSpan(
+                                        children: [
+                                          TextSpan(
+                                            text: 'Item: ',
+                                            style: TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                              color: Colors.black,
+                                            ),
+                                          ),
+                                          TextSpan(
+                                            text: item.item,
+                                            style: TextStyle(
+                                              fontWeight: FontWeight.normal,
+                                              color: Colors.black,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    SizedBox(height: 10),
+                                    RichText(
+                                      text: TextSpan(
+                                        children: [
+                                          TextSpan(
+                                            text: 'Quantity: ',
+                                            style: TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                              color: Colors.black,
+                                            ),
+                                          ),
+                                          TextSpan(
+                                            text: item.quantity,
+                                            style: TextStyle(
+                                              fontWeight: FontWeight.normal,
+                                              color: Colors.black,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    SizedBox(height: 10),
+                                    RichText(
+                                      text: TextSpan(
+                                        children: [
+                                          TextSpan(
+                                            text: 'Driver\'s Name: ',
+                                            style: TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                              color: Colors.black,
+                                            ),
+                                          ),
+                                          TextSpan(
+                                            text: item.driverName,
+                                            style: TextStyle(
+                                              fontWeight: FontWeight.normal,
+                                              color: Colors.black,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    SizedBox(height: 10),
+                                    RichText(
+                                      text: TextSpan(
+                                        children: [
+                                          TextSpan(
+                                            text: 'Plate Number: ',
+                                            style: TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                              color: Colors.black,
+                                            ),
+                                          ),
+                                          TextSpan(
+                                            text: item.plateNumber,
+                                            style: TextStyle(
+                                              fontWeight: FontWeight.normal,
+                                              color: Colors.black,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    SizedBox(height: 10),
+                                    RichText(
+                                      text: TextSpan(
+                                        children: [
+                                          TextSpan(
+                                            text: 'Pull Out Reason: ',
+                                            style: TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                              color: Colors.black,
+                                            ),
+                                          ),
+                                          TextSpan(
+                                            text: item.pullOutReason,
+                                            style: TextStyle(
+                                              fontWeight: FontWeight.normal,
+                                              color: Colors.black,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ));
+                        });
+                  }
                 }
-              }
-            },
-          ),
+              }),
         ),
         appBarActions: [
           IconButton(
@@ -1082,7 +1258,6 @@ class _RTVState extends State<RTV> {
               color: Colors.white,
             ),
             onPressed: () {
-              // Manually refresh RTV data
               _fetchData();
             },
           ),
@@ -1090,7 +1265,7 @@ class _RTVState extends State<RTV> {
             onSelected: (value) {
               setState(() {
                 _sortByLatest = value == 'latestToOldest';
-                _fetchData(); // Reload data based on new sort order
+                _fetchData();
               });
             },
             itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
@@ -1108,6 +1283,8 @@ class _RTVState extends State<RTV> {
         userName: widget.userName,
         userLastName: widget.userLastName,
         userEmail: widget.userEmail,
+        userContactNum: widget.userContactNum,
+        userMiddleName: widget.userMiddleName,
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
@@ -1116,6 +1293,8 @@ class _RTVState extends State<RTV> {
               userName: widget.userName,
               userLastName: widget.userLastName,
               userEmail: widget.userEmail,
+              userContactNum: widget.userContactNum,
+              userMiddleName: widget.userMiddleName,
             ),
           ));
         },
@@ -1134,52 +1313,129 @@ class Setting extends StatelessWidget {
   final String userName;
   final String userLastName;
   final String userEmail;
+  String userMiddleName; // Add this if you have a middle name
+  String userContactNum; // Add this for contact number
 
   Setting({
     required this.userName,
     required this.userLastName,
     required this.userEmail,
+    required this.userMiddleName, // Optional middle name
+    required this.userContactNum, // Optional contact number
   });
 
   @override
   Widget build(BuildContext context) {
     return SideBarLayout(
       title: "Settings",
-      mainContent: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          SizedBox(
-            height: 650, // Add space between the button and surrounding content
-          ),
-          Center(
-            child: SizedBox(
-              height: 50,
-              width: 350, // Set width to match the screen width
-              child: ElevatedButton(
-                onPressed: () {
-                  _logout(context);
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.green[900], // Set button color here
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(50),
-                  ),
+      mainContent: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(
+              horizontal: 16.0), // Add some padding around the form
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: [
+              SizedBox(height: 20),
+              Text(
+                'First Name: ',
+                style:
+                    TextStyle(fontWeight: FontWeight.bold, color: Colors.black),
+              ),
+              TextFormField(
+                readOnly: true,
+                initialValue: userName,
+                decoration: InputDecoration(
+                  border: OutlineInputBorder(),
                 ),
-                child: Text(
-                  'LOG OUT',
-                  style: TextStyle(
-                    color: Colors.white, // Set text color here
-                    fontWeight: FontWeight.bold,
+              ),
+              SizedBox(height: 20),
+              Text(
+                'Middle Name: ',
+                style:
+                    TextStyle(fontWeight: FontWeight.bold, color: Colors.black),
+              ),
+              TextFormField(
+                readOnly: true,
+                initialValue: userMiddleName,
+                decoration: InputDecoration(
+                  border: OutlineInputBorder(),
+                ),
+              ),
+              SizedBox(height: 20),
+              Text(
+                'Last Name: ',
+                style:
+                    TextStyle(fontWeight: FontWeight.bold, color: Colors.black),
+              ),
+              TextFormField(
+                readOnly: true,
+                initialValue: userLastName,
+                decoration: InputDecoration(
+                  border: OutlineInputBorder(),
+                ),
+              ),
+              SizedBox(height: 20),
+              Text(
+                'Contact Number: ',
+                style:
+                    TextStyle(fontWeight: FontWeight.bold, color: Colors.black),
+              ),
+              TextFormField(
+                readOnly: true,
+                initialValue: userContactNum,
+                decoration: InputDecoration(
+                  border: OutlineInputBorder(),
+                ),
+              ),
+              SizedBox(height: 20),
+              Text(
+                'Email Address: ',
+                style:
+                    TextStyle(fontWeight: FontWeight.bold, color: Colors.black),
+              ),
+              TextFormField(
+                initialValue: userEmail,
+                readOnly: true,
+                decoration: InputDecoration(
+                  border: OutlineInputBorder(),
+                ),
+              ),
+              SizedBox(
+                  height:
+                      210), // Add space between the text fields and the button
+              Center(
+                child: SizedBox(
+                  height: 50,
+                  width: 350,
+                  child: ElevatedButton(
+                    onPressed: () {
+                      _logout(context);
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.green[900],
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(50),
+                      ),
+                    ),
+                    child: Text(
+                      'LOG OUT',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
                   ),
                 ),
               ),
-            ),
-          )
-        ],
+            ],
+          ),
+        ),
       ),
       userName: userName,
       userLastName: userLastName,
       userEmail: userEmail,
+      userContactNum: userContactNum,
+      userMiddleName: userMiddleName,
     );
   }
 }
@@ -1208,6 +1464,8 @@ class SideBarLayout extends StatefulWidget {
   String userName;
   String userLastName;
   String userEmail;
+  String userMiddleName;
+  String userContactNum;
 
   SideBarLayout({
     required this.title,
@@ -1216,6 +1474,8 @@ class SideBarLayout extends StatefulWidget {
     required this.userName,
     required this.userLastName,
     required this.userEmail,
+    required this.userContactNum,
+    required this.userMiddleName,
   });
 
   @override
@@ -1226,11 +1486,15 @@ class _SideBarLayoutState extends State<SideBarLayout> {
   String userName = '';
   String userLastName = '';
   String userEmail = '';
+  String userContactNum = '';
+  String userMiddleName = '';
 
   @override
   void initState() {
     super.initState();
     _fetchUserInfo();
+    // userMiddleName =
+    //     widget.userMiddleName ?? ''; // Provide a default value if null
   }
 
   Future<void> _fetchUserInfo() async {
@@ -1241,7 +1505,9 @@ class _SideBarLayoutState extends State<SideBarLayout> {
         print(userInfo); // Print the retrieved user information
         setState(() {
           widget.userName = userInfo['firstName'] ?? '';
+          widget.userMiddleName = userInfo['middleName'] ?? '';
           widget.userLastName = userInfo['lastName'] ?? '';
+          widget.userContactNum = userInfo['contactNum'] ?? '';
           widget.userEmail = userInfo['emailAddress'] ?? '';
         });
       } else {
@@ -1327,6 +1593,8 @@ class _SideBarLayoutState extends State<SideBarLayout> {
                                 userName: widget.userName,
                                 userLastName: widget.userLastName,
                                 userEmail: widget.userEmail,
+                                userContactNum: widget.userContactNum,
+                                userMiddleName: widget.userMiddleName,
                               )),
                     );
                   },
@@ -1341,6 +1609,8 @@ class _SideBarLayoutState extends State<SideBarLayout> {
                                 userName: widget.userName,
                                 userLastName: widget.userLastName,
                                 userEmail: widget.userEmail,
+                                userContactNum: widget.userContactNum,
+                                userMiddleName: widget.userMiddleName,
                               )),
                     );
                   },
@@ -1355,6 +1625,8 @@ class _SideBarLayoutState extends State<SideBarLayout> {
                                 userName: widget.userName,
                                 userLastName: widget.userLastName,
                                 userEmail: widget.userEmail,
+                                userContactNum: widget.userContactNum,
+                                userMiddleName: widget.userMiddleName,
                               )),
                     );
                   },
@@ -1370,6 +1642,8 @@ class _SideBarLayoutState extends State<SideBarLayout> {
                                 userName: widget.userName,
                                 userLastName: widget.userLastName,
                                 userEmail: widget.userEmail,
+                                userContactNum: widget.userContactNum,
+                                userMiddleName: widget.userMiddleName,
                               )),
                     );
                   },

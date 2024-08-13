@@ -49,7 +49,9 @@ class _LoginPageState extends State<LoginPage> {
           final prefs = await SharedPreferences.getInstance();
           prefs.setBool('isLoggedIn', true);
           prefs.setString('userName', userDetails['firstName'] ?? '');
+          prefs.setString('userMiddleName', userDetails['middleName'] ?? '');
           prefs.setString('userLastName', userDetails['lastName'] ?? '');
+          prefs.setString('userContactNum', userDetails['contactNum'] ?? '');
           prefs.setString('userEmail', userDetails['emailAddress'] ?? '');
 
           // Use pushReplacement to navigate to Dashboard or perform any other actions after successful login
@@ -68,6 +70,8 @@ class _LoginPageState extends State<LoginPage> {
                 userName: userDetails['firstName'] ?? '',
                 userLastName: userDetails['lastName'] ?? '',
                 userEmail: userDetails['emailAddress'] ?? '',
+                userMiddleName: userDetails['middleName'] ?? '',
+                userContactNum: userDetails['contactNum'] ?? '',
               ),
             ),
             (Route<dynamic> route) => false,
