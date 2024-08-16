@@ -149,6 +149,52 @@ class MongoDatabase {
     }
   }
 
+  Future<void> updateInventoryItem(InventoryItem item) async {
+    try {
+      if (db == null || !db.isConnected) {
+        await connect();
+      }
+
+      final collection = db.collection(USER_INVENTORY);
+
+      final result = await collection.updateOne(
+        where.eq('_id', item.id), // Find the document by ID
+        modify
+            .set('date', item.date)
+            .set('inputId', item.inputId)
+            .set('name', item.name)
+            .set('accountNameBranchManning', item.accountNameBranchManning)
+            .set('period', item.period)
+            .set('month', item.month)
+            .set('week', item.week)
+            .set('category', item.category)
+            .set('skuDescription', item.skuDescription)
+            .set('products', item.products)
+            .set('skuCode', item.skuCode)
+            .set('status', item.status)
+            .set('beginning', item.beginning)
+            .set('delivery', item.delivery)
+            .set('ending', item.ending)
+            .set('offtake', item.offtake)
+            .set('inventoryDaysLevel', item.inventoryDaysLevel)
+            .set('noOfDaysOOS', item.noOfDaysOOS)
+            .set('expiryFields', item.expiryFields)
+            .set('remarksOOS', item.remarksOOS)
+            .set('reasonOOS', item.reasonOOS),
+      );
+
+      if (result.isAcknowledged) {
+        print('Inventory item updated in database');
+      } else {
+        print('Update not acknowledged');
+      }
+    } catch (e) {
+      print('Error updating inventory item: $e');
+    } finally {
+      await close();
+    }
+  }
+
   static Future<String> logTimeIn(
       String userEmail, String timeInLocation) async {
     try {
