@@ -173,7 +173,11 @@ class _AddInventoryState extends State<AddInventory> {
                                 child: TextFormField(
                                   controller: _dateController,
                                   readOnly: true,
-                                  decoration: InputDecoration(),
+                                  decoration: InputDecoration(
+                                    border: OutlineInputBorder(),
+                                    contentPadding:
+                                        EdgeInsets.symmetric(horizontal: 12),
+                                  ),
                                 ),
                               ),
                             ],
@@ -190,6 +194,9 @@ class _AddInventoryState extends State<AddInventory> {
                           initialValue: generateInputID(),
                           readOnly: true,
                           decoration: InputDecoration(
+                            border: OutlineInputBorder(),
+                            contentPadding:
+                                EdgeInsets.symmetric(horizontal: 12),
                             hintText: 'Auto-generated Input ID',
                           ),
                         ),
@@ -204,7 +211,11 @@ class _AddInventoryState extends State<AddInventory> {
                           initialValue:
                               '${widget.userName} ${widget.userLastName}',
                           readOnly: true,
-                          decoration: InputDecoration(),
+                          decoration: InputDecoration(
+                            border: OutlineInputBorder(),
+                            contentPadding:
+                                EdgeInsets.symmetric(horizontal: 12),
+                          ),
                         ),
                         SizedBox(height: 16),
                         Text(
@@ -249,7 +260,9 @@ class _AddInventoryState extends State<AddInventory> {
                                           : null, // Disable onChange when there is only one branch
                                       decoration: InputDecoration(
                                         hintText: 'Select',
-                                        border: InputBorder.none,
+                                        border: OutlineInputBorder(),
+                                        contentPadding: EdgeInsets.symmetric(
+                                            horizontal: 12),
                                       ),
                                     ),
                                     // Conditionally show clear button
@@ -867,7 +880,9 @@ class _AddInventoryState extends State<AddInventory> {
                                         },
                                         decoration: InputDecoration(
                                           hintText: 'Select Period',
-                                          border: InputBorder.none,
+                                          border: OutlineInputBorder(),
+                                          contentPadding: EdgeInsets.symmetric(
+                                              horizontal: 12),
                                         ),
                                       ),
                                       if (_selectedPeriod != null)
@@ -894,9 +909,17 @@ class _AddInventoryState extends State<AddInventory> {
                             SizedBox(height: 16),
                             Text('Month',
                                 style: TextStyle(
-                                    fontWeight: FontWeight.bold, fontSize: 16)),
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 16,
+                                )),
                             SizedBox(height: 8),
                             TextFormField(
+                              decoration: InputDecoration(
+                                hintText: 'Select Period',
+                                border: OutlineInputBorder(),
+                                contentPadding:
+                                    EdgeInsets.symmetric(horizontal: 12),
+                              ),
                               controller: _monthController,
                               readOnly: true,
                             ),
@@ -907,6 +930,12 @@ class _AddInventoryState extends State<AddInventory> {
                                   fontWeight: FontWeight.bold, fontSize: 16),
                             ),
                             TextFormField(
+                              decoration: InputDecoration(
+                                hintText: 'Select Period',
+                                border: OutlineInputBorder(),
+                                contentPadding:
+                                    EdgeInsets.symmetric(horizontal: 12),
+                              ),
                               controller: _weekController,
                               readOnly: true,
                             ),
@@ -1845,6 +1874,8 @@ class _SKUInventoryState extends State<SKUInventory> {
                     controller: _accountNameController,
                     readOnly: true,
                     decoration: InputDecoration(
+                      border: OutlineInputBorder(),
+                      contentPadding: EdgeInsets.symmetric(horizontal: 12),
                       hintText: widget.selectedWeek,
                     ),
                   ),
@@ -1856,6 +1887,8 @@ class _SKUInventoryState extends State<SKUInventory> {
                     controller: _accountNameController,
                     readOnly: true,
                     decoration: InputDecoration(
+                      border: OutlineInputBorder(),
+                      contentPadding: EdgeInsets.symmetric(horizontal: 12),
                       hintText: widget.selectedMonth,
                     ),
                   ),
@@ -1867,8 +1900,11 @@ class _SKUInventoryState extends State<SKUInventory> {
                   TextField(
                     controller: _accountNameController,
                     readOnly: true,
-                    decoration:
-                        InputDecoration(hintText: widget.selectedAccount),
+                    decoration: InputDecoration(
+                      hintText: widget.selectedAccount,
+                      border: OutlineInputBorder(),
+                      contentPadding: EdgeInsets.symmetric(horizontal: 12),
+                    ),
                   ),
                   SizedBox(height: 20),
                   Text(
@@ -1964,6 +2000,9 @@ class _SKUInventoryState extends State<SKUInventory> {
                                 _productsController, // Assigning controller
                             readOnly: true,
                             decoration: InputDecoration(
+                              border: OutlineInputBorder(),
+                              contentPadding:
+                                  EdgeInsets.symmetric(horizontal: 12),
                               hintText: _productDetails,
                             ),
                           ),
@@ -1979,6 +2018,9 @@ class _SKUInventoryState extends State<SKUInventory> {
                                 _skuCodeController, // Assigning controller
                             decoration: InputDecoration(
                               hintText: _skuCode,
+                              border: OutlineInputBorder(),
+                              contentPadding:
+                                  EdgeInsets.symmetric(horizontal: 12),
                             ),
                           ),
                         ],
@@ -2054,50 +2096,73 @@ class _SKUInventoryState extends State<SKUInventory> {
                     ],
                   ),
                   if (_showCarriedTextField)
-                    TextField(
-                      controller: _beginningController,
-                      keyboardType: TextInputType.number,
-                      inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                      decoration: InputDecoration(
-                        labelText: 'Beginning',
-                        labelStyle: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
-                        ),
-                      ),
-                      onChanged: (_) =>
-                          checkSaveEnabled(), // Call checkSaveEnabled on change
+                    Text(
+                      'Beginning',
+                      style:
+                          TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                     ),
+                  SizedBox(height: 10),
+                  TextField(
+                    controller: _beginningController,
+                    keyboardType: TextInputType.number,
+                    inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                    decoration: InputDecoration(
+                      border: OutlineInputBorder(),
+                      contentPadding: EdgeInsets.symmetric(horizontal: 12),
+                      labelStyle: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                      ),
+                    ),
+                    onChanged: (_) =>
+                        checkSaveEnabled(), // Call checkSaveEnabled on change
+                  ),
+                  SizedBox(height: 10),
                   if (_showCarriedTextField)
-                    TextField(
-                      controller: _deliveryController,
-                      keyboardType: TextInputType.number,
-                      inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                      decoration: InputDecoration(
-                        labelText: 'Delivery',
-                        labelStyle: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
-                        ),
-                      ),
-                      onChanged: (_) =>
-                          checkSaveEnabled(), // Call checkSaveEnabled on change
+                    Text(
+                      'Delivery',
+                      style:
+                          TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                     ),
+                  SizedBox(height: 10),
+                  TextField(
+                    controller: _deliveryController,
+                    keyboardType: TextInputType.number,
+                    inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                    decoration: InputDecoration(
+                      border: OutlineInputBorder(),
+                      contentPadding: EdgeInsets.symmetric(horizontal: 12),
+                      labelStyle: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                      ),
+                    ),
+                    onChanged: (_) =>
+                        checkSaveEnabled(), // Call checkSaveEnabled on change
+                  ),
+                  SizedBox(height: 10),
                   if (_showCarriedTextField)
-                    TextField(
-                      controller: _endingController,
-                      keyboardType: TextInputType.number,
-                      inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                      decoration: InputDecoration(
-                        labelText: 'Ending',
-                        labelStyle: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
-                        ),
-                      ),
-                      onChanged: (_) =>
-                          checkSaveEnabled(), // Call checkSaveEnabled on change
+                    Text(
+                      'Ending',
+                      style:
+                          TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                     ),
+                  SizedBox(height: 10),
+                  TextField(
+                    controller: _endingController,
+                    keyboardType: TextInputType.number,
+                    inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                    decoration: InputDecoration(
+                      border: OutlineInputBorder(),
+                      contentPadding: EdgeInsets.symmetric(horizontal: 12),
+                      labelStyle: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                      ),
+                    ),
+                    onChanged: (_) =>
+                        checkSaveEnabled(), // Call checkSaveEnabled on change
+                  ),
                   SizedBox(height: 10),
                   if (_showCarriedTextField)
                     Center(
@@ -2138,69 +2203,99 @@ class _SKUInventoryState extends State<SKUInventory> {
                       ],
                     ),
                   if (_showCarriedTextField)
-                    TextField(
-                      controller: _offtakeController,
-                      keyboardType: TextInputType.number,
-                      inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                      readOnly: true,
-                      decoration: InputDecoration(
-                        labelText: 'Offtake',
-                        labelStyle: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
-                        ),
+                    Text(
+                      'Offtake',
+                      style:
+                          TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                    ),
+                  SizedBox(height: 10),
+                  TextField(
+                    controller: _offtakeController,
+                    keyboardType: TextInputType.number,
+                    inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                    readOnly: true,
+                    decoration: InputDecoration(
+                      border: OutlineInputBorder(),
+                      contentPadding: EdgeInsets.symmetric(horizontal: 12),
+                      labelStyle: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
                       ),
                     ),
+                  ),
+                  SizedBox(height: 10),
                   if (_showCarriedTextField)
-                    TextField(
-                      controller: _inventoryDaysLevelController,
-                      keyboardType: TextInputType.number,
-                      inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                      readOnly: true,
-                      decoration: InputDecoration(
-                        labelText: 'Inventory days Level',
-                        labelStyle: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
-                        ),
+                    Text(
+                      'Inventory Days Level',
+                      style:
+                          TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                    ),
+                  SizedBox(height: 10),
+                  TextField(
+                    controller: _inventoryDaysLevelController,
+                    keyboardType: TextInputType.number,
+                    inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                    readOnly: true,
+                    decoration: InputDecoration(
+                      border: OutlineInputBorder(),
+                      contentPadding: EdgeInsets.symmetric(horizontal: 12),
+                      labelStyle: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
                       ),
                     ),
+                  ),
+                  SizedBox(height: 10),
                   if (_showCarriedTextField)
-                    DropdownButtonFormField<int>(
-                      decoration: InputDecoration(
-                        labelText: 'No. of Days OOS',
-                        labelStyle: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
-                        ),
-                      ),
-                      value: _selectedNumberOfDaysOOS,
-                      onChanged: (newValue) {
-                        setState(() {
-                          _selectedNumberOfDaysOOS = newValue;
-
-                          // Reset the remarks and reason when OOS changes
-                          _remarksOOS = null;
-                          _selectedNoDeliveryOption = null;
-                          _reasonOOS = null;
-
-                          // Check if Save button should be enabled
-                          checkSaveEnabled();
-                        });
-                      },
-                      items: List.generate(8, (index) {
-                        return DropdownMenuItem<int>(
-                          value: index,
-                          child: Text(index.toString()),
-                        );
-                      }),
+                    Text(
+                      'No. of Days OOS',
+                      style:
+                          TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                     ),
+                  SizedBox(height: 10),
+                  DropdownButtonFormField<int>(
+                    decoration: InputDecoration(
+                      border: OutlineInputBorder(),
+                      contentPadding: EdgeInsets.symmetric(horizontal: 12),
+                      labelStyle: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                      ),
+                    ),
+                    value: _selectedNumberOfDaysOOS,
+                    onChanged: (newValue) {
+                      setState(() {
+                        _selectedNumberOfDaysOOS = newValue;
+
+                        // Reset the remarks and reason when OOS changes
+                        _remarksOOS = null;
+                        _selectedNoDeliveryOption = null;
+                        _reasonOOS = null;
+
+                        // Check if Save button should be enabled
+                        checkSaveEnabled();
+                      });
+                    },
+                    items: List.generate(8, (index) {
+                      return DropdownMenuItem<int>(
+                        value: index,
+                        child: Text(index.toString()),
+                      );
+                    }),
+                  ),
                   SizedBox(height: 10),
                   if (_selectedNumberOfDaysOOS != null &&
                       _selectedNumberOfDaysOOS! > 0) ...[
+                    Text(
+                      'Inventory Days Level',
+                      style:
+                          TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                    ),
+                    SizedBox(height: 10),
                     DropdownButtonFormField<String>(
                       decoration: InputDecoration(
-                        labelText: 'Remarks',
+                        border: OutlineInputBorder(),
+                        contentPadding: EdgeInsets.symmetric(horizontal: 12),
                         labelStyle: TextStyle(
                           fontWeight: FontWeight.bold,
                           fontSize: 16,
@@ -2240,11 +2335,18 @@ class _SKUInventoryState extends State<SKUInventory> {
                       ],
                     ),
                   ],
+                  SizedBox(height: 10),
                   if (_showNoDeliveryDropdown) ...[
+                    Text(
+                      'Reason',
+                      style:
+                          TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                    ),
                     SizedBox(height: 10),
                     DropdownButtonFormField<String>(
                       decoration: InputDecoration(
-                        labelText: 'Select Reason',
+                        border: OutlineInputBorder(),
+                        contentPadding: EdgeInsets.symmetric(horizontal: 12),
                         labelStyle: TextStyle(
                           fontWeight: FontWeight.bold,
                           fontSize: 16,

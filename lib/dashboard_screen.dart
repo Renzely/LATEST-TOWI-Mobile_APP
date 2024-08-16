@@ -1,4 +1,5 @@
 // ignore_for_file: must_be_immutable, prefer_const_constructors, use_key_in_widget_constructors, prefer_const_constructors_in_immutables, library_private_types_in_public_api, unnecessary_string_interpolations, sort_child_properties_last, avoid_print, use_rethrow_when_possible, depend_on_referenced_packages
+import 'package:demo_app/editInventory_screen.dart';
 import 'package:demo_app/editRTV_screen.dart';
 import 'package:demo_app/inventoryAdd_screen.dart';
 import 'package:demo_app/login_screen.dart';
@@ -557,14 +558,16 @@ class _InventoryState extends State<Inventory> {
                                     icon: Icon(Icons.edit),
                                     onPressed: () {
                                       //     // Navigate to the edit screen with the selected item data
-                                      //     Navigator.push(
-                                      //       context,
-                                      //       MaterialPageRoute(
-                                      //         builder: (context) => EditInventory(
-                                      //           inventoryItem: item,
-                                      //         ),
-                                      //       ),
-                                      //     );
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) =>
+                                              EditInventoryScreen(
+                                            inventoryItem: item,
+                                            userEmail: widget.userEmail,
+                                          ),
+                                        ),
+                                      );
                                     },
                                   ),
                                 ],
