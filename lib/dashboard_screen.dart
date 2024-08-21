@@ -556,19 +556,21 @@ class _InventoryState extends State<Inventory> {
                                   ),
                                   IconButton(
                                     icon: Icon(Icons.edit),
-                                    onPressed: () {
-                                      //     // Navigate to the edit screen with the selected item data
-                                      Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                          builder: (context) =>
-                                              EditInventoryScreen(
-                                            inventoryItem: item,
-                                            userEmail: widget.userEmail,
-                                          ),
-                                        ),
-                                      );
-                                    },
+                                    onPressed: item.status == 'Carried'
+                                        ? () {
+                                            // Navigate to the edit screen with the selected item data
+                                            Navigator.push(
+                                              context,
+                                              MaterialPageRoute(
+                                                builder: (context) =>
+                                                    EditInventoryScreen(
+                                                  inventoryItem: item,
+                                                  userEmail: widget.userEmail,
+                                                ),
+                                              ),
+                                            );
+                                          }
+                                        : null, // Disable the button otherwise
                                   ),
                                 ],
                               ),
@@ -772,6 +774,13 @@ class _InventoryState extends State<Inventory> {
                                               style: TextStyle(
                                                   color: Colors.black),
                                             ),
+                                            if (expiry.containsKey(
+                                                'manualPcsInput')) // Check if 'manualPcsInput' exists
+                                              Text(
+                                                'Manual PCS Input: ${expiry['expiryPcs']}',
+                                                style: TextStyle(
+                                                    color: Colors.black),
+                                              ),
                                             SizedBox(
                                                 height:
                                                     10), // Adjust spacing as needed

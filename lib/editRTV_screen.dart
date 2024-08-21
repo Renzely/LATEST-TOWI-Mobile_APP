@@ -166,8 +166,7 @@ class _EditRTVScreenState extends State<EditRTVScreen> {
 
   void _checkIfAllFieldsAreFilled() {
     setState(() {
-      isSaveButtonEnabled = 
-          _quantityController.text.isNotEmpty &&
+      isSaveButtonEnabled = _quantityController.text.isNotEmpty &&
           _driverNameController.text.isNotEmpty &&
           _plateNumberController.text.isNotEmpty &&
           _pullOutReasonController.text.isNotEmpty;
@@ -256,6 +255,10 @@ class _EditRTVScreenState extends State<EditRTVScreen> {
                 controller: _inputId,
                 readOnly: true,
                 keyboardType: TextInputType.number,
+                decoration: InputDecoration(
+                  border: OutlineInputBorder(),
+                  contentPadding: EdgeInsets.symmetric(horizontal: 12),
+                ),
               ),
               SizedBox(height: 16),
               Text(
@@ -265,6 +268,10 @@ class _EditRTVScreenState extends State<EditRTVScreen> {
               TextFormField(
                 controller: _merchandiserNameController,
                 readOnly: true,
+                decoration: InputDecoration(
+                  border: OutlineInputBorder(),
+                  contentPadding: EdgeInsets.symmetric(horizontal: 12),
+                ),
               ),
               SizedBox(height: 16),
               Text(
@@ -274,73 +281,82 @@ class _EditRTVScreenState extends State<EditRTVScreen> {
               TextFormField(
                 controller: _outletController,
                 readOnly: true,
+                decoration: InputDecoration(
+                  border: OutlineInputBorder(),
+                  contentPadding: EdgeInsets.symmetric(horizontal: 12),
+                ),
               ),
               SizedBox(height: 16),
               Text(
-  'Category',
-  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-),
-SizedBox(height: 10),
-Row(
-  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-  children: _categoryToSkuDescriptions.keys.map((String category) {
-    return OutlinedButton(
-      onPressed: null, // Disable button interaction
-      style: OutlinedButton.styleFrom(
-        side: BorderSide(
-          width: 2.0,
-          color: selectedCategory == category
-              ? Colors.green
-              : Colors.blueGrey.shade200,
-        ),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(4),
-        ),
-      ),
-      child: Text(
-        category,
-        style: TextStyle(color: Colors.black),
-      ),
-    );
-  }).toList(),
-),
-
-            SizedBox(height: 16),
-Text(
-  'Item',
-  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-),
-SizedBox(height: 10),
-DropdownButtonFormField<String>(
-  value: selectedItem,
-  items: itemOptions.map((String item) {
-    return DropdownMenuItem<String>(
-      value: item,
-      child: SizedBox(
-        width: 350,
-        child: Tooltip(
-          message: item,
-          child: Text(
-            item,
-            overflow: TextOverflow.ellipsis,
-          ),
-        ),
-      ),
-    );
-  }).toList(),
-  onChanged: null, // Disable the dropdown interaction
-  decoration: InputDecoration(
-    // Optionally adjust the decoration to indicate read-only state
-    enabled: false,
-  ),
-),
-
+                'Category',
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+              ),
+              SizedBox(height: 10),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children:
+                    _categoryToSkuDescriptions.keys.map((String category) {
+                  return OutlinedButton(
+                    onPressed: null, // Disable button interaction
+                    style: OutlinedButton.styleFrom(
+                      side: BorderSide(
+                        width: 2.0,
+                        color: selectedCategory == category
+                            ? Colors.green
+                            : Colors.blueGrey.shade200,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                    ),
+                    child: Text(
+                      category,
+                      style: TextStyle(color: Colors.black),
+                    ),
+                  );
+                }).toList(),
+              ),
+              SizedBox(height: 16),
+              Text(
+                'SKU Description',
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+              ),
+              SizedBox(height: 10),
+              DropdownButtonFormField<String>(
+                value: selectedItem,
+                items: itemOptions.map((String item) {
+                  return DropdownMenuItem<String>(
+                    value: item,
+                    child: SizedBox(
+                      width: 350,
+                      child: Tooltip(
+                        message: item,
+                        child: Text(
+                          item,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ),
+                  );
+                }).toList(),
+                onChanged: null, // Disable the dropdown interaction
+                decoration: InputDecoration(
+                  border: OutlineInputBorder(),
+                  contentPadding: EdgeInsets.symmetric(horizontal: 12),
+                  enabled:
+                      false, // Optionally adjust the decoration to indicate read-only state
+                ),
+              ),
               SizedBox(height: 16),
               Text(
                 'Quantity',
                 style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
               ),
               TextFormField(
+                decoration: InputDecoration(
+                  border: OutlineInputBorder(),
+                  contentPadding: EdgeInsets.symmetric(horizontal: 12),
+                ),
                 controller: _quantityController,
                 keyboardType: TextInputType.number,
                 validator: (value) {
@@ -356,6 +372,10 @@ DropdownButtonFormField<String>(
                 style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
               ),
               TextFormField(
+                decoration: InputDecoration(
+                  border: OutlineInputBorder(),
+                  contentPadding: EdgeInsets.symmetric(horizontal: 12),
+                ),
                 controller: _driverNameController,
                 validator: (value) {
                   if (value == null || value.isEmpty) {
@@ -370,6 +390,10 @@ DropdownButtonFormField<String>(
                 style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
               ),
               TextFormField(
+                decoration: InputDecoration(
+                  border: OutlineInputBorder(),
+                  contentPadding: EdgeInsets.symmetric(horizontal: 12),
+                ),
                 controller: _plateNumberController,
                 validator: (value) {
                   if (value == null || value.isEmpty) {
@@ -384,6 +408,10 @@ DropdownButtonFormField<String>(
                 style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
               ),
               TextFormField(
+                decoration: InputDecoration(
+                  border: OutlineInputBorder(),
+                  contentPadding: EdgeInsets.symmetric(horizontal: 12),
+                ),
                 controller: _pullOutReasonController,
                 validator: (value) {
                   if (value == null || value.isEmpty) {
@@ -397,7 +425,8 @@ DropdownButtonFormField<String>(
                 alignment: Alignment.bottomCenter,
                 child: ElevatedButton(
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: isSaveButtonEnabled ? Colors.green : Colors.grey,
+                    backgroundColor:
+                        isSaveButtonEnabled ? Colors.green : Colors.grey,
                     padding: EdgeInsets.all(
                         20), // Increase padding to make the button larger
                     shape: RoundedRectangleBorder(
@@ -405,12 +434,13 @@ DropdownButtonFormField<String>(
                           100), // Increased from 50 to 100 for a larger curve
                     ),
                   ),
-                  onPressed: isSaveButtonEnabled ? _confirmSaveReturnToVendor : null,
+                  onPressed:
+                      isSaveButtonEnabled ? _confirmSaveReturnToVendor : null,
                   child: Text(
                     "Save Changes",
                     style: GoogleFonts.roboto(
                       color: Colors.white,
-                      fontWeight: FontWeight.bold, 
+                      fontWeight: FontWeight.bold,
                     ),
                   ),
                 ),

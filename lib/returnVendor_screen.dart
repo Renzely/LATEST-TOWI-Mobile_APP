@@ -245,6 +245,8 @@ class _ReturnVendorState extends State<ReturnVendor> {
                   initialValue: generateInputID(),
                   enabled: false,
                   decoration: InputDecoration(
+                    border: OutlineInputBorder(),
+                    contentPadding: EdgeInsets.symmetric(horizontal: 12),
                     hintText: 'Auto-generated Input ID',
                   ),
                 ),
@@ -260,6 +262,9 @@ class _ReturnVendorState extends State<ReturnVendor> {
                         child: TextFormField(
                           decoration: InputDecoration(
                             enabled: false,
+                            border: OutlineInputBorder(),
+                            contentPadding:
+                                EdgeInsets.symmetric(horizontal: 12),
                             hintText:
                                 DateFormat('yyyy-MM-dd').format(selectedDate),
                           ),
@@ -277,6 +282,8 @@ class _ReturnVendorState extends State<ReturnVendor> {
                   enabled: false,
                   initialValue: '${widget.userName} ${widget.userLastName}',
                   decoration: InputDecoration(
+                    border: OutlineInputBorder(),
+                    contentPadding: EdgeInsets.symmetric(horizontal: 12),
                     labelText: '',
                   ),
                 ),
@@ -286,9 +293,13 @@ class _ReturnVendorState extends State<ReturnVendor> {
                   style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                 ),
                 SizedBox(height: 10),
-                DropdownButtonFormField(
+                DropdownButtonFormField<String>(
                   isExpanded: true,
                   value: selectedOutlet,
+                  decoration: InputDecoration(
+                    border: OutlineInputBorder(),
+                    contentPadding: EdgeInsets.symmetric(horizontal: 12),
+                  ),
                   items: outletOptions.map((String outlet) {
                     return DropdownMenuItem(
                       value: outlet,
@@ -313,6 +324,10 @@ class _ReturnVendorState extends State<ReturnVendor> {
                 SizedBox(height: 10),
                 DropdownButtonFormField<String>(
                   value: isPending ? 'Pending' : 'Not Pending',
+                  decoration: InputDecoration(
+                    border: OutlineInputBorder(),
+                    contentPadding: EdgeInsets.symmetric(horizontal: 12),
+                  ),
                   items: ['Pending', 'Not Pending'].map((String value) {
                     return DropdownMenuItem<String>(
                       value: value,
@@ -358,13 +373,12 @@ class _ReturnVendorState extends State<ReturnVendor> {
                   }).toList(),
                 ),
                 SizedBox(height: 16),
-                Text(
-                  'Item',
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                ),
-                SizedBox(height: 10),
                 DropdownButtonFormField<String>(
                   value: selectedItem,
+                  decoration: InputDecoration(
+                    border: OutlineInputBorder(),
+                    contentPadding: EdgeInsets.symmetric(horizontal: 12),
+                  ),
                   items: itemOptions.map((String item) {
                     return DropdownMenuItem<String>(
                       value: item,
@@ -401,6 +415,8 @@ class _ReturnVendorState extends State<ReturnVendor> {
                       TextFormField(
                         decoration: InputDecoration(
                           hintText: 'Input Quantity',
+                          border: OutlineInputBorder(),
+                          contentPadding: EdgeInsets.symmetric(horizontal: 12),
                         ),
                         onChanged: (value) {
                           setState(() {
@@ -418,6 +434,8 @@ class _ReturnVendorState extends State<ReturnVendor> {
                       TextFormField(
                         decoration: InputDecoration(
                           hintText: 'Input Driver\'s Name',
+                          border: OutlineInputBorder(),
+                          contentPadding: EdgeInsets.symmetric(horizontal: 12),
                         ),
                         onChanged: (value) {
                           setState(() {
@@ -435,6 +453,8 @@ class _ReturnVendorState extends State<ReturnVendor> {
                       TextFormField(
                         decoration: InputDecoration(
                           hintText: 'Input Plate Number',
+                          border: OutlineInputBorder(),
+                          contentPadding: EdgeInsets.symmetric(horizontal: 12),
                         ),
                         onChanged: (value) {
                           setState(() {
@@ -452,6 +472,8 @@ class _ReturnVendorState extends State<ReturnVendor> {
                       TextFormField(
                         decoration: InputDecoration(
                           hintText: 'Input Pull Out Reason',
+                          border: OutlineInputBorder(),
+                          contentPadding: EdgeInsets.symmetric(horizontal: 12),
                         ),
                         onChanged: (value) {
                           setState(() {
