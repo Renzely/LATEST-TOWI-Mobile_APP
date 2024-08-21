@@ -294,7 +294,7 @@ class _AddInventoryState extends State<AddInventory> {
                           ),
                           SizedBox(height: 8),
                           Text(
-                            'PERIOD',
+                            'Weeks Covered',
                             style: TextStyle(
                                 fontWeight: FontWeight.bold, fontSize: 16),
                           ),
@@ -1204,48 +1204,35 @@ class _SKUInventoryState extends State<SKUInventory> {
 
   Future<void> _saveToDatabase(InventoryItem item) async {
     try {
-      // Connect to your MongoDB database
       final db = await mongo.Db.create(INVENTORY_CONN_URL);
       await db.open();
-
-      // Get a reference to the collection where you want to save items
       final collection = db.collection(USER_INVENTORY);
-
-      // Convert the InventoryItem to a Map using the toJson() method
       final Map<String, dynamic> itemMap = item.toJson();
-
-      // Insert the item into the collection
       await collection.insert(itemMap);
-
-      // Close the database connection when done
       await db.close();
-
       print('Inventory item saved to database');
     } catch (e) {
-      // Handle any errors that occur during saving
       print('Error saving inventory item: $e');
     }
+  }
 
-    Future<List<InventoryItem>> getUserInventoryItems(String userEmail) async {
-      List<InventoryItem> items = [];
-      try {
-        final db = await mongo.Db.create(INVENTORY_CONN_URL);
-        await db.open();
-        final collection = db.collection(USER_INVENTORY);
+  Future<List<InventoryItem>> getUserInventoryItems(String userEmail) async {
+    List<InventoryItem> items = [];
+    try {
+      final db = await mongo.Db.create(INVENTORY_CONN_URL);
+      await db.open();
+      final collection = db.collection(USER_INVENTORY);
+      final result = await collection.find({'userEmail': userEmail}).toList();
 
-        // Query only items that match the userEmail
-        final result = await collection.find({'userEmail': userEmail}).toList();
-
-        for (var doc in result) {
-          items.add(InventoryItem.fromJson(doc));
-        }
-
-        await db.close();
-      } catch (e) {
-        print('Error fetching inventory items: $e');
+      for (var doc in result) {
+        items.add(InventoryItem.fromJson(doc));
       }
-      return items;
+
+      await db.close();
+    } catch (e) {
+      print('Error fetching inventory items: $e');
     }
+    return items;
   }
 
   void _addExpiryField() {
@@ -1790,8 +1777,20 @@ class _SKUInventoryState extends State<SKUInventory> {
   void _calculateInventoryDaysLevel() {
     double ending = double.tryParse(_endingController.text) ?? 0;
     double offtake = double.tryParse(_offtakeController.text) ?? 0;
-    double inventoryDaysLevel = ending / (offtake / 7);
-    _inventoryDaysLevelController.text = inventoryDaysLevel.toStringAsFixed(2);
+
+    double inventoryDaysLevel = 0; // Default to 0
+
+    if (offtake != 0 && ending != double.infinity && !ending.isNaN) {
+      inventoryDaysLevel = ending / (offtake / 7);
+    }
+
+    if (inventoryDaysLevel.isNaN || inventoryDaysLevel.isInfinite) {
+      inventoryDaysLevel = 0; // Assign 0 if the result is NaN or infinite
+    }
+
+    _inventoryDaysLevelController.text = inventoryDaysLevel == 0
+        ? '' // Leave it empty if the value is 0
+        : inventoryDaysLevel.toStringAsFixed(2);
   }
 
   void checkSaveEnabled() {
@@ -1984,9 +1983,15 @@ class _SKUInventoryState extends State<SKUInventory> {
                           ),
                         ),
                         _buildDropdown(
-                          '',
+                          '', // Label for the dropdown
                           _selectSKU,
                           _categoryToSkuDescriptions[_versionSelected]!,
+                          InputDecoration(
+                            border:
+                                OutlineInputBorder(), // Apply border to the dropdown
+                            contentPadding: EdgeInsets.symmetric(
+                                horizontal: 12), // Padding inside the dropdown
+                          ),
                         ),
                         if (_productDetails != null) ...[
                           SizedBox(height: 10),
@@ -2000,9 +2005,11 @@ class _SKUInventoryState extends State<SKUInventory> {
                                 _productsController, // Assigning controller
                             readOnly: true,
                             decoration: InputDecoration(
-                              border: OutlineInputBorder(),
-                              contentPadding:
-                                  EdgeInsets.symmetric(horizontal: 12),
+                              border:
+                                  OutlineInputBorder(), // Apply border to the TextField
+                              contentPadding: EdgeInsets.symmetric(
+                                  horizontal:
+                                      12), // Padding inside the TextField
                               hintText: _productDetails,
                             ),
                           ),
@@ -2017,15 +2024,18 @@ class _SKUInventoryState extends State<SKUInventory> {
                             controller:
                                 _skuCodeController, // Assigning controller
                             decoration: InputDecoration(
+                              border:
+                                  OutlineInputBorder(), // Apply border to the TextField
+                              contentPadding: EdgeInsets.symmetric(
+                                  horizontal:
+                                      12), // Padding inside the TextField
                               hintText: _skuCode,
-                              border: OutlineInputBorder(),
-                              contentPadding:
-                                  EdgeInsets.symmetric(horizontal: 12),
                             ),
                           ),
                         ],
                       ],
                     ),
+
                   SizedBox(height: 15),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -2106,14 +2116,17 @@ class _SKUInventoryState extends State<SKUInventory> {
                     controller: _beginningController,
                     keyboardType: TextInputType.number,
                     inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                    decoration: InputDecoration(
-                      border: OutlineInputBorder(),
-                      contentPadding: EdgeInsets.symmetric(horizontal: 12),
-                      labelStyle: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16,
-                      ),
-                    ),
+                    decoration: _statusSelected == 'Carried'
+                        ? InputDecoration(
+                            border: OutlineInputBorder(),
+                            contentPadding:
+                                EdgeInsets.symmetric(horizontal: 12),
+                            labelStyle: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                            ),
+                          )
+                        : null, // No border or padding when status is not 'Carried'
                     onChanged: (_) =>
                         checkSaveEnabled(), // Call checkSaveEnabled on change
                   ),
@@ -2129,14 +2142,17 @@ class _SKUInventoryState extends State<SKUInventory> {
                     controller: _deliveryController,
                     keyboardType: TextInputType.number,
                     inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                    decoration: InputDecoration(
-                      border: OutlineInputBorder(),
-                      contentPadding: EdgeInsets.symmetric(horizontal: 12),
-                      labelStyle: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16,
-                      ),
-                    ),
+                    decoration: _statusSelected == 'Carried'
+                        ? InputDecoration(
+                            border: OutlineInputBorder(),
+                            contentPadding:
+                                EdgeInsets.symmetric(horizontal: 12),
+                            labelStyle: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                            ),
+                          )
+                        : null, // No border or padding when status is not 'Carried'
                     onChanged: (_) =>
                         checkSaveEnabled(), // Call checkSaveEnabled on change
                   ),
@@ -2152,14 +2168,17 @@ class _SKUInventoryState extends State<SKUInventory> {
                     controller: _endingController,
                     keyboardType: TextInputType.number,
                     inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                    decoration: InputDecoration(
-                      border: OutlineInputBorder(),
-                      contentPadding: EdgeInsets.symmetric(horizontal: 12),
-                      labelStyle: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16,
-                      ),
-                    ),
+                    decoration: _statusSelected == 'Carried'
+                        ? InputDecoration(
+                            border: OutlineInputBorder(),
+                            contentPadding:
+                                EdgeInsets.symmetric(horizontal: 12),
+                            labelStyle: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                            ),
+                          )
+                        : null, // No border or padding when status is not 'Carried'
                     onChanged: (_) =>
                         checkSaveEnabled(), // Call checkSaveEnabled on change
                   ),
@@ -2193,7 +2212,7 @@ class _SKUInventoryState extends State<SKUInventory> {
                             children: [
                               Expanded(child: _expiryFields[i]),
                               IconButton(
-                                icon: Icon(Icons.remove_circle_outline),
+                                icon: Icon(Icons.delete),
                                 onPressed: () {
                                   _removeExpiryField(i);
                                 },
@@ -2214,14 +2233,17 @@ class _SKUInventoryState extends State<SKUInventory> {
                     keyboardType: TextInputType.number,
                     inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                     readOnly: true,
-                    decoration: InputDecoration(
-                      border: OutlineInputBorder(),
-                      contentPadding: EdgeInsets.symmetric(horizontal: 12),
-                      labelStyle: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16,
-                      ),
-                    ),
+                    decoration: _statusSelected == 'Carried'
+                        ? InputDecoration(
+                            border: OutlineInputBorder(),
+                            contentPadding:
+                                EdgeInsets.symmetric(horizontal: 12),
+                            labelStyle: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                            ),
+                          )
+                        : null, // No border or padding when status is not 'Carried'
                   ),
                   SizedBox(height: 10),
                   if (_showCarriedTextField)
@@ -2236,63 +2258,29 @@ class _SKUInventoryState extends State<SKUInventory> {
                     keyboardType: TextInputType.number,
                     inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                     readOnly: true,
-                    decoration: InputDecoration(
-                      border: OutlineInputBorder(),
-                      contentPadding: EdgeInsets.symmetric(horizontal: 12),
-                      labelStyle: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16,
-                      ),
-                    ),
+                    decoration: _statusSelected == 'Carried'
+                        ? InputDecoration(
+                            border: OutlineInputBorder(),
+                            contentPadding:
+                                EdgeInsets.symmetric(horizontal: 12),
+                            labelStyle: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                            ),
+                          )
+                        : null, // No border or padding when status is not 'Carried'
                   ),
+
                   SizedBox(height: 10),
-                  if (_showCarriedTextField)
+                  // Conditionally display 'No. of Days OOS' and the DropdownButtonFormField
+                  if (_showCarriedTextField) ...[
                     Text(
                       'No. of Days OOS',
                       style:
                           TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                     ),
-                  SizedBox(height: 10),
-                  DropdownButtonFormField<int>(
-                    decoration: InputDecoration(
-                      border: OutlineInputBorder(),
-                      contentPadding: EdgeInsets.symmetric(horizontal: 12),
-                      labelStyle: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16,
-                      ),
-                    ),
-                    value: _selectedNumberOfDaysOOS,
-                    onChanged: (newValue) {
-                      setState(() {
-                        _selectedNumberOfDaysOOS = newValue;
-
-                        // Reset the remarks and reason when OOS changes
-                        _remarksOOS = null;
-                        _selectedNoDeliveryOption = null;
-                        _reasonOOS = null;
-
-                        // Check if Save button should be enabled
-                        checkSaveEnabled();
-                      });
-                    },
-                    items: List.generate(8, (index) {
-                      return DropdownMenuItem<int>(
-                        value: index,
-                        child: Text(index.toString()),
-                      );
-                    }),
-                  ),
-                  SizedBox(height: 10),
-                  if (_selectedNumberOfDaysOOS != null &&
-                      _selectedNumberOfDaysOOS! > 0) ...[
-                    Text(
-                      'Inventory Days Level',
-                      style:
-                          TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                    ),
                     SizedBox(height: 10),
-                    DropdownButtonFormField<String>(
+                    DropdownButtonFormField<int>(
                       decoration: InputDecoration(
                         border: OutlineInputBorder(),
                         contentPadding: EdgeInsets.symmetric(horizontal: 12),
@@ -2301,7 +2289,51 @@ class _SKUInventoryState extends State<SKUInventory> {
                           fontSize: 16,
                         ),
                       ),
-                      value: _remarksOOS,
+                      value: _selectedNumberOfDaysOOS,
+                      onChanged: (newValue) {
+                        setState(() {
+                          _selectedNumberOfDaysOOS = newValue;
+
+                          // Reset the remarks and reason when OOS changes
+                          _remarksOOS = null;
+                          _selectedNoDeliveryOption = null;
+                          _reasonOOS = null;
+
+                          // Check if Save button should be enabled
+                          checkSaveEnabled();
+                        });
+                      },
+                      items: List.generate(8, (index) {
+                        return DropdownMenuItem<int>(
+                          value: index,
+                          child: Text(index.toString()),
+                        );
+                      }),
+                    ),
+                    SizedBox(height: 10),
+                  ],
+                  SizedBox(height: 10),
+                  if (_selectedNumberOfDaysOOS != null &&
+                      _selectedNumberOfDaysOOS! > 0) ...[
+                    Text(
+                      'Remarks',
+                      style:
+                          TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                    ),
+                    SizedBox(height: 10),
+                    DropdownButtonFormField<String>(
+                      decoration: _statusSelected == 'Carried'
+                          ? InputDecoration(
+                              border: OutlineInputBorder(),
+                              contentPadding:
+                                  EdgeInsets.symmetric(horizontal: 12),
+                              labelStyle: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16,
+                              ),
+                            )
+                          : null, // No border or padding when status is not 'Carried'
+                      value: _remarksOOS, // Ensure the value is not null
                       onChanged: (newValue) {
                         setState(() {
                           _remarksOOS = newValue;
@@ -2344,14 +2376,17 @@ class _SKUInventoryState extends State<SKUInventory> {
                     ),
                     SizedBox(height: 10),
                     DropdownButtonFormField<String>(
-                      decoration: InputDecoration(
-                        border: OutlineInputBorder(),
-                        contentPadding: EdgeInsets.symmetric(horizontal: 12),
-                        labelStyle: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
-                        ),
-                      ),
+                      decoration: _statusSelected == 'Carried'
+                          ? InputDecoration(
+                              border: OutlineInputBorder(),
+                              contentPadding:
+                                  EdgeInsets.symmetric(horizontal: 12),
+                              labelStyle: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16,
+                              ),
+                            )
+                          : null, // No border or padding when status is not
                       value: _selectedNoDeliveryOption,
                       onChanged: (newValue) {
                         setState(() {
@@ -2457,6 +2492,7 @@ class _SKUInventoryState extends State<SKUInventory> {
     String title,
     ValueChanged<String?> onSelect,
     List<String> options,
+    InputDecoration Decoration,
   ) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -2488,11 +2524,15 @@ class ExpiryField extends StatefulWidget {
   final int index;
   final Function(String, int, int) onExpiryFieldChanged;
   final VoidCallback onDeletePressed;
+  final String? initialMonth; // Initial value for the dropdown
+  final int? initialPcs; // Nullable initial value for the TextField
 
   ExpiryField({
     required this.index,
     required this.onExpiryFieldChanged,
     required this.onDeletePressed,
+    this.initialMonth,
+    this.initialPcs, // Make this nullable to allow an empty state
   });
 
   @override
@@ -2506,6 +2546,10 @@ class _ExpiryFieldState extends State<ExpiryField> {
   @override
   void initState() {
     super.initState();
+    _selectedMonth = widget.initialMonth;
+    if (widget.initialPcs != null) {
+      _expiryController.text = widget.initialPcs.toString();
+    } // Don't set anything if initialPcs is null
     _expiryController.addListener(_onExpiryFieldChanged);
   }
 
@@ -2518,8 +2562,11 @@ class _ExpiryFieldState extends State<ExpiryField> {
 
   void _onExpiryFieldChanged() {
     if (_selectedMonth != null) {
-      widget.onExpiryFieldChanged(_selectedMonth!,
-          int.tryParse(_expiryController.text) ?? 0, widget.index);
+      widget.onExpiryFieldChanged(
+        _selectedMonth!,
+        int.tryParse(_expiryController.text) ?? 0,
+        widget.index,
+      );
     }
   }
 
@@ -2533,7 +2580,7 @@ class _ExpiryFieldState extends State<ExpiryField> {
           style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
         ),
         SizedBox(height: 10),
-        DropdownButton<String>(
+        DropdownButtonFormField<String>(
           value: _selectedMonth,
           onChanged: (String? newValue) {
             setState(() {
@@ -2541,6 +2588,13 @@ class _ExpiryFieldState extends State<ExpiryField> {
             });
             _onExpiryFieldChanged();
           },
+          decoration: InputDecoration(
+            contentPadding: EdgeInsets.symmetric(horizontal: 12),
+            border: OutlineInputBorder(
+              borderSide: BorderSide(color: Colors.grey),
+              borderRadius: BorderRadius.circular(8.0),
+            ),
+          ),
           hint: Text('Select Month'),
           items: [
             DropdownMenuItem<String>(
@@ -2552,33 +2606,40 @@ class _ExpiryFieldState extends State<ExpiryField> {
               child: Text('2 months'),
             ),
             DropdownMenuItem<String>(
-              value: '3 months',
+              value: '3 Months',
               child: Text('3 months'),
             ),
             DropdownMenuItem<String>(
-              value: '4 months',
+              value: '4 Months',
               child: Text('4 months'),
             ),
             DropdownMenuItem<String>(
-              value: '5 months',
+              value: '5 Months',
               child: Text('5 months'),
             ),
             DropdownMenuItem<String>(
-              value: '6 months',
+              value: '6 Months',
               child: Text('6 months'),
             ),
           ],
         ),
+        SizedBox(height: 16),
         Text(
           'PCS of Expiry',
           style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
         ),
+        SizedBox(height: 8),
         TextField(
           controller: _expiryController,
           decoration: InputDecoration(
-            hintText: 'Enter PCS of expiry ',
+            hintText: 'Enter PCS of expiry',
+            border: OutlineInputBorder(),
+            contentPadding: EdgeInsets.symmetric(horizontal: 12),
           ),
           keyboardType: TextInputType.number,
+          onChanged: (value) {
+            _onExpiryFieldChanged();
+          },
         ),
       ],
     );

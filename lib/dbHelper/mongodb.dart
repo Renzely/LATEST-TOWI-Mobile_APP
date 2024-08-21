@@ -237,11 +237,16 @@ class MongoDatabase {
     try {
       await connect();
       var timeLogCollection = db.collection(USER_ATTENDANCE);
+      var todayDate =
+          DateTime.now().toLocal().toIso8601String().substring(0, 10);
       var currentTime = DateTime.now().toIso8601String();
 
-      // Perform the update
+      // Perform the update for the current date
       var result = await timeLogCollection.updateOne(
-        where.eq('userEmail', userEmail).and(where.eq('timeOut', null)),
+        where
+            .eq('userEmail', userEmail)
+            .and(where.eq('date', todayDate))
+            .and(where.eq('timeOut', null)),
         modify
             .set('timeOut', currentTime)
             .set('timeOutLocation', timeOutLocation),
@@ -255,7 +260,7 @@ class MongoDatabase {
         if (result.nModified != null && result.nModified > 0) {
           return "Success";
         } else {
-          return "No open time found";
+          return "No open time found for today";
         }
       } else {
         return "Update not acknowledged";
