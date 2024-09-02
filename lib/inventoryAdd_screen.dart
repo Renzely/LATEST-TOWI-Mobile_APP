@@ -1982,15 +1982,23 @@ class _SKUInventoryState extends State<SKUInventory> {
                             ),
                           ),
                         ),
-                        _buildDropdown(
-                          '', // Label for the dropdown
-                          _selectSKU,
-                          _categoryToSkuDescriptions[_versionSelected]!,
-                          InputDecoration(
+                        DropdownButtonFormField<String>(
+                          // value: _selectedSKU, // Your selected value state
+                          onChanged:
+                              _selectSKU, // Pass the method reference here
+                          items: _categoryToSkuDescriptions[_versionSelected]!
+                              .map<DropdownMenuItem<String>>((String value) {
+                            return DropdownMenuItem<String>(
+                              value: value,
+                              child: Text(value),
+                            );
+                          }).toList(),
+                          decoration: InputDecoration(
+                            labelText: '', // Label for the dropdown
                             border:
-                                OutlineInputBorder(), // Apply border to the dropdown
-                            contentPadding: EdgeInsets.symmetric(
-                                horizontal: 12), // Padding inside the dropdown
+                                OutlineInputBorder(), // Apply border to the TextField
+                            contentPadding:
+                                EdgeInsets.symmetric(horizontal: 12),
                           ),
                         ),
                         if (_productDetails != null) ...[
@@ -2182,7 +2190,7 @@ class _SKUInventoryState extends State<SKUInventory> {
                     onChanged: (_) =>
                         checkSaveEnabled(), // Call checkSaveEnabled on change
                   ),
-                  SizedBox(height: 10),
+                  SizedBox(height: 20),
                   if (_showCarriedTextField)
                     Center(
                       child: OutlinedButton(
@@ -2221,6 +2229,7 @@ class _SKUInventoryState extends State<SKUInventory> {
                           ),
                       ],
                     ),
+                  SizedBox(height: 16),
                   if (_showCarriedTextField)
                     Text(
                       'Offtake',
@@ -2575,6 +2584,7 @@ class _ExpiryFieldState extends State<ExpiryField> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        SizedBox(height: 10),
         Text(
           'Month of Expiry',
           style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12),

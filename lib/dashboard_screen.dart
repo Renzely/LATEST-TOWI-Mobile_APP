@@ -36,11 +36,14 @@ class Attendance extends StatelessWidget {
   Widget build(BuildContext context) {
     return SideBarLayout(
       title: "Attendance",
-      mainContent: Column(
-        children: [
-          DateTimeWidget(),
-          AttendanceWidget(userEmail: userEmail), // Pass the userEmail here
-        ],
+      mainContent: SingleChildScrollView(
+        // Wrap the Column with SingleChildScrollView
+        child: Column(
+          children: [
+            DateTimeWidget(),
+            AttendanceWidget(userEmail: userEmail), // Pass the userEmail here
+          ],
+        ),
       ),
       userName: userName,
       userLastName: userLastName,
