@@ -1362,20 +1362,6 @@ class _EditInventoryScreenState extends State<EditInventoryScreen> {
           ],
         ),
         SizedBox(height: 16),
-        // if (selectedMonth != null)
-        //   TextField(
-        //     controller: pcsController,
-        //     decoration: InputDecoration(
-        //       hintText: 'PCS of Expiry',
-        //       border: OutlineInputBorder(),
-        //       contentPadding: EdgeInsets.symmetric(horizontal: 12),
-        //     ),
-        //     keyboardType: TextInputType.number,
-        //     onChanged: (value) {
-        //       _updateExpiryField(index, selectedMonth!, pcsController.text);
-        //     },
-        //   ),
-        SizedBox(height: 16),
         // for (int i = 0; i < _pcsControllers.length; i++)
         TextField(
           controller: pcsController,
