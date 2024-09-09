@@ -294,4 +294,65 @@ class MongoDatabase {
       await close();
     }
   }
+
+  static Future<List<Map<String, dynamic>>> getSkusByBranchAndCategory(
+      String branchName, String category) async {
+    try {
+      await connect(); // Ensure the database connection is established
+
+      var collection = db.collection(
+          USER_SKU); // Make sure this points to your 'branchskus' collection
+
+      // Query to filter by branch name and category
+      var result = await collection.find({
+        'accountNameBranchManning': branchName,
+        'category': category,
+        'version': {
+          '\$in': ['V1', 'V2', 'V3']
+        }, // Include versions if necessary
+      }).toList();
+
+      // Extract SKUs array from the result
+      List<Map<String, dynamic>> skus = [];
+      for (var doc in result) {
+        if (doc.containsKey('SKUs')) {
+          skus.addAll(List<Map<String, dynamic>>.from(doc['SKUs']));
+        }
+      }
+
+      return skus; // Return the SKUs array
+    } catch (e) {
+      print('Error retrieving SKUs by branch and category: $e');
+      return [];
+    } finally {
+      await close(); // Ensure the connection is closed after the operation
+    }
+  }
+
+  // Function to get saved SKUs for a specific branch
+  static Future<List<String>> getSavedSkusForBranch(String branch) async {
+    try {
+      await connect(); // Ensure the database connection is established
+
+      var collection = db.collection('branchskus'); // 'branchskus' collection
+
+      // Query to filter by branch name and retrieve the saved SKUs
+      var result = await collection.findOne({
+        'accountNameBranchManning': branch, // Field that identifies the branch
+      });
+
+      // Extract the SKUs field (assuming it's an array of strings)
+      if (result != null && result.containsKey('SKUs')) {
+        List<String> savedSkus = List<String>.from(result['SKUs']);
+        return savedSkus; // Return the SKUs array
+      } else {
+        return []; // Return an empty list if no SKUs found
+      }
+    } catch (e) {
+      print('Error retrieving saved SKUs for branch: $e');
+      return [];
+    } finally {
+      await close(); // Ensure the connection is closed after the operation
+    }
+  }
 }

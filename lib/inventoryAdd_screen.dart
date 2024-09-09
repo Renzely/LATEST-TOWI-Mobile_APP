@@ -1116,6 +1116,8 @@ class _SKUInventoryState extends State<SKUInventory> {
   bool _showNoPOTextField = false;
   bool _showUnservedTextField = false;
   bool _showNoDeliveryDropdown = false;
+  String selectedBranch = 'BranchName'; // Get this from user input or selection
+  List<String> _availableSkuDescriptions = [];
 
   void _saveInventoryItem() {
     String AccountManning = _selectedaccountname ?? '';
@@ -1662,6 +1664,55 @@ class _SKUInventoryState extends State<SKUInventory> {
     'KOPIKO LUCKY DAY 24BTL X 180ML': {'Product': 'KLD', 'SKU Code': '324046'},
   };
 
+  // List<String> getSkuDescriptions(List<String> savedSkus) {
+  //   List<String> matchedDescriptions = [];
+  //   for (String sku in savedSkus) {
+  //     _categoryToSkuDescriptions.forEach((category, SKUDescription) {
+  //       if (SKUDescription.contains(sku)) {
+  //         matchedDescriptions.add(sku);
+  //       }
+  //     });
+  //   }
+  //   return matchedDescriptions;
+  // }
+
+  // List<String> getFilteredSkuDescriptions(List<String> savedSkus) {
+  //   List<String> matchedDescriptions = [];
+  //   _categoryToSkuDescriptions.forEach((category, SKUDescription) {
+  //     matchedDescriptions.addAll(SKUDescription.where(
+  //         (SKUDescription) => savedSkus.contains(SKUDescription)));
+  //   });
+  //   return matchedDescriptions;
+  // }
+
+  // void loadSkuDescriptions(String branchName, String category) async {
+  //   List<Map<String, dynamic>> skus =
+  //       await MongoDatabase.getSkusByBranchAndCategory(branchName, category);
+
+  //   print('SKUs by Branch and Category: $skus');
+
+  //   if (skus.isNotEmpty) {
+  //     List<String> savedSkus =
+  //         skus.map((sku) => sku['SKUs'] as String).toList();
+  //     print('Saved SKUs: $savedSkus');
+
+  //     List<String> skuDescriptions = getSkuDescriptions(savedSkus);
+  //     print('SKU Descriptions: $skuDescriptions');
+
+  //     setState(() {
+  //       _availableSkuDescriptions = skuDescriptions;
+  //       _selectedDropdownValue =
+  //           skuDescriptions.isNotEmpty ? skuDescriptions.first : null;
+  //     });
+  //   } else {
+  //     setState(() {
+  //       _availableSkuDescriptions = [];
+  //       _selectedDropdownValue = null;
+  //     });
+  //     print('No SKUs found for this branch and category.');
+  //   }
+  // }
+
   void _toggleDropdown(String version) {
     setState(() {
       if (_versionSelected == version) {
@@ -1673,22 +1724,43 @@ class _SKUInventoryState extends State<SKUInventory> {
         _versionSelected = version;
         _isDropdownVisible = true; // Show the dropdown
       }
+
+      // Reset remarks, reason, and their dropdown visibility
+      _remarksOOS = null; // Hide the Remarks dropdown
+      _selectedNoDeliveryOption = null; // Reset No Delivery option
+      _reasonOOS = null; // Reset Reason for OOS
+      _showNoDeliveryDropdown = false; // Hide No Delivery reason dropdown
+
+      // Reset No. of Days OOS
+      _selectedNumberOfDaysOOS = 0; // Reset Number of Days OOS to 0
+
+      // Reset other fields and visibility states
       _selectedDropdownValue = null;
-      _productDetails = null;
-      _skuCode = null;
-      // Hide buttons when a category is deselected
+      _productDetails = null; // Clear product details
+      _skuCode = null; // Clear SKU code
+      _expiryFields.clear(); // Clear expiry fields when switching categories
+
+      // Hide buttons and text fields when a category is deselected
       _showCarriedTextField = false;
       _showNotCarriedTextField = false;
       _showDelistedTextField = false;
+
+      // Reset text controllers (optional)
+      _beginningController.clear();
+      _deliveryController.clear();
+      _endingController.clear();
+      _offtakeController.clear();
     });
   }
 
   void _selectSKU(String? newValue) {
-    setState(() {
-      _selectedDropdownValue = newValue;
-      _productDetails = _skuToProductSkuCode[newValue!]!['Product'];
-      _skuCode = _skuToProductSkuCode[newValue]!['SKU Code'];
-    });
+    if (newValue != null && _skuToProductSkuCode.containsKey(newValue)) {
+      setState(() {
+        _selectedDropdownValue = newValue;
+        _productDetails = _skuToProductSkuCode[newValue]!['Product'];
+        _skuCode = _skuToProductSkuCode[newValue]!['SKU Code'];
+      });
+    }
   }
 
   void _toggleCarriedTextField(String status) {
@@ -1701,6 +1773,7 @@ class _SKUInventoryState extends State<SKUInventory> {
       _deliveryController.clear();
       _endingController.clear();
       _offtakeController.clear();
+      _expiryFields.clear(); // Clear expiry fields when switching categories
     });
   }
 
@@ -1717,6 +1790,7 @@ class _SKUInventoryState extends State<SKUInventory> {
       _deliveryController.clear();
       _endingController.clear();
       _offtakeController.clear();
+      _expiryFields.clear(); // Clear expiry fields when switching categories
 
       if (status == 'Not Carried' || status == 'Delisted') {
         _selectedNumberOfDaysOOS = 0;
@@ -1737,6 +1811,7 @@ class _SKUInventoryState extends State<SKUInventory> {
       _deliveryController.clear();
       _endingController.clear();
       _offtakeController.clear();
+      _expiryFields.clear(); // Clear expiry fields when switching categories
       if (status == 'Not Carried' || status == 'Delisted') {
         _selectedNumberOfDaysOOS = 0;
       }
@@ -1746,6 +1821,7 @@ class _SKUInventoryState extends State<SKUInventory> {
   @override
   void initState() {
     super.initState();
+    // loadSkuDescriptions(selectedBranch);
     _beginningController.addListener(_calculateOfftake);
     _deliveryController.addListener(_calculateOfftake);
     _endingController.addListener(_calculateOfftake);
@@ -1915,7 +1991,11 @@ class _SKUInventoryState extends State<SKUInventory> {
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
                       OutlinedButton(
-                        onPressed: () => _toggleDropdown('V1'),
+                        onPressed: _versionSelected == 'V1' ||
+                                _versionSelected ==
+                                    null // Enable V1 only if it is selected or none is selected
+                            ? () => _toggleDropdown('V1')
+                            : null, // Disable when another version is selected
                         style: OutlinedButton.styleFrom(
                           side: BorderSide(
                               width: 2.0,
@@ -1932,7 +2012,11 @@ class _SKUInventoryState extends State<SKUInventory> {
                         ),
                       ),
                       OutlinedButton(
-                        onPressed: () => _toggleDropdown('V2'),
+                        onPressed: _versionSelected == 'V2' ||
+                                _versionSelected ==
+                                    null // Enable V2 only if it is selected or none is selected
+                            ? () => _toggleDropdown('V2')
+                            : null, // Disable when another version is selected
                         style: OutlinedButton.styleFrom(
                           side: BorderSide(
                               width: 2.0,
@@ -1949,7 +2033,11 @@ class _SKUInventoryState extends State<SKUInventory> {
                         ),
                       ),
                       OutlinedButton(
-                        onPressed: () => _toggleDropdown('V3'),
+                        onPressed: _versionSelected == 'V3' ||
+                                _versionSelected ==
+                                    null // Enable V3 only if it is selected or none is selected
+                            ? () => _toggleDropdown('V3')
+                            : null, // Disable when another version is selected
                         style: OutlinedButton.styleFrom(
                           side: BorderSide(
                               width: 2.0,
@@ -2113,85 +2201,80 @@ class _SKUInventoryState extends State<SKUInventory> {
                         ),
                     ],
                   ),
-                  if (_showCarriedTextField)
+                  // Conditionally showing the 'Beginning' field with its label
+                  if (_showCarriedTextField) ...[
                     Text(
                       'Beginning',
                       style:
                           TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                     ),
-                  SizedBox(height: 10),
-                  TextField(
-                    controller: _beginningController,
-                    keyboardType: TextInputType.number,
-                    inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                    decoration: _statusSelected == 'Carried'
-                        ? InputDecoration(
-                            border: OutlineInputBorder(),
-                            contentPadding:
-                                EdgeInsets.symmetric(horizontal: 12),
-                            labelStyle: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 16,
-                            ),
-                          )
-                        : null, // No border or padding when status is not 'Carried'
-                    onChanged: (_) =>
-                        checkSaveEnabled(), // Call checkSaveEnabled on change
-                  ),
-                  SizedBox(height: 10),
-                  if (_showCarriedTextField)
+                    SizedBox(height: 10),
+                    TextField(
+                      controller: _beginningController,
+                      keyboardType: TextInputType.number,
+                      inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                      decoration: InputDecoration(
+                        border: OutlineInputBorder(),
+                        contentPadding: EdgeInsets.symmetric(horizontal: 12),
+                        labelStyle: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                        ),
+                      ),
+                      onChanged: (_) => checkSaveEnabled(),
+                    ),
+                    SizedBox(height: 10),
+                  ],
+// Conditionally showing the 'Delivery' field with its label
+                  if (_showCarriedTextField) ...[
                     Text(
                       'Delivery',
                       style:
                           TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                     ),
-                  SizedBox(height: 10),
-                  TextField(
-                    controller: _deliveryController,
-                    keyboardType: TextInputType.number,
-                    inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                    decoration: _statusSelected == 'Carried'
-                        ? InputDecoration(
-                            border: OutlineInputBorder(),
-                            contentPadding:
-                                EdgeInsets.symmetric(horizontal: 12),
-                            labelStyle: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 16,
-                            ),
-                          )
-                        : null, // No border or padding when status is not 'Carried'
-                    onChanged: (_) =>
-                        checkSaveEnabled(), // Call checkSaveEnabled on change
-                  ),
-                  SizedBox(height: 10),
-                  if (_showCarriedTextField)
+                    SizedBox(height: 10),
+                    TextField(
+                      controller: _deliveryController,
+                      keyboardType: TextInputType.number,
+                      inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                      decoration: InputDecoration(
+                        border: OutlineInputBorder(),
+                        contentPadding: EdgeInsets.symmetric(horizontal: 12),
+                        labelStyle: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                        ),
+                      ),
+                      onChanged: (_) => checkSaveEnabled(),
+                    ),
+                    SizedBox(height: 10),
+                  ],
+// Conditionally showing the 'Ending' field with its label
+                  if (_showCarriedTextField) ...[
                     Text(
                       'Ending',
                       style:
                           TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                     ),
-                  SizedBox(height: 10),
-                  TextField(
-                    controller: _endingController,
-                    keyboardType: TextInputType.number,
-                    inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                    decoration: _statusSelected == 'Carried'
-                        ? InputDecoration(
-                            border: OutlineInputBorder(),
-                            contentPadding:
-                                EdgeInsets.symmetric(horizontal: 12),
-                            labelStyle: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 16,
-                            ),
-                          )
-                        : null, // No border or padding when status is not 'Carried'
-                    onChanged: (_) =>
-                        checkSaveEnabled(), // Call checkSaveEnabled on change
-                  ),
+                    SizedBox(height: 10),
+                    TextField(
+                      controller: _endingController,
+                      keyboardType: TextInputType.number,
+                      inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                      decoration: InputDecoration(
+                        border: OutlineInputBorder(),
+                        contentPadding: EdgeInsets.symmetric(horizontal: 12),
+                        labelStyle: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                        ),
+                      ),
+                      onChanged: (_) => checkSaveEnabled(),
+                    ),
+                    SizedBox(height: 10),
+                  ],
                   SizedBox(height: 20),
-                  if (_showCarriedTextField)
+                  if (_showCarriedTextField) ...[
                     Center(
                       child: OutlinedButton(
                         onPressed: _addExpiryField,
@@ -2207,78 +2290,77 @@ class _SKUInventoryState extends State<SKUInventory> {
                         ),
                       ),
                     ),
+                    SizedBox(height: 10),
+                    if (_expiryFields.isNotEmpty)
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          for (int i = 0; i < _expiryFields.length; i++)
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment
+                                  .center, // Align rows to center
+                              children: [
+                                Expanded(child: _expiryFields[i]),
+                                IconButton(
+                                  icon: Icon(Icons.delete),
+                                  onPressed: () {
+                                    _removeExpiryField(i);
+                                  },
+                                ),
+                              ],
+                            ),
+                        ],
+                      ),
+                  ],
 
-                  SizedBox(height: 10),
-                  if (_expiryFields.isNotEmpty)
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        for (int i = 0; i < _expiryFields.length; i++)
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment
-                                .center, // Align rows to center
-                            children: [
-                              Expanded(child: _expiryFields[i]),
-                              IconButton(
-                                icon: Icon(Icons.delete),
-                                onPressed: () {
-                                  _removeExpiryField(i);
-                                },
-                              ),
-                            ],
-                          ),
-                      ],
-                    ),
                   SizedBox(height: 16),
-                  if (_showCarriedTextField)
+                  if (_showCarriedTextField) ...[
                     Text(
                       'Offtake',
                       style:
                           TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                     ),
-                  SizedBox(height: 10),
-                  TextField(
-                    controller: _offtakeController,
-                    keyboardType: TextInputType.number,
-                    inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                    readOnly: true,
-                    decoration: _statusSelected == 'Carried'
-                        ? InputDecoration(
-                            border: OutlineInputBorder(),
-                            contentPadding:
-                                EdgeInsets.symmetric(horizontal: 12),
-                            labelStyle: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 16,
-                            ),
-                          )
-                        : null, // No border or padding when status is not 'Carried'
-                  ),
-                  SizedBox(height: 10),
-                  if (_showCarriedTextField)
+                    SizedBox(height: 10),
+                    TextField(
+                      controller: _offtakeController,
+                      keyboardType: TextInputType.number,
+                      inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                      readOnly: true,
+                      decoration: InputDecoration(
+                        border: OutlineInputBorder(),
+                        contentPadding: EdgeInsets.symmetric(horizontal: 12),
+                        labelStyle: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                        ),
+                      ),
+                    ),
+                    SizedBox(height: 10),
+                  ],
+// Conditionally showing the 'Inventory Days Level' field with its label
+                  if (_showCarriedTextField) ...[
                     Text(
                       'Inventory Days Level',
                       style:
                           TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                     ),
-                  SizedBox(height: 10),
-                  TextField(
-                    controller: _inventoryDaysLevelController,
-                    keyboardType: TextInputType.number,
-                    inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                    readOnly: true,
-                    decoration: _statusSelected == 'Carried'
-                        ? InputDecoration(
-                            border: OutlineInputBorder(),
-                            contentPadding:
-                                EdgeInsets.symmetric(horizontal: 12),
-                            labelStyle: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 16,
-                            ),
-                          )
-                        : null, // No border or padding when status is not 'Carried'
-                  ),
+                    SizedBox(height: 10),
+                    TextField(
+                      controller: _inventoryDaysLevelController,
+                      keyboardType: TextInputType.number,
+                      inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                      readOnly: true,
+                      decoration: InputDecoration(
+                        border: OutlineInputBorder(),
+                        contentPadding: EdgeInsets.symmetric(horizontal: 12),
+                        labelStyle: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                        ),
+                      ),
+                    ),
+                    SizedBox(height: 10),
+                  ],
 
                   SizedBox(height: 10),
                   // Conditionally display 'No. of Days OOS' and the DropdownButtonFormField
