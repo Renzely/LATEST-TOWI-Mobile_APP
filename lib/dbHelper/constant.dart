@@ -12,7 +12,7 @@ const USER_RTV = 'TowiReturnToVendor';
 
 const USER_ATTENDANCE = "TowiAttendances";
 
-
+const USER_SKU = "branchskus";
 
 // user = "TowiAppUser"
 // password = "TowiAppPass"  
