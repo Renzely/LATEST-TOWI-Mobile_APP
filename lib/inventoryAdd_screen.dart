@@ -219,7 +219,7 @@ class _AddInventoryState extends State<AddInventory> {
                         ),
                         SizedBox(height: 16),
                         Text(
-                          'Account Name Branch Manning',
+                          'Branch/Outlet',
                           style: TextStyle(
                               fontWeight: FontWeight.bold, fontSize: 16),
                         ),
@@ -1362,9 +1362,9 @@ class _SKUInventoryState extends State<SKUInventory> {
       'ENERGEN CHOCOLATE VANILLA BAG 8 X 30 X 40G',
       'ENERGEN CHAMPION NBA HANGER 24 X 10 X 35G',
       'ENERGEN PADESAL MATE 24 X 10 X 30G',
-      'ENERGEN CHAMPION 12 X 10 X 2 X 35G PH'
-          'KOPIKO CAFE MOCHA TP 12 X 10 X (2 X 25.5G) PH'
-          'ENERGEN CHAMPION NBA TP 15 X 8 X 2 X 30G PH',
+      'ENERGEN CHAMPION 12 X 10 X 2 X 35G PH',
+      'KOPIKO CAFE MOCHA TP 12 X 10 X (2 X 25.5G) PH',
+      'ENERGEN CHAMPION NBA TP 15 X 8 X 2 X 30G PH',
       'BLACK 420011 KOPIKO BLACK 3IN1 TWINPACK 12 X 10 X 2 X 28G',
     ],
     'V3': [
@@ -1874,12 +1874,10 @@ class _SKUInventoryState extends State<SKUInventory> {
       if (_statusSelected == 'Carried') {
         if (_selectedNumberOfDaysOOS == 0) {
           // Enable Save button when "0" is selected
-          _isSaveEnabled = true;
+          _isSaveEnabled = false;
         } else {
           // Enable Save button only if the relevant fields are filled or criteria are met
-          _isSaveEnabled = _beginningController.text.isNotEmpty &&
-              _deliveryController.text.isNotEmpty &&
-              _endingController.text.isNotEmpty &&
+          _isSaveEnabled = _endingController.text.isNotEmpty &&
               (_remarksOOS == "No P.O" ||
                   _remarksOOS == "Unserved" ||
                   (_remarksOOS == "No Delivery" &&
@@ -1969,7 +1967,7 @@ class _SKUInventoryState extends State<SKUInventory> {
                   ),
                   SizedBox(height: 10),
                   Text(
-                    'Account Branch Name',
+                    'Branch/Outlet',
                     style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                   ),
                   TextField(
@@ -1990,71 +1988,79 @@ class _SKUInventoryState extends State<SKUInventory> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
-                      OutlinedButton(
-                        onPressed: _versionSelected == 'V1' ||
-                                _versionSelected ==
-                                    null // Enable V1 only if it is selected or none is selected
-                            ? () => _toggleDropdown('V1')
-                            : null, // Disable when another version is selected
-                        style: OutlinedButton.styleFrom(
-                          side: BorderSide(
-                              width: 2.0,
-                              color: _versionSelected == 'V1'
-                                  ? Colors.green
-                                  : Colors.blueGrey.shade200),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(4),
+                      Expanded(
+                        child: OutlinedButton(
+                          onPressed: _versionSelected == 'V1' ||
+                                  _versionSelected == null
+                              ? () => _toggleDropdown('V1')
+                              : null,
+                          style: OutlinedButton.styleFrom(
+                            side: BorderSide(
+                                width: 2.0,
+                                color: _versionSelected == 'V1'
+                                    ? Colors.green
+                                    : Colors.blueGrey.shade200),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(4),
+                            ),
                           ),
-                        ),
-                        child: Text(
-                          'V1',
-                          style: TextStyle(color: Colors.black),
+                          child: Text(
+                            'V1',
+                            style: TextStyle(color: Colors.black),
+                          ),
                         ),
                       ),
-                      OutlinedButton(
-                        onPressed: _versionSelected == 'V2' ||
-                                _versionSelected ==
-                                    null // Enable V2 only if it is selected or none is selected
-                            ? () => _toggleDropdown('V2')
-                            : null, // Disable when another version is selected
-                        style: OutlinedButton.styleFrom(
-                          side: BorderSide(
-                              width: 2.0,
-                              color: _versionSelected == 'V2'
-                                  ? Colors.green
-                                  : Colors.blueGrey.shade200),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(4),
+                      SizedBox(
+                          width: 8), // Add spacing between buttons if needed
+                      Expanded(
+                        child: OutlinedButton(
+                          onPressed: _versionSelected == 'V2' ||
+                                  _versionSelected == null
+                              ? () => _toggleDropdown('V2')
+                              : null,
+                          style: OutlinedButton.styleFrom(
+                            side: BorderSide(
+                                width: 2.0,
+                                color: _versionSelected == 'V2'
+                                    ? Colors.green
+                                    : Colors.blueGrey.shade200),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(4),
+                            ),
                           ),
-                        ),
-                        child: Text(
-                          'V2',
-                          style: TextStyle(color: Colors.black),
+                          child: Text(
+                            'V2',
+                            style: TextStyle(color: Colors.black),
+                          ),
                         ),
                       ),
-                      OutlinedButton(
-                        onPressed: _versionSelected == 'V3' ||
-                                _versionSelected ==
-                                    null // Enable V3 only if it is selected or none is selected
-                            ? () => _toggleDropdown('V3')
-                            : null, // Disable when another version is selected
-                        style: OutlinedButton.styleFrom(
-                          side: BorderSide(
-                              width: 2.0,
-                              color: _versionSelected == 'V3'
-                                  ? Colors.green
-                                  : Colors.blueGrey.shade200),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(4),
+                      SizedBox(
+                          width: 8), // Add spacing between buttons if needed
+                      Expanded(
+                        child: OutlinedButton(
+                          onPressed: _versionSelected == 'V3' ||
+                                  _versionSelected == null
+                              ? () => _toggleDropdown('V3')
+                              : null,
+                          style: OutlinedButton.styleFrom(
+                            side: BorderSide(
+                                width: 2.0,
+                                color: _versionSelected == 'V3'
+                                    ? Colors.green
+                                    : Colors.blueGrey.shade200),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(4),
+                            ),
                           ),
-                        ),
-                        child: Text(
-                          'V3',
-                          style: TextStyle(color: Colors.black),
+                          child: Text(
+                            'V3',
+                            style: TextStyle(color: Colors.black),
+                          ),
                         ),
                       ),
                     ],
                   ),
+                  SizedBox(height: 20),
                   // Add text fields where user input is expected, and assign controllers
                   if (_isDropdownVisible && _versionSelected != null)
                     Column(
@@ -2071,18 +2077,28 @@ class _SKUInventoryState extends State<SKUInventory> {
                           ),
                         ),
                         DropdownButtonFormField<String>(
-                          // value: _selectedSKU, // Your selected value state
                           onChanged:
                               _selectSKU, // Pass the method reference here
                           items: _categoryToSkuDescriptions[_versionSelected]!
                               .map<DropdownMenuItem<String>>((String value) {
                             return DropdownMenuItem<String>(
                               value: value,
-                              child: Text(value),
+                              child: Container(
+                                width:
+                                    350, // Set a max width for the dropdown items
+                                child: Text(
+                                  value,
+                                  overflow: TextOverflow
+                                      .ellipsis, // Handle long text with ellipsis
+                                  softWrap:
+                                      false, // Prevent wrapping of long text
+                                ),
+                              ),
                             );
                           }).toList(),
                           decoration: InputDecoration(
-                            labelText: '', // Label for the dropdown
+                            labelText:
+                                'Select SKU Description', // Label for the dropdown
                             border:
                                 OutlineInputBorder(), // Apply border to the TextField
                             contentPadding:
@@ -2137,70 +2153,83 @@ class _SKUInventoryState extends State<SKUInventory> {
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
                       if (_productDetails != null)
-                        OutlinedButton(
-                          onPressed: () {
-                            _toggleCarriedTextField('Carried');
-                            checkSaveEnabled(); // Call checkSaveEnabled when category changes
-                          },
-                          style: OutlinedButton.styleFrom(
-                            side: BorderSide(
+                        SizedBox(
+                          width: 130, // Same fixed width
+                          child: OutlinedButton(
+                            onPressed: () {
+                              _toggleCarriedTextField('Carried');
+                              checkSaveEnabled(); // Call checkSaveEnabled when category changes
+                            },
+                            style: OutlinedButton.styleFrom(
+                              side: BorderSide(
                                 width: 2.0,
                                 color: _statusSelected == 'Carried'
                                     ? Colors.green
-                                    : Colors.blueGrey.shade200),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(4),
+                                    : Colors.blueGrey.shade200,
+                              ),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(4),
+                              ),
                             ),
-                          ),
-                          child: Text(
-                            'Carried',
-                            style: TextStyle(color: Colors.black),
+                            child: Text(
+                              'Carried',
+                              style: TextStyle(color: Colors.black),
+                            ),
                           ),
                         ),
                       if (_productDetails != null)
-                        OutlinedButton(
-                          onPressed: () {
-                            _toggleNotCarriedTextField('Not Carried');
-                            checkSaveEnabled(); // Call checkSaveEnabled when category changes
-                          },
-                          style: OutlinedButton.styleFrom(
-                            side: BorderSide(
+                        SizedBox(
+                          width: 130, // Same fixed width
+                          child: OutlinedButton(
+                            onPressed: () {
+                              _toggleNotCarriedTextField('Not Carried');
+                              checkSaveEnabled(); // Call checkSaveEnabled when category changes
+                            },
+                            style: OutlinedButton.styleFrom(
+                              side: BorderSide(
                                 width: 2.0,
                                 color: _statusSelected == 'Not Carried'
                                     ? Colors.green
-                                    : Colors.blueGrey.shade200),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(4),
+                                    : Colors.blueGrey.shade200,
+                              ),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(4),
+                              ),
                             ),
-                          ),
-                          child: Text(
-                            'Not Carried',
-                            style: TextStyle(color: Colors.black),
+                            child: Text(
+                              'Not Carried',
+                              style: TextStyle(color: Colors.black),
+                            ),
                           ),
                         ),
                       if (_productDetails != null)
-                        OutlinedButton(
-                          onPressed: () {
-                            _toggleDelistedTextField('Delisted');
-                            checkSaveEnabled(); // Call checkSaveEnabled when category changes
-                          },
-                          style: OutlinedButton.styleFrom(
-                            side: BorderSide(
+                        SizedBox(
+                          width: 130, // Same fixed width
+                          child: OutlinedButton(
+                            onPressed: () {
+                              _toggleDelistedTextField('Delisted');
+                              checkSaveEnabled(); // Call checkSaveEnabled when category changes
+                            },
+                            style: OutlinedButton.styleFrom(
+                              side: BorderSide(
                                 width: 2.0,
                                 color: _statusSelected == 'Delisted'
                                     ? Colors.green
-                                    : Colors.blueGrey.shade200),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(4),
+                                    : Colors.blueGrey.shade200,
+                              ),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(4),
+                              ),
                             ),
-                          ),
-                          child: Text(
-                            'Delisted',
-                            style: TextStyle(color: Colors.black),
+                            child: Text(
+                              'Delisted',
+                              style: TextStyle(color: Colors.black),
+                            ),
                           ),
                         ),
                     ],
                   ),
+                  SizedBox(height: 15),
                   // Conditionally showing the 'Beginning' field with its label
                   if (_showCarriedTextField) ...[
                     Text(
@@ -2276,17 +2305,20 @@ class _SKUInventoryState extends State<SKUInventory> {
                   SizedBox(height: 20),
                   if (_showCarriedTextField) ...[
                     Center(
-                      child: OutlinedButton(
-                        onPressed: _addExpiryField,
-                        style: OutlinedButton.styleFrom(
-                          side: BorderSide(width: 2.0, color: Colors.green),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(4),
+                      child: SizedBox(
+                        width: 450, // Set the width of the button
+                        child: OutlinedButton(
+                          onPressed: _addExpiryField,
+                          style: OutlinedButton.styleFrom(
+                            side: BorderSide(width: 2.0, color: Colors.green),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(4),
+                            ),
                           ),
-                        ),
-                        child: Text(
-                          'Add Expiry',
-                          style: TextStyle(color: Colors.black),
+                          child: Text(
+                            'Add Expiry',
+                            style: TextStyle(color: Colors.black),
+                          ),
                         ),
                       ),
                     ),
@@ -2503,7 +2535,6 @@ class _SKUInventoryState extends State<SKUInventory> {
                       ],
                     ),
                   ],
-
                   SizedBox(height: 20),
                   if (_showCarriedTextField ||
                       _showNotCarriedTextField ||
@@ -2514,23 +2545,387 @@ class _SKUInventoryState extends State<SKUInventory> {
                         ElevatedButton(
                           onPressed: _isSaveEnabled
                               ? () async {
+                                  // Show confirmation dialog with preview
                                   bool confirmed = await showDialog(
                                     context: context,
                                     builder: (BuildContext context) {
                                       return AlertDialog(
                                         title: Text('Save Confirmation'),
-                                        content: Text(
-                                            'Do you want to save this inventory item?'),
+                                        content: SingleChildScrollView(
+                                          child: Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: <Widget>[
+                                              Text('Preview Inventory Item:'),
+                                              SizedBox(height: 10),
+                                              Text.rich(
+                                                TextSpan(
+                                                  children: [
+                                                    TextSpan(
+                                                      text: 'User Email: ',
+                                                      style: TextStyle(
+                                                          fontWeight:
+                                                              FontWeight.bold),
+                                                    ),
+                                                    TextSpan(
+                                                        text: widget.userEmail),
+                                                  ],
+                                                ),
+                                              ),
+                                              SizedBox(height: 10),
+                                              Text.rich(
+                                                TextSpan(
+                                                  children: [
+                                                    TextSpan(
+                                                      text: 'Date: ',
+                                                      style: TextStyle(
+                                                          fontWeight:
+                                                              FontWeight.bold),
+                                                    ),
+                                                    TextSpan(
+                                                      text: DateFormat(
+                                                              'yyyy-MM-dd')
+                                                          .format(
+                                                              DateTime.now()),
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+                                              SizedBox(height: 10),
+                                              Text.rich(
+                                                TextSpan(
+                                                  children: [
+                                                    TextSpan(
+                                                      text: 'Input ID: ',
+                                                      style: TextStyle(
+                                                          fontWeight:
+                                                              FontWeight.bold),
+                                                    ),
+                                                    TextSpan(
+                                                        text: widget.inputid),
+                                                  ],
+                                                ),
+                                              ),
+                                              SizedBox(height: 10),
+                                              Text.rich(
+                                                TextSpan(
+                                                  children: [
+                                                    TextSpan(
+                                                      text: 'Name: ',
+                                                      style: TextStyle(
+                                                          fontWeight:
+                                                              FontWeight.bold),
+                                                    ),
+                                                    TextSpan(
+                                                      text:
+                                                          '${widget.userName} ${widget.userLastName}',
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+                                              SizedBox(height: 10),
+                                              Text.rich(
+                                                TextSpan(
+                                                  children: [
+                                                    TextSpan(
+                                                      text:
+                                                          'Account Name Branch ',
+                                                      style: TextStyle(
+                                                          fontWeight:
+                                                              FontWeight.bold),
+                                                    ),
+                                                    TextSpan(
+                                                        text: widget
+                                                            .selectedAccount),
+                                                  ],
+                                                ),
+                                              ),
+                                              SizedBox(height: 10),
+                                              Text.rich(
+                                                TextSpan(
+                                                  children: [
+                                                    TextSpan(
+                                                      text: 'Period: ',
+                                                      style: TextStyle(
+                                                          fontWeight:
+                                                              FontWeight.bold),
+                                                    ),
+                                                    TextSpan(
+                                                        text: widget
+                                                            .SelectedPeriod),
+                                                  ],
+                                                ),
+                                              ),
+                                              SizedBox(height: 10),
+                                              Text.rich(
+                                                TextSpan(
+                                                  children: [
+                                                    TextSpan(
+                                                      text: 'Month: ',
+                                                      style: TextStyle(
+                                                          fontWeight:
+                                                              FontWeight.bold),
+                                                    ),
+                                                    TextSpan(
+                                                        text: widget
+                                                            .selectedMonth),
+                                                  ],
+                                                ),
+                                              ),
+                                              SizedBox(height: 10),
+                                              Text.rich(
+                                                TextSpan(
+                                                  children: [
+                                                    TextSpan(
+                                                      text: 'Week: ',
+                                                      style: TextStyle(
+                                                          fontWeight:
+                                                              FontWeight.bold),
+                                                    ),
+                                                    TextSpan(
+                                                        text: widget
+                                                            .selectedWeek),
+                                                  ],
+                                                ),
+                                              ),
+                                              SizedBox(height: 10),
+                                              Text.rich(
+                                                TextSpan(
+                                                  children: [
+                                                    TextSpan(
+                                                      text: 'Category: ',
+                                                      style: TextStyle(
+                                                          fontWeight:
+                                                              FontWeight.bold),
+                                                    ),
+                                                    TextSpan(
+                                                        text: _versionSelected),
+                                                  ],
+                                                ),
+                                              ),
+                                              SizedBox(height: 10),
+                                              Text.rich(
+                                                TextSpan(
+                                                  children: [
+                                                    TextSpan(
+                                                      text: 'SKU Description: ',
+                                                      style: TextStyle(
+                                                          fontWeight:
+                                                              FontWeight.bold),
+                                                    ),
+                                                    TextSpan(
+                                                        text:
+                                                            _selectedDropdownValue),
+                                                  ],
+                                                ),
+                                              ),
+                                              SizedBox(height: 10),
+                                              Text.rich(
+                                                TextSpan(
+                                                  children: [
+                                                    TextSpan(
+                                                      text: 'Products: ',
+                                                      style: TextStyle(
+                                                          fontWeight:
+                                                              FontWeight.bold),
+                                                    ),
+                                                    TextSpan(
+                                                        text: _productDetails),
+                                                  ],
+                                                ),
+                                              ),
+                                              SizedBox(height: 10),
+                                              Text.rich(
+                                                TextSpan(
+                                                  children: [
+                                                    TextSpan(
+                                                      text: 'SKU Code: ',
+                                                      style: TextStyle(
+                                                          fontWeight:
+                                                              FontWeight.bold),
+                                                    ),
+                                                    TextSpan(text: _skuCode),
+                                                  ],
+                                                ),
+                                              ),
+                                              SizedBox(height: 10),
+                                              Text.rich(
+                                                TextSpan(
+                                                  children: [
+                                                    TextSpan(
+                                                      text: 'Status: ',
+                                                      style: TextStyle(
+                                                          fontWeight:
+                                                              FontWeight.bold),
+                                                    ),
+                                                    TextSpan(
+                                                        text: _statusSelected),
+                                                  ],
+                                                ),
+                                              ),
+                                              SizedBox(height: 10),
+                                              Text.rich(
+                                                TextSpan(
+                                                  children: [
+                                                    TextSpan(
+                                                      text: 'Beginning Value: ',
+                                                      style: TextStyle(
+                                                          fontWeight:
+                                                              FontWeight.bold),
+                                                    ),
+                                                    TextSpan(
+                                                      text:
+                                                          '${int.tryParse(_beginningController.text) ?? 0}',
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+                                              SizedBox(height: 10),
+                                              Text.rich(
+                                                TextSpan(
+                                                  children: [
+                                                    TextSpan(
+                                                      text: 'Delivery Value: ',
+                                                      style: TextStyle(
+                                                          fontWeight:
+                                                              FontWeight.bold),
+                                                    ),
+                                                    TextSpan(
+                                                      text:
+                                                          '${int.tryParse(_deliveryController.text) ?? 0}',
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+                                              SizedBox(height: 10),
+                                              Text.rich(
+                                                TextSpan(
+                                                  children: [
+                                                    TextSpan(
+                                                      text: 'Ending Value: ',
+                                                      style: TextStyle(
+                                                          fontWeight:
+                                                              FontWeight.bold),
+                                                    ),
+                                                    TextSpan(
+                                                      text:
+                                                          '${int.tryParse(_endingController.text) ?? 0}',
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+                                              SizedBox(height: 10),
+                                              Text.rich(
+                                                TextSpan(
+                                                  children: [
+                                                    TextSpan(
+                                                      text: 'Offtake Value: ',
+                                                      style: TextStyle(
+                                                          fontWeight:
+                                                              FontWeight.bold),
+                                                    ),
+                                                    TextSpan(
+                                                      text:
+                                                          '${double.tryParse(_offtakeController.text)?.toStringAsFixed(2) ?? '0.00'}',
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+                                              SizedBox(height: 10),
+                                              Text.rich(
+                                                TextSpan(
+                                                  children: [
+                                                    TextSpan(
+                                                      text:
+                                                          'Inventory Days Level: ',
+                                                      style: TextStyle(
+                                                          fontWeight:
+                                                              FontWeight.bold),
+                                                    ),
+                                                    TextSpan(
+                                                      text:
+                                                          '${double.tryParse(_inventoryDaysLevelController.text)?.toStringAsFixed(2) ?? '0.00'}',
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+                                              SizedBox(height: 10),
+                                              Text.rich(
+                                                TextSpan(
+                                                  children: [
+                                                    TextSpan(
+                                                      text: 'No of Days OOS: ',
+                                                      style: TextStyle(
+                                                          fontWeight:
+                                                              FontWeight.bold),
+                                                    ),
+                                                    TextSpan(
+                                                        text:
+                                                            '$_selectedNumberOfDaysOOS'),
+                                                  ],
+                                                ),
+                                              ),
+                                              SizedBox(height: 10),
+                                              Text.rich(
+                                                TextSpan(
+                                                  children: [
+                                                    TextSpan(
+                                                      text: 'Expiry Fields: ',
+                                                      style: TextStyle(
+                                                          fontWeight:
+                                                              FontWeight.bold),
+                                                    ),
+                                                    TextSpan(
+                                                        text:
+                                                            '$_expiryFieldsValues'),
+                                                  ],
+                                                ),
+                                              ),
+                                              SizedBox(height: 10),
+                                              Text.rich(
+                                                TextSpan(
+                                                  children: [
+                                                    TextSpan(
+                                                      text: 'Remarks OOS: ',
+                                                      style: TextStyle(
+                                                          fontWeight:
+                                                              FontWeight.bold),
+                                                    ),
+                                                    TextSpan(
+                                                        text: '$_remarksOOS'),
+                                                  ],
+                                                ),
+                                              ),
+                                              SizedBox(height: 10),
+                                              Text.rich(
+                                                TextSpan(
+                                                  children: [
+                                                    TextSpan(
+                                                      text: 'Reason OOS: ',
+                                                      style: TextStyle(
+                                                          fontWeight:
+                                                              FontWeight.bold),
+                                                    ),
+                                                    TextSpan(
+                                                        text: '$_reasonOOS'),
+                                                  ],
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
                                         actions: <Widget>[
                                           TextButton(
                                             onPressed: () {
-                                              Navigator.of(context).pop(false);
+                                              Navigator.of(context).pop(
+                                                  false); // Close dialog without saving
                                             },
                                             child: Text('Cancel'),
                                           ),
                                           TextButton(
                                             onPressed: () {
-                                              Navigator.of(context).pop(true);
+                                              Navigator.of(context)
+                                                  .pop(true); // Confirm saving
                                             },
                                             child: Text('Confirm'),
                                           ),
@@ -2539,15 +2934,17 @@ class _SKUInventoryState extends State<SKUInventory> {
                                     },
                                   );
 
+                                  // Save the inventory item if confirmed
                                   if (confirmed ?? false) {
-                                    _saveInventoryItem();
+                                    _saveInventoryItem(); // Call your save function here
                                     ScaffoldMessenger.of(context).showSnackBar(
                                       SnackBar(
                                         content: Text('Inventory item saved'),
                                         duration: Duration(seconds: 2),
                                       ),
                                     );
-                                    Navigator.pop(context);
+                                    Navigator.pop(
+                                        context); // Close the current screen after saving
                                   }
                                 }
                               : null, // Disable button if !_isSaveEnabled
@@ -2669,7 +3066,7 @@ class _ExpiryFieldState extends State<ExpiryField> {
         SizedBox(height: 10),
         Text(
           'Month of Expiry',
-          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
+          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
         ),
         SizedBox(height: 10),
         DropdownButtonFormField<String>(
@@ -2718,7 +3115,7 @@ class _ExpiryFieldState extends State<ExpiryField> {
         SizedBox(height: 16),
         Text(
           'PCS of Expiry',
-          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
+          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
         ),
         SizedBox(height: 8),
         TextField(

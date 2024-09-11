@@ -210,10 +210,7 @@ class _EditInventoryScreenState extends State<EditInventoryScreen> {
               (_remarksOOS == "No P.O" ||
                   _remarksOOS == "Unserved" ||
                   (_remarksOOS == "No Delivery" &&
-                      _selectedNoDeliveryOption != null)) &&
-              _selectedPeriod != null && // Ensure _selectedPeriod is not null
-              _monthController.text.isNotEmpty &&
-              _weekController.text.isNotEmpty;
+                      _selectedNoDeliveryOption != null));
         }
       } else {
         // For statuses other than "Carried", the Save button should be disabled
@@ -746,6 +743,7 @@ class _EditInventoryScreenState extends State<EditInventoryScreen> {
                                       _monthController.clear();
                                       _weekController.clear();
                                   }
+                                  checkSaveEnabled(); // Ensure button state is updated
                                 });
                               },
                               items: [
@@ -814,15 +812,16 @@ class _EditInventoryScreenState extends State<EditInventoryScreen> {
                                     EdgeInsets.symmetric(horizontal: 12),
                               ),
                             ),
-                            Positioned(
-                              right: 0,
-                              child: IconButton(
-                                icon: Icon(Icons.arrow_drop_down),
-                                onPressed: () {
-                                  // Dropdown button action
-                                },
+                            if (_selectedPeriod != null)
+                              Positioned(
+                                right: 0,
+                                child: IconButton(
+                                  icon: Icon(Icons.arrow_drop_down),
+                                  onPressed: () {
+                                    // Dropdown button action
+                                  },
+                                ),
                               ),
-                            ),
                           ],
                         ),
                       ),

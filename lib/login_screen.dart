@@ -19,10 +19,20 @@ class _LoginPageState extends State<LoginPage> {
   final TextEditingController passwordController = TextEditingController();
   String usernameErrorText = '';
   String passwordErrorText = '';
+  bool _obscureText = true;
 
   Future<void> _login(BuildContext context) async {
-    final String username = usernameController.text;
-    final String password = passwordController.text;
+    final String username = usernameController.text.trim();
+    final String password = passwordController.text.trim();
+
+    // Check for empty username and password
+    if (username.isEmpty || password.isEmpty) {
+      setState(() {
+        usernameErrorText = username.isEmpty ? 'Input username' : '';
+        passwordErrorText = password.isEmpty ? 'Input password' : '';
+      });
+      return; // Exit the method if either field is empty
+    }
 
     try {
       final userDetails =
@@ -83,7 +93,7 @@ class _LoginPageState extends State<LoginPage> {
         }
       } else {
         setState(() {
-          usernameErrorText = 'Invalid username';
+          usernameErrorText = 'Account does not exist';
         });
       }
     } catch (e) {
@@ -237,7 +247,8 @@ class _LoginPageState extends State<LoginPage> {
                                       passwordErrorText = '';
                                     });
                                   },
-                                  obscureText: true, // To hide password
+                                  obscureText:
+                                      _obscureText, // Controls password visibility
                                   decoration: InputDecoration(
                                     hintText: 'Enter your password',
                                     prefixIcon: Icon(Icons.lock),
@@ -245,8 +256,21 @@ class _LoginPageState extends State<LoginPage> {
                                     errorText: passwordErrorText.isNotEmpty
                                         ? passwordErrorText
                                         : null,
+                                    suffixIcon: IconButton(
+                                      icon: Icon(
+                                        _obscureText
+                                            ? Icons.visibility_off
+                                            : Icons.visibility,
+                                      ),
+                                      onPressed: () {
+                                        setState(() {
+                                          _obscureText =
+                                              !_obscureText; // Toggle password visibility
+                                        });
+                                      },
+                                    ),
                                   ),
-                                ),
+                                )
                               ],
                             ),
                           ],
