@@ -46,7 +46,7 @@ class _SignUpState extends State<SignUp> {
 
   @override
   Widget build(BuildContext context) {
-    List<String> remarksChoices = ['REGULAR', 'RELIVER', 'PROVISIONARY'];
+    List<String> remarksChoices = ['REGULAR', 'RELIVER', 'PROBATIONARY'];
     return Scaffold(
       backgroundColor: Colors.white,
       body: SingleChildScrollView(
@@ -380,7 +380,8 @@ class _SignUpState extends State<SignUp> {
 
   Future<void> _sendOtp(String email, Map<String, dynamic> userData) async {
     final response = await http.post(
-      Uri.parse('http://192.168.50.55:8080/send-otp-register'),
+      Uri.parse(
+          'https://latest-backend-towi-admin.onrender.com/send-otp-register'),
       headers: <String, String>{
         'Content-Type': 'application/json; charset=UTF-8',
       },

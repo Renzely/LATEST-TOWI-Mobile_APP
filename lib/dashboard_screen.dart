@@ -413,6 +413,7 @@ class _InventoryState extends State<Inventory> {
   int currentPage = 0;
   late Future<List<InventoryItem>> _futureInventory;
   bool _sortByLatest = true; // Default to sorting by latest date
+  Map<String, bool> itemEditingStatus = {};
 
   @override
   void initState() {
@@ -545,6 +546,8 @@ class _InventoryState extends State<Inventory> {
                           itemCount: currentPageItems.length,
                           itemBuilder: (context, index) {
                             InventoryItem item = currentPageItems[index];
+                            bool isEditingDone =
+                                itemEditingStatus[item.inputId] ?? false;
                             return ListTile(
                               title: Row(
                                 mainAxisAlignment:
@@ -559,7 +562,8 @@ class _InventoryState extends State<Inventory> {
                                   ),
                                   IconButton(
                                     icon: Icon(Icons.edit),
-                                    onPressed: item.status == 'Carried'
+                                    onPressed: item.status == 'Carried' &&
+                                            !isEditingDone
                                         ? () {
                                             // Navigate to the edit screen with the selected item data
                                             Navigator.push(
@@ -571,7 +575,13 @@ class _InventoryState extends State<Inventory> {
                                                   userEmail: widget.userEmail,
                                                 ),
                                               ),
-                                            );
+                                            ).then((_) {
+                                              // Update the state when editing is done
+                                              setState(() {
+                                                itemEditingStatus[
+                                                    item.inputId] = true;
+                                              });
+                                            });
                                           }
                                         : null, // Disable the button otherwise
                                   ),
@@ -1727,7 +1737,7 @@ class _DateTimeWidgetState extends State<DateTimeWidget> {
           Text(
             '$formattedDate, $dayOfWeek',
             style: TextStyle(
-              fontSize: 30,
+              fontSize: 25,
               fontWeight: FontWeight.normal,
               color: Colors.black,
             ),
