@@ -295,6 +295,53 @@ class MongoDatabase {
     }
   }
 
+  static Future<String> updateEditingStatus(
+      String inputId, String userEmail, bool isEditing) async {
+    try {
+      await connect();
+      final collection = db.collection(USER_INVENTORY);
+      final result = await collection.updateOne(
+        where.eq('inputId', inputId).and(where.eq('userEmail', userEmail)),
+        modify.set('isEditing', isEditing),
+      );
+
+      if (result.isAcknowledged && result.nModified == 1) {
+        return "Editing status updated successfully";
+      } else {
+        return "Failed to update editing status";
+      }
+    } catch (e) {
+      print('Error updating editing status: $e');
+      return "Error: $e";
+    } finally {
+      await close();
+    }
+  }
+
+  static Future<bool> getEditingStatus(String inputId, String userEmail) async {
+    try {
+      await connect();
+
+      final collection =
+          db.collection(USER_INVENTORY); // Collection for ReturnToVendor
+
+      final record = await collection.findOne(
+        where.eq('inputId', inputId).and(where.eq('userEmail', userEmail)),
+      );
+
+      if (record != null && record.containsKey('isEditing')) {
+        return record['isEditing'] as bool;
+      } else {
+        return false; // Default to false if no status is found
+      }
+    } catch (e) {
+      print('Error fetching editing status: $e');
+      return false;
+    } finally {
+      await close();
+    }
+  }
+
   // static Future<List<Map<String, dynamic>>> getSkusByBranchAndCategory(
   //     String branchName, String category) async {
   //   try {

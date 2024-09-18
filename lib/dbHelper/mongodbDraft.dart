@@ -153,31 +153,34 @@ class InventoryItem {
   final double inventoryDaysLevel;
   dynamic noOfDaysOOS;
   final List<Map<String, dynamic>> expiryFields;
+  final bool isEditing; // New field
 
-  InventoryItem(
-      {required this.id,
-      required this.userEmail,
-      required this.date,
-      required this.inputId,
-      required this.name,
-      required this.accountNameBranchManning,
-      required this.period,
-      required this.month,
-      required this.week,
-      required this.category,
-      required this.skuDescription,
-      required this.products,
-      required this.skuCode,
-      required this.status,
-      required this.beginning,
-      required this.delivery,
-      required this.ending,
-      required this.offtake,
-      required this.inventoryDaysLevel,
-      required this.noOfDaysOOS,
-      required this.expiryFields,
-      required this.remarksOOS,
-      required this.reasonOOS});
+  InventoryItem({
+    required this.id,
+    required this.userEmail,
+    required this.date,
+    required this.inputId,
+    required this.name,
+    required this.accountNameBranchManning,
+    required this.period,
+    required this.month,
+    required this.week,
+    required this.category,
+    required this.skuDescription,
+    required this.products,
+    required this.skuCode,
+    required this.status,
+    required this.beginning,
+    required this.delivery,
+    required this.ending,
+    required this.offtake,
+    required this.inventoryDaysLevel,
+    required this.noOfDaysOOS,
+    required this.expiryFields,
+    required this.remarksOOS,
+    required this.reasonOOS,
+    required this.isEditing,
+  });
 
   factory InventoryItem.fromJson(Map<String, dynamic> json) => InventoryItem(
         id: json['_id'] ?? ObjectId(),
@@ -208,6 +211,7 @@ class InventoryItem {
             [], // Ensure expiryFields is not null
         remarksOOS: json['remarksOOS'] ?? '',
         reasonOOS: json['reasonOOS'] ?? '',
+        isEditing: json['isEditing'] ?? false, // Default value if null
       );
 
   Map<String, dynamic> toJson() => {
@@ -234,6 +238,7 @@ class InventoryItem {
         'expiryFields': expiryFields,
         'remarksOOS': remarksOOS,
         'reasonOOS': reasonOOS,
+        'isEditing': isEditing, // Include in JSON
       };
   void _saveToDatabase(InventoryItem newItem) async {
     // Connect to your MongoDB database

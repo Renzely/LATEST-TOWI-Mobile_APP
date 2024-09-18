@@ -414,6 +414,60 @@ class _InventoryState extends State<Inventory> {
   late Future<List<InventoryItem>> _futureInventory;
   bool _sortByLatest = true; // Default to sorting by latest date
   Map<String, bool> itemEditingStatus = {};
+  List<InventoryItem> currentPageItems = []; // Populate with your items
+  Map<String, bool> editingStates = {};
+  // // SharedPreferences Helper Functions
+  // Future<void> saveEditingStatus(
+  //     String inputId, bool status, String userEmail) async {
+  //   final prefs = await SharedPreferences.getInstance();
+  //   try {
+  //     String key = '${userEmail}_$inputId'; // Include the user email in the key
+  //     print('Saving editing status for key: $key with status: $status');
+  //     await prefs.setBool(key, status);
+  //   } catch (e) {
+  //     print('Error saving editing status: $e');
+  //   }
+  // }
+
+  // Future<bool> loadEditingStatus(String inputId, String userEmail) async {
+  //   final prefs = await SharedPreferences.getInstance();
+  //   String key = '${userEmail}_$inputId'; // Include the user email in the key
+  //   bool status = prefs.getBool(key) ?? false;
+  //   print('Loaded editing status for key: $key - Status: $status');
+  //   return status;
+  // }
+
+  // Future<void> clearEditingStatus(String inputId, String userEmail) async {
+  //   final prefs = await SharedPreferences.getInstance();
+  //   String key = '${userEmail}_$inputId'; // Include the user email in the key
+  //   await prefs.remove(key);
+  // }
+
+  // Function to fetch editing status from MongoDB
+
+  Future<bool> _getEditingStatus(String inputId, String userEmail) async {
+    return await MongoDatabase.getEditingStatus(inputId, userEmail);
+  }
+
+  Future<void> _updateEditingStatus(
+      String inputId, String userEmail, bool isEditing) async {
+    try {
+      final db = await mongo.Db.create(
+          INVENTORY_CONN_URL); // Ensure 'mongo' is imported correctly
+      await db.open();
+      final collection = db.collection(USER_INVENTORY);
+
+      // Update the document where 'inputId' and 'userEmail' match, setting 'isEditing' to the provided value
+      await collection.update(
+        mongo.where.eq('inputId', inputId).eq('userEmail', userEmail),
+        mongo.modify.set('isEditing', isEditing),
+      );
+
+      await db.close();
+    } catch (e) {
+      print('Error updating editing status: $e');
+    }
+  }
 
   @override
   void initState() {
@@ -444,9 +498,9 @@ class _InventoryState extends State<Inventory> {
       // Sort inventory items based on _sortByLatest flag
       inventoryItems.sort((a, b) {
         if (_sortByLatest) {
-          return a.date.compareTo(b.date); // Sort by latest to oldest
+          return a.week.compareTo(b.week); // Sort by latest to oldest
         } else {
-          return b.date.compareTo(a.date); // Sort by oldest to latest
+          return b.week.compareTo(a.week); // Sort by oldest to latest
         }
       });
       return inventoryItems;
@@ -543,326 +597,377 @@ class _InventoryState extends State<Inventory> {
                       ),
                       Expanded(
                         child: ListView.builder(
-                          itemCount: currentPageItems.length,
-                          itemBuilder: (context, index) {
-                            InventoryItem item = currentPageItems[index];
-                            bool isEditingDone =
-                                itemEditingStatus[item.inputId] ?? false;
-                            return ListTile(
-                              title: Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Text(
-                                    item.week,
-                                    style: TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 18,
+                            itemCount: currentPageItems.length,
+                            itemBuilder: (context, index) {
+                              InventoryItem item = currentPageItems[index];
+                              return FutureBuilder<bool>(
+                                key: ValueKey(item.inputId),
+                                future: _getEditingStatus(
+                                    item.inputId, widget.userEmail),
+                                builder: (context, snapshot) {
+                                  // If there's an error, show error icon and disable the edit button
+                                  if (snapshot.hasError) {
+                                    return ListTile(
+                                      title: Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          Text(item.week),
+                                          Icon(Icons.error), // Show error icon
+                                        ],
+                                      ),
+                                    );
+                                  }
+
+                                  // Use false as default for isEditing to avoid premature disabling
+                                  bool isEditing = snapshot.data ?? true;
+
+                                  // Debugging line to check the isEditing value
+                                  print(
+                                      'Item ${item.inputId} isEditing: $isEditing');
+
+                                  // Disable the button permanently if `isEditing` is true
+                                  return ListTile(
+                                    title: Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Text(item.week),
+                                        IconButton(
+                                          icon: Icon(Icons.edit),
+                                          onPressed: item.status == 'Carried' &&
+                                                  !isEditing
+                                              ? () async {
+                                                  // Set editing status to true
+                                                  await _updateEditingStatus(
+                                                      item.inputId,
+                                                      widget.userEmail,
+                                                      false);
+
+                                                  // Navigate to the Edit screen
+                                                  await Navigator.push(
+                                                    context,
+                                                    MaterialPageRoute(
+                                                      builder: (context) =>
+                                                          EditInventoryScreen(
+                                                        inventoryItem: item,
+                                                        userEmail:
+                                                            widget.userEmail,
+                                                      ),
+                                                    ),
+                                                  );
+
+                                                  // After editing, reset editing status to false
+                                                  await _updateEditingStatus(
+                                                      item.inputId,
+                                                      widget.userEmail,
+                                                      true);
+
+                                                  setState(
+                                                      () {}); // Refresh UI after editing
+                                                }
+                                              : null, // Button permanently disabled if isEditing is true
+                                        ),
+                                      ],
                                     ),
-                                  ),
-                                  IconButton(
-                                    icon: Icon(Icons.edit),
-                                    onPressed: item.status == 'Carried' &&
-                                            !isEditingDone
-                                        ? () {
-                                            // Navigate to the edit screen with the selected item data
-                                            Navigator.push(
-                                              context,
-                                              MaterialPageRoute(
-                                                builder: (context) =>
-                                                    EditInventoryScreen(
-                                                  inventoryItem: item,
-                                                  userEmail: widget.userEmail,
-                                                ),
-                                              ),
-                                            ).then((_) {
-                                              // Update the state when editing is done
-                                              setState(() {
-                                                itemEditingStatus[
-                                                    item.inputId] = true;
-                                              });
-                                            });
-                                          }
-                                        : null, // Disable the button otherwise
-                                  ),
-                                ],
-                              ),
-                              subtitle: Container(
-                                decoration: BoxDecoration(
-                                  color: Colors.grey.shade200,
-                                  border: Border.all(
-                                    color: Colors.black,
-                                    width: 1.0,
-                                  ),
-                                ),
-                                padding: EdgeInsets.all(8.0),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      'Date: ',
-                                      style: TextStyle(
-                                          fontWeight: FontWeight.bold,
-                                          color: Colors.black),
-                                    ),
-                                    Text(
-                                      '${item.date}',
-                                      style: TextStyle(color: Colors.black),
-                                    ),
-                                    SizedBox(height: 10),
-                                    Text(
-                                      'Input ID: ',
-                                      style: TextStyle(
-                                          fontWeight: FontWeight.bold,
-                                          color: Colors.black),
-                                    ),
-                                    Text(
-                                      '${item.inputId}',
-                                      style: TextStyle(color: Colors.black),
-                                    ),
-                                    SizedBox(height: 10),
-                                    Text(
-                                      'Merchandiser: ',
-                                      style: TextStyle(
-                                          fontWeight: FontWeight.bold,
-                                          color: Colors.black),
-                                    ),
-                                    Text(
-                                      '${item.name}',
-                                      style: TextStyle(color: Colors.black),
-                                    ),
-                                    SizedBox(height: 10),
-                                    Text(
-                                      'Account Name Branch Manning: ',
-                                      style: TextStyle(
-                                          fontWeight: FontWeight.bold,
-                                          color: Colors.black),
-                                    ),
-                                    Text(
-                                      '${item.accountNameBranchManning}',
-                                      style: TextStyle(color: Colors.black),
-                                    ),
-                                    SizedBox(height: 10),
-                                    Text(
-                                      'Period: ',
-                                      style: TextStyle(
-                                          fontWeight: FontWeight.bold,
-                                          color: Colors.black),
-                                    ),
-                                    Text(
-                                      '${item.period}',
-                                      style: TextStyle(color: Colors.black),
-                                    ),
-                                    SizedBox(height: 10),
-                                    Text(
-                                      'Month: ',
-                                      style: TextStyle(
-                                          fontWeight: FontWeight.bold,
-                                          color: Colors.black),
-                                    ),
-                                    Text(
-                                      '${item.month}',
-                                      style: TextStyle(color: Colors.black),
-                                    ),
-                                    SizedBox(height: 10),
-                                    Text(
-                                      'Week: ',
-                                      style: TextStyle(
-                                          fontWeight: FontWeight.bold,
-                                          color: Colors.black),
-                                    ),
-                                    Text(
-                                      '${item.week}',
-                                      style: TextStyle(color: Colors.black),
-                                    ),
-                                    SizedBox(height: 10),
-                                    Text(
-                                      'Category: ',
-                                      style: TextStyle(
-                                          fontWeight: FontWeight.bold,
-                                          color: Colors.black),
-                                    ),
-                                    Text('${item.category}'),
-                                    SizedBox(height: 10),
-                                    Text(
-                                      'SKU Description: ',
-                                      style: TextStyle(
-                                          fontWeight: FontWeight.bold,
-                                          color: Colors.black),
-                                    ),
-                                    Text(
-                                      '${item.skuDescription}',
-                                      style: TextStyle(color: Colors.black),
-                                    ),
-                                    SizedBox(height: 10),
-                                    Text(
-                                      'Products: ',
-                                      style: TextStyle(
-                                          fontWeight: FontWeight.bold,
-                                          color: Colors.black),
-                                    ),
-                                    Text(
-                                      '${item.products}',
-                                      style: TextStyle(color: Colors.black),
-                                    ),
-                                    SizedBox(height: 10),
-                                    Text(
-                                      'SKU Code: ',
-                                      style: TextStyle(
-                                          fontWeight: FontWeight.bold,
-                                          color: Colors.black),
-                                    ),
-                                    Text(
-                                      '${item.skuCode}',
-                                      style: TextStyle(color: Colors.black),
-                                    ),
-                                    SizedBox(height: 10),
-                                    Text(
-                                      'Status: ',
-                                      style: TextStyle(
-                                          fontWeight: FontWeight.bold,
-                                          color: Colors.black),
-                                    ),
-                                    Text(
-                                      '${item.status}',
-                                      style: TextStyle(color: Colors.black),
-                                    ),
-                                    SizedBox(height: 10),
-                                    Text(
-                                      'Beginning: ',
-                                      style: TextStyle(
-                                          fontWeight: FontWeight.bold,
-                                          color: Colors.black),
-                                    ),
-                                    Text(
-                                      '${item.beginning}',
-                                      style: TextStyle(color: Colors.black),
-                                    ),
-                                    SizedBox(height: 10),
-                                    Text(
-                                      'Delivery: ',
-                                      style: TextStyle(
-                                          fontWeight: FontWeight.bold,
-                                          color: Colors.black),
-                                    ),
-                                    Text(
-                                      '${item.delivery}',
-                                      style: TextStyle(color: Colors.black),
-                                    ),
-                                    SizedBox(height: 10),
-                                    Text(
-                                      'Ending: ',
-                                      style: TextStyle(
-                                          fontWeight: FontWeight.bold,
-                                          color: Colors.black),
-                                    ),
-                                    Text(
-                                      '${item.ending}',
-                                      style: TextStyle(color: Colors.black),
-                                    ),
-                                    SizedBox(height: 10),
-                                    Text(
-                                      'Expiration: ',
-                                      style: TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.black,
+                                    subtitle: Container(
+                                      decoration: BoxDecoration(
+                                        color: Colors.grey.shade200,
+                                        border: Border.all(
+                                          color: Colors.black,
+                                          width: 1.0,
+                                        ),
+                                      ),
+                                      padding: EdgeInsets.all(8.0),
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            'Date: ',
+                                            style: TextStyle(
+                                                fontWeight: FontWeight.bold,
+                                                color: Colors.black),
+                                          ),
+                                          Text(
+                                            '${item.date}',
+                                            style:
+                                                TextStyle(color: Colors.black),
+                                          ),
+                                          SizedBox(height: 10),
+                                          Text(
+                                            'Input ID: ',
+                                            style: TextStyle(
+                                                fontWeight: FontWeight.bold,
+                                                color: Colors.black),
+                                          ),
+                                          Text(
+                                            '${item.inputId}',
+                                            style:
+                                                TextStyle(color: Colors.black),
+                                          ),
+                                          SizedBox(height: 10),
+                                          Text(
+                                            'Merchandiser: ',
+                                            style: TextStyle(
+                                                fontWeight: FontWeight.bold,
+                                                color: Colors.black),
+                                          ),
+                                          Text(
+                                            '${item.name}',
+                                            style:
+                                                TextStyle(color: Colors.black),
+                                          ),
+                                          SizedBox(height: 10),
+                                          Text(
+                                            'Account Name Branch Manning: ',
+                                            style: TextStyle(
+                                                fontWeight: FontWeight.bold,
+                                                color: Colors.black),
+                                          ),
+                                          Text(
+                                            '${item.accountNameBranchManning}',
+                                            style:
+                                                TextStyle(color: Colors.black),
+                                          ),
+                                          SizedBox(height: 10),
+                                          Text(
+                                            'Period: ',
+                                            style: TextStyle(
+                                                fontWeight: FontWeight.bold,
+                                                color: Colors.black),
+                                          ),
+                                          Text(
+                                            '${item.period}',
+                                            style:
+                                                TextStyle(color: Colors.black),
+                                          ),
+                                          SizedBox(height: 10),
+                                          Text(
+                                            'Month: ',
+                                            style: TextStyle(
+                                                fontWeight: FontWeight.bold,
+                                                color: Colors.black),
+                                          ),
+                                          Text(
+                                            '${item.month}',
+                                            style:
+                                                TextStyle(color: Colors.black),
+                                          ),
+                                          SizedBox(height: 10),
+                                          Text(
+                                            'Week: ',
+                                            style: TextStyle(
+                                                fontWeight: FontWeight.bold,
+                                                color: Colors.black),
+                                          ),
+                                          Text(
+                                            '${item.week}',
+                                            style:
+                                                TextStyle(color: Colors.black),
+                                          ),
+                                          SizedBox(height: 10),
+                                          Text(
+                                            'Category: ',
+                                            style: TextStyle(
+                                                fontWeight: FontWeight.bold,
+                                                color: Colors.black),
+                                          ),
+                                          Text('${item.category}'),
+                                          SizedBox(height: 10),
+                                          Text(
+                                            'SKU Description: ',
+                                            style: TextStyle(
+                                                fontWeight: FontWeight.bold,
+                                                color: Colors.black),
+                                          ),
+                                          Text(
+                                            '${item.skuDescription}',
+                                            style:
+                                                TextStyle(color: Colors.black),
+                                          ),
+                                          SizedBox(height: 10),
+                                          Text(
+                                            'Products: ',
+                                            style: TextStyle(
+                                                fontWeight: FontWeight.bold,
+                                                color: Colors.black),
+                                          ),
+                                          Text(
+                                            '${item.products}',
+                                            style:
+                                                TextStyle(color: Colors.black),
+                                          ),
+                                          SizedBox(height: 10),
+                                          Text(
+                                            'SKU Code: ',
+                                            style: TextStyle(
+                                                fontWeight: FontWeight.bold,
+                                                color: Colors.black),
+                                          ),
+                                          Text(
+                                            '${item.skuCode}',
+                                            style:
+                                                TextStyle(color: Colors.black),
+                                          ),
+                                          SizedBox(height: 10),
+                                          Text(
+                                            'Status: ',
+                                            style: TextStyle(
+                                                fontWeight: FontWeight.bold,
+                                                color: Colors.black),
+                                          ),
+                                          Text(
+                                            '${item.status}',
+                                            style:
+                                                TextStyle(color: Colors.black),
+                                          ),
+                                          SizedBox(height: 10),
+                                          Text(
+                                            'Beginning: ',
+                                            style: TextStyle(
+                                                fontWeight: FontWeight.bold,
+                                                color: Colors.black),
+                                          ),
+                                          Text(
+                                            '${item.beginning}',
+                                            style:
+                                                TextStyle(color: Colors.black),
+                                          ),
+                                          SizedBox(height: 10),
+                                          Text(
+                                            'Delivery: ',
+                                            style: TextStyle(
+                                                fontWeight: FontWeight.bold,
+                                                color: Colors.black),
+                                          ),
+                                          Text(
+                                            '${item.delivery}',
+                                            style:
+                                                TextStyle(color: Colors.black),
+                                          ),
+                                          SizedBox(height: 10),
+                                          Text(
+                                            'Ending: ',
+                                            style: TextStyle(
+                                                fontWeight: FontWeight.bold,
+                                                color: Colors.black),
+                                          ),
+                                          Text(
+                                            '${item.ending}',
+                                            style:
+                                                TextStyle(color: Colors.black),
+                                          ),
+                                          SizedBox(height: 10),
+                                          Text(
+                                            'Expiration: ',
+                                            style: TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                              color: Colors.black,
+                                            ),
+                                          ),
+                                          SizedBox(height: 10),
+                                          Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children:
+                                                item.expiryFields.map((expiry) {
+                                              return Column(
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.start,
+                                                children: [
+                                                  Text(
+                                                    'Expiry Date: ${expiry['expiryMonth']}',
+                                                    style: TextStyle(
+                                                        color: Colors.black),
+                                                  ),
+                                                  Text(
+                                                    'Quantity: ${expiry['expiryPcs']}',
+                                                    style: TextStyle(
+                                                        color: Colors.black),
+                                                  ),
+                                                  if (expiry.containsKey(
+                                                      'manualPcsInput')) // Check if 'manualPcsInput' exists
+                                                    Text(
+                                                      'Manual PCS Input: ${expiry['expiryPcs']}',
+                                                      style: TextStyle(
+                                                          color: Colors.black),
+                                                    ),
+                                                  SizedBox(
+                                                      height:
+                                                          10), // Adjust spacing as needed
+                                                ],
+                                              );
+                                            }).toList(),
+                                          ),
+                                          SizedBox(height: 10),
+                                          Text(
+                                            'Offtake: ',
+                                            style: TextStyle(
+                                                fontWeight: FontWeight.bold,
+                                                color: Colors.black),
+                                          ),
+                                          Text(
+                                            '${item.offtake}',
+                                            style:
+                                                TextStyle(color: Colors.black),
+                                          ),
+                                          SizedBox(height: 10),
+                                          Text(
+                                            'Inventory Days Level: ',
+                                            style: TextStyle(
+                                                fontWeight: FontWeight.bold,
+                                                color: Colors.black),
+                                          ),
+                                          Text(
+                                            '${item.inventoryDaysLevel}',
+                                            style:
+                                                TextStyle(color: Colors.black),
+                                          ),
+                                          SizedBox(height: 10),
+                                          Text(
+                                            'Number of Days OOS: ',
+                                            style: TextStyle(
+                                                fontWeight: FontWeight.bold,
+                                                color: Colors.black),
+                                          ),
+                                          Text(
+                                            '${item.noOfDaysOOS}',
+                                            style:
+                                                TextStyle(color: Colors.black),
+                                          ),
+                                          SizedBox(height: 10),
+                                          Text(
+                                            'Remarks: ',
+                                            style: TextStyle(
+                                                fontWeight: FontWeight.bold,
+                                                color: Colors.black),
+                                          ),
+                                          Text(
+                                            '${item.remarksOOS}',
+                                            style:
+                                                TextStyle(color: Colors.black),
+                                          ),
+                                          SizedBox(height: 10),
+                                          Text(
+                                            'Reason: ',
+                                            style: TextStyle(
+                                                fontWeight: FontWeight.bold,
+                                                color: Colors.black),
+                                          ),
+                                          Text(
+                                            '${item.reasonOOS}',
+                                            style:
+                                                TextStyle(color: Colors.black),
+                                          ),
+                                        ],
                                       ),
                                     ),
-                                    SizedBox(height: 10),
-                                    Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: item.expiryFields.map((expiry) {
-                                        return Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            Text(
-                                              'Expiry Date: ${expiry['expiryMonth']}',
-                                              style: TextStyle(
-                                                  color: Colors.black),
-                                            ),
-                                            Text(
-                                              'Quantity: ${expiry['expiryPcs']}',
-                                              style: TextStyle(
-                                                  color: Colors.black),
-                                            ),
-                                            if (expiry.containsKey(
-                                                'manualPcsInput')) // Check if 'manualPcsInput' exists
-                                              Text(
-                                                'Manual PCS Input: ${expiry['expiryPcs']}',
-                                                style: TextStyle(
-                                                    color: Colors.black),
-                                              ),
-                                            SizedBox(
-                                                height:
-                                                    10), // Adjust spacing as needed
-                                          ],
-                                        );
-                                      }).toList(),
-                                    ),
-                                    SizedBox(height: 10),
-                                    Text(
-                                      'Offtake: ',
-                                      style: TextStyle(
-                                          fontWeight: FontWeight.bold,
-                                          color: Colors.black),
-                                    ),
-                                    Text(
-                                      '${item.offtake}',
-                                      style: TextStyle(color: Colors.black),
-                                    ),
-                                    SizedBox(height: 10),
-                                    Text(
-                                      'Inventory Days Level: ',
-                                      style: TextStyle(
-                                          fontWeight: FontWeight.bold,
-                                          color: Colors.black),
-                                    ),
-                                    Text(
-                                      '${item.inventoryDaysLevel}',
-                                      style: TextStyle(color: Colors.black),
-                                    ),
-                                    SizedBox(height: 10),
-                                    Text(
-                                      'Number of Days OOS: ',
-                                      style: TextStyle(
-                                          fontWeight: FontWeight.bold,
-                                          color: Colors.black),
-                                    ),
-                                    Text(
-                                      '${item.noOfDaysOOS}',
-                                      style: TextStyle(color: Colors.black),
-                                    ),
-                                    SizedBox(height: 10),
-                                    Text(
-                                      'Remarks: ',
-                                      style: TextStyle(
-                                          fontWeight: FontWeight.bold,
-                                          color: Colors.black),
-                                    ),
-                                    Text(
-                                      '${item.remarksOOS}',
-                                      style: TextStyle(color: Colors.black),
-                                    ),
-                                    SizedBox(height: 10),
-                                    Text(
-                                      'Reason: ',
-                                      style: TextStyle(
-                                          fontWeight: FontWeight.bold,
-                                          color: Colors.black),
-                                    ),
-                                    Text(
-                                      '${item.reasonOOS}',
-                                      style: TextStyle(color: Colors.black),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            );
-                          },
-                        ),
-                      ),
+                                  );
+                                },
+                              );
+                            }),
+                      )
                     ],
                   );
                 }
@@ -981,7 +1086,7 @@ class _RTVState extends State<RTV> {
 
       rtvItems.sort((a, b) {
         if (_sortByLatest) {
-          return b.date.compareTo(a.date); // Sort by latest to oldest
+          return a.date.compareTo(b.date); // Sort by latest to oldest
         } else {
           return a.date.compareTo(b.date); // Sort by oldest to latest
         }
@@ -1470,7 +1575,9 @@ Future<void> _logout(BuildContext context) async {
   attendanceModel.reset();
   try {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.clear();
+    await prefs
+        .clear(); // Clear all preferences to ensure no old state persists
+
     // Navigate back to the login screen after logout
     Navigator.of(context).pushAndRemoveUntil(
       MaterialPageRoute(builder: (context) => LoginPage()),
@@ -1728,7 +1835,7 @@ class _DateTimeWidgetState extends State<DateTimeWidget> {
           Text(
             formattedTime,
             style: TextStyle(
-              fontSize: 70,
+              fontSize: 60,
               fontWeight: FontWeight.bold,
               color: Colors.black,
             ),
@@ -1737,7 +1844,7 @@ class _DateTimeWidgetState extends State<DateTimeWidget> {
           Text(
             '$formattedDate, $dayOfWeek',
             style: TextStyle(
-              fontSize: 25,
+              fontSize: 20,
               fontWeight: FontWeight.normal,
               color: Colors.black,
             ),

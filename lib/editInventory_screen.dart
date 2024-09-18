@@ -57,6 +57,7 @@ class _EditInventoryScreenState extends State<EditInventoryScreen> {
   String? _selectedNoDeliveryOption;
   String? selectedMonth;
   String currentStatus = ''; // Variable to hold the current status
+  bool editing = false;
 
   @override
   void initState() {
@@ -107,6 +108,14 @@ class _EditInventoryScreenState extends State<EditInventoryScreen> {
     _deliveryController.addListener(_calculateOfftake);
     _endingController.addListener(_calculateOfftake);
     _offtakeController.addListener(_calculateInventoryDaysLevel);
+
+    _statusController.addListener(() {
+      checkSaveEnabled();
+    });
+
+    _beginningController.addListener(() {
+      checkSaveEnabled();
+    });
 
     // _expiryFieldControllers = widget.inventoryItem.expiryFields.map((expiry) {
     //   return TextEditingController(text: expiry['expiryMonth'] ?? '');
@@ -196,8 +205,13 @@ class _EditInventoryScreenState extends State<EditInventoryScreen> {
 
   void checkSaveEnabled() {
     setState(() {
-      // Check if the status is "Carried"
       if (_statusController.text == 'Carried') {
+        // Restore the original value of _beginningController if status changes from 'Delisted'
+        if (_beginningController.text == 'Delisted') {
+          _beginningController.text =
+              widget.inventoryItem.ending?.toString() ?? '';
+        }
+
         // Enable Save button if _selectedNumberOfDaysOOS is 0
         if (_selectedNumberOfDaysOOS == 0) {
           _isSaveEnabled = true;
@@ -212,9 +226,12 @@ class _EditInventoryScreenState extends State<EditInventoryScreen> {
                   (_remarksOOS == "No Delivery" &&
                       _selectedNoDeliveryOption != null));
         }
-      } else {
-        // For statuses other than "Carried", the Save button should be disabled
-        _isSaveEnabled = false;
+      } else if (_statusController.text == 'Delisted') {
+        // If status is 'Delisted', set beginning to 'Delisted'
+        _beginningController.text = 'Delisted';
+
+        // Enable Save button without requiring all fields, as they may not apply
+        _isSaveEnabled = true;
       }
     });
   }
@@ -234,54 +251,46 @@ class _EditInventoryScreenState extends State<EditInventoryScreen> {
       String accountManning = _branchController.text;
       String status = _statusController.text;
       int beginning = int.tryParse(_beginningController.text) ?? 0;
+      String beginningvalue = _beginningController.text;
+      String deliveryValue;
+      String endingValue;
+      String offtakevalue = '0.00';
+      double inventoryDaysLevel = 0;
+      String noOfDaysOOSValue = '0';
+      String remarksOOSValue = '';
+      String reasonOOSValue = '';
+
+      if (status == 'Delisted') {
+        beginningvalue = 'Delisted';
+        deliveryValue = 'Delisted';
+        endingValue = 'Delisted';
+        remarksOOSValue = 'Delisted';
+        reasonOOSValue = 'Delisted';
+      } else {
+        deliveryValue =
+            int.tryParse(_deliveryController.text)?.toString() ?? '0';
+        endingValue = int.tryParse(_endingController.text)?.toString() ?? '0';
+        offtakevalue = int.tryParse(_offtakeController.text)?.toString() ?? '0';
+      }
+
+      // Calculate offtake
+      int beginningValue = beginning;
       int delivery = int.tryParse(_deliveryController.text) ?? 0;
       int ending = int.tryParse(_endingController.text) ?? 0;
+      int offtake = beginningValue + delivery - ending;
 
-      int offtake = beginning + delivery - ending;
-      double inventoryDaysLevel = 0;
-
-      if (status != "Not Carried" && status != "Delisted") {
+      if (status != 'Delisted') {
         if (offtake != 0 && ending != double.infinity && !ending.isNaN) {
           inventoryDaysLevel = ending / (offtake / 7);
         }
-      }
-
-      dynamic ncValue = 'NC';
-      dynamic delistedValue = 'Delisted';
-      dynamic beginningValue = beginning;
-      dynamic deliveryValue = delivery;
-      dynamic endingValue = ending;
-      dynamic offtakeValue = offtake;
-      dynamic noOfDaysOOSValue = double.tryParse(_OOSController.text) ?? 0;
-
-      if (status == 'Delisted') {
-        beginningValue = delistedValue;
-        deliveryValue = delistedValue;
-        endingValue = delistedValue;
-        offtakeValue = delistedValue;
-        noOfDaysOOSValue = delistedValue;
-        _pcsControllers.forEach((controller) {
-          controller.text = delistedValue;
-        });
-      } else if (status == 'Not Carried') {
-        beginningValue = ncValue;
-        deliveryValue = ncValue;
-        endingValue = ncValue;
-        offtakeValue = ncValue;
-        noOfDaysOOSValue = ncValue;
-        _pcsControllers.forEach((controller) {
-          controller.text = ncValue;
-        });
       }
 
       List<Map<String, String>> expiryFieldsData = []; // Explicitly define type
       int maxIndex = max(_selectedMonths.length, _pcsControllers.length);
 
       for (int i = 0; i < maxIndex; i++) {
-        // Use the null-aware operator to handle nullable values
-        String expiryMonth = i < _selectedMonths.length
-            ? _selectedMonths[i] ?? '' // Default to an empty string if null
-            : '';
+        String expiryMonth =
+            i < _selectedMonths.length ? _selectedMonths[i] ?? '' : '';
         String expiryPcs =
             i < _pcsControllers.length ? _pcsControllers[i].text : '';
 
@@ -312,14 +321,15 @@ class _EditInventoryScreenState extends State<EditInventoryScreen> {
         'skuCode': _skuCodeController.text,
         'status': status,
         'beginning': beginningValue.toString(),
-        'delivery': deliveryValue.toString(),
-        'ending': endingValue.toString(),
-        'offtake': offtakeValue.toString(),
+        'delivery': deliveryValue,
+        'ending': endingValue,
+        'offtake': offtake.toString(),
         'inventoryDaysLevel': inventoryDaysLevel,
-        'noOfDaysOOS': noOfDaysOOSValue.toString(),
+        'noOfDaysOOS': noOfDaysOOSValue,
         'expiryFields': expiryFieldsData,
-        'remarksOOS': _remarksOOS ?? '',
-        'reasonOOS': _selectedNoDeliveryOption ?? '',
+        'remarksOOS': remarksOOSValue,
+        'reasonOOS': reasonOOSValue,
+        'isEditing': false, // Add the editing status here
       };
 
       // Log the final document before insertion
@@ -329,10 +339,17 @@ class _EditInventoryScreenState extends State<EditInventoryScreen> {
       await collection.insertOne(newDocument);
       print('New inventory item inserted successfully.');
 
-      // Navigate back to the previous screen
-      Navigator.pop(context);
+      // Check if the widget is still mounted before navigating
+      if (mounted) {
+        Navigator.pop(context, true); // Indicate that editing is done
+      }
     } catch (e) {
       print('Error inserting new inventory item: $e');
+      // Check if the widget is still mounted before navigating
+      if (mounted) {
+        Navigator.pop(context,
+            false); // Indicate that editing is not done if there's an error
+      }
     } finally {
       // Ensure the database connection is closed if it was opened
       if (db != null) {
@@ -349,9 +366,9 @@ class _EditInventoryScreenState extends State<EditInventoryScreen> {
     _deliveryController.clear();
     _endingController.clear();
     _offtakeController.clear();
-    _selectedPeriod = null;
-    _monthController.clear();
-    _weekController.clear();
+    // _selectedPeriod = null;
+    // _monthController.clear();
+    // _weekController.clear();
     _IDLController.clear();
     _expiryFields.clear();
     _pcsControllers.clear();
@@ -363,7 +380,7 @@ class _EditInventoryScreenState extends State<EditInventoryScreen> {
   }
 
   void _addExpiryField() {
-    if (currentStatus != 'Delisted' && currentStatus != 'Not Carried') {
+    if (currentStatus != 'Delisted') {
       setState(() {
         if (_expiryFields.length < 6) {
           int index = _expiryFields.length;
@@ -412,7 +429,7 @@ class _EditInventoryScreenState extends State<EditInventoryScreen> {
   void _updateStatus(String status) {
     setState(() {
       currentStatus = status;
-      if (status == 'Delisted' || status == 'Not carried') {
+      if (status == 'Delisted') {
         _resetExpiryFields(); // Clear existing expiry fields if the status changes to delisted or not carried
       }
     });
@@ -444,6 +461,7 @@ class _EditInventoryScreenState extends State<EditInventoryScreen> {
                 ),
                 SizedBox(height: 16),
                 TextField(
+                  readOnly: true,
                   controller: _dateController,
                   decoration: InputDecoration(
                       border: OutlineInputBorder(),
@@ -459,6 +477,7 @@ class _EditInventoryScreenState extends State<EditInventoryScreen> {
                 ),
                 SizedBox(height: 16),
                 TextField(
+                  readOnly: true,
                   controller: _inputIdController,
                   decoration: InputDecoration(
                       border: OutlineInputBorder(),
@@ -474,6 +493,7 @@ class _EditInventoryScreenState extends State<EditInventoryScreen> {
                 ),
                 SizedBox(height: 16),
                 TextField(
+                  readOnly: true,
                   controller: _nameController,
                   decoration: InputDecoration(
                       border: OutlineInputBorder(),
@@ -941,7 +961,7 @@ class _EditInventoryScreenState extends State<EditInventoryScreen> {
                     border: OutlineInputBorder(),
                     contentPadding: EdgeInsets.symmetric(horizontal: 12),
                   ),
-                  items: <String>['Carried', 'Not Carried', 'Delisted']
+                  items: <String>['Carried', 'Delisted']
                       .map<DropdownMenuItem<String>>((String value) {
                     return DropdownMenuItem<String>(
                       value: value,
@@ -952,8 +972,8 @@ class _EditInventoryScreenState extends State<EditInventoryScreen> {
                     setState(() {
                       _statusController.text = newValue!;
 
-                      if (newValue == 'Not Carried' || newValue == 'Delisted') {
-                        _resetFields(); // Clear expiry fields if the status is 'Not Carried' or 'Delisted'
+                      if (newValue == 'Delisted') {
+                        _resetFields();
                       }
                     });
                   },
@@ -1033,19 +1053,29 @@ class _EditInventoryScreenState extends State<EditInventoryScreen> {
                 SizedBox(height: 16),
                 Center(
                   child: OutlinedButton(
-                    onPressed: _addExpiryField,
+                    onPressed: _isFieldsEnabled()
+                        ? _addExpiryField
+                        : null, // Enable button if _isFieldsEnabled() is true, otherwise disable
                     style: OutlinedButton.styleFrom(
-                      side: BorderSide(width: 2.0, color: Colors.green),
+                      side: BorderSide(
+                          width: 2.0,
+                          color:
+                              _isFieldsEnabled() ? Colors.green : Colors.grey),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(4),
                       ),
                     ),
                     child: Text(
                       'Add Expiry',
-                      style: TextStyle(color: Colors.black),
+                      style: TextStyle(
+                        color: _isFieldsEnabled()
+                            ? Colors.black
+                            : Colors.grey, // Change text color when disabled
+                      ),
                     ),
                   ),
                 ),
+
                 SizedBox(height: 16),
                 Text(
                   'Offtake',

@@ -1100,6 +1100,7 @@ class _SKUInventoryState extends State<SKUInventory> {
   bool _showNotCarriedTextField = false;
   bool _showDelistedTextField = false;
   bool _isSaveEnabled = false;
+  bool _isEditing = true;
   TextEditingController _beginningController = TextEditingController();
   TextEditingController _deliveryController = TextEditingController();
   TextEditingController _endingController = TextEditingController();
@@ -1119,7 +1120,27 @@ class _SKUInventoryState extends State<SKUInventory> {
   String selectedBranch = 'BranchName'; // Get this from user input or selection
   List<String> _availableSkuDescriptions = [];
 
-  void _saveInventoryItem() {
+  Future<void> _updateEditingStatus(
+      String inputId, String userEmail, bool isEditing) async {
+    try {
+      final db = await mongo.Db.create(
+          INVENTORY_CONN_URL); // Ensure 'mongo' is imported correctly
+      await db.open();
+      final collection = db.collection(USER_INVENTORY);
+
+      // Update the document where 'inputId' and 'userEmail' match, setting 'isEditing' to the provided value
+      await collection.update(
+        mongo.where.eq('inputId', inputId).eq('userEmail', userEmail),
+        mongo.modify.set('isEditing', isEditing),
+      );
+
+      await db.close();
+    } catch (e) {
+      print('Error updating editing status: $e');
+    }
+  }
+
+  void _saveInventoryItem() async {
     String AccountManning = _selectedaccountname ?? '';
     String period = _selectedPeriod ?? '';
     String Version = _versionSelected ?? '';
@@ -1129,6 +1150,7 @@ class _SKUInventoryState extends State<SKUInventory> {
     String skucode = _skuCode ?? '';
     String remarksOOS = _remarksOOS ?? '';
     String reasonOOS = _reasonOOS ?? '';
+    bool edit = _isEditing;
     int numberOfDaysOOS = _selectedNumberOfDaysOOS ?? 0;
 
     int beginning = int.tryParse(_beginningController.text) ?? 0;
@@ -1172,36 +1194,39 @@ class _SKUInventoryState extends State<SKUInventory> {
       ];
     }
 
-    // Create a new InventoryItem from form inputs
     InventoryItem newItem = InventoryItem(
-        id:
-            ObjectId(), // You might want to generate this based on your DB setup
-        userEmail: widget.userEmail,
-        date: DateFormat('yyyy-MM-dd')
-            .format(DateTime.now()), // Assuming current date for simplicity
-        inputId: widget.inputid,
-        name: '${widget.userName} ${widget.userLastName}',
-        accountNameBranchManning: widget.selectedAccount,
-        period: widget.SelectedPeriod,
-        month: widget.selectedMonth,
-        week: widget.selectedWeek,
-        category: Version,
-        skuDescription: SKUDescription,
-        products: product,
-        skuCode: skucode,
-        status: status,
-        beginning: beginningValue,
-        delivery: deliveryValue,
-        ending: endingValue,
-        offtake: offtakeValue,
-        inventoryDaysLevel: inventoryDaysLevel.toDouble(),
-        noOfDaysOOS: noOfDaysOOSValue,
-        expiryFields: _expiryFieldsValues,
-        remarksOOS: remarksOOS,
-        reasonOOS: reasonOOS);
+      id: ObjectId(), // Generate this as needed
+      userEmail: widget.userEmail,
+      date: DateFormat('yyyy-MM-dd').format(DateTime.now()), // Current date
+      inputId: widget.inputid,
+      name: '${widget.userName} ${widget.userLastName}',
+      accountNameBranchManning: widget.selectedAccount,
+      period: widget.SelectedPeriod,
+      month: widget.selectedMonth,
+      week: widget.selectedWeek,
+      category: Version,
+      skuDescription: SKUDescription,
+      products: product,
+      skuCode: skucode,
+      status: status,
+      beginning: beginningValue,
+      delivery: deliveryValue,
+      ending: endingValue,
+      offtake: offtakeValue,
+      inventoryDaysLevel: inventoryDaysLevel.toDouble(),
+      noOfDaysOOS: noOfDaysOOSValue,
+      expiryFields: _expiryFieldsValues,
+      remarksOOS: remarksOOS,
+      reasonOOS: reasonOOS,
+      isEditing: true, // Set to false when saving new item
+    );
 
-    // Save the new inventory item to the database
-    _saveToDatabase(newItem);
+    await _saveToDatabase(newItem);
+
+    // Update status of the original item if editing
+    if (_isEditing) {
+      await _updateEditingStatus(widget.inputid, widget.userEmail, false);
+    }
   }
 
   Future<void> _saveToDatabase(InventoryItem item) async {
@@ -1873,11 +1898,13 @@ class _SKUInventoryState extends State<SKUInventory> {
     setState(() {
       if (_statusSelected == 'Carried') {
         if (_selectedNumberOfDaysOOS == 0) {
-          // Enable Save button when "0" is selected
-          _isSaveEnabled = false;
-        } else {
-          // Enable Save button only if the relevant fields are filled or criteria are met
+          // Enable Save button when "0" is selected, but only if other fields are filled
           _isSaveEnabled = _endingController.text.isNotEmpty &&
+              _deliveryController.text.isNotEmpty;
+        } else {
+          // Existing logic for when _selectedNumberOfDaysOOS is not 0
+          _isSaveEnabled = _endingController.text.isNotEmpty &&
+              _deliveryController.text.isNotEmpty &&
               (_remarksOOS == "No P.O" ||
                   _remarksOOS == "Unserved" ||
                   (_remarksOOS == "No Delivery" &&
@@ -2085,7 +2112,7 @@ class _SKUInventoryState extends State<SKUInventory> {
                               value: value,
                               child: Container(
                                 width:
-                                    350, // Set a max width for the dropdown items
+                                    315, // Set a max width for the dropdown items
                                 child: Text(
                                   value,
                                   overflow: TextOverflow
@@ -2154,7 +2181,7 @@ class _SKUInventoryState extends State<SKUInventory> {
                     children: [
                       if (_productDetails != null)
                         SizedBox(
-                          width: 130, // Same fixed width
+                          width: 115, // Same fixed width
                           child: OutlinedButton(
                             onPressed: () {
                               _toggleCarriedTextField('Carried');
@@ -2204,7 +2231,7 @@ class _SKUInventoryState extends State<SKUInventory> {
                         ),
                       if (_productDetails != null)
                         SizedBox(
-                          width: 130, // Same fixed width
+                          width: 115, // Same fixed width
                           child: OutlinedButton(
                             onPressed: () {
                               _toggleDelistedTextField('Delisted');
@@ -3030,6 +3057,7 @@ class ExpiryField extends StatefulWidget {
 class _ExpiryFieldState extends State<ExpiryField> {
   String? _selectedMonth;
   final TextEditingController _expiryController = TextEditingController();
+  bool _isMonthSelected = false; // New flag to track dropdown selection
 
   @override
   void initState() {
@@ -3037,7 +3065,7 @@ class _ExpiryFieldState extends State<ExpiryField> {
     _selectedMonth = widget.initialMonth;
     if (widget.initialPcs != null) {
       _expiryController.text = widget.initialPcs.toString();
-    } // Don't set anything if initialPcs is null
+    }
     _expiryController.addListener(_onExpiryFieldChanged);
   }
 
@@ -3049,7 +3077,7 @@ class _ExpiryFieldState extends State<ExpiryField> {
   }
 
   void _onExpiryFieldChanged() {
-    if (_selectedMonth != null) {
+    if (_isMonthSelected) {
       widget.onExpiryFieldChanged(
         _selectedMonth!,
         int.tryParse(_expiryController.text) ?? 0,
@@ -3074,6 +3102,7 @@ class _ExpiryFieldState extends State<ExpiryField> {
           onChanged: (String? newValue) {
             setState(() {
               _selectedMonth = newValue;
+              _isMonthSelected = newValue != null && newValue.isNotEmpty;
             });
             _onExpiryFieldChanged();
           },
@@ -3120,6 +3149,8 @@ class _ExpiryFieldState extends State<ExpiryField> {
         SizedBox(height: 8),
         TextField(
           controller: _expiryController,
+          enabled:
+              _isMonthSelected, // Enable TextField only when a month is selected
           decoration: InputDecoration(
             hintText: 'Enter PCS of expiry',
             border: OutlineInputBorder(),
