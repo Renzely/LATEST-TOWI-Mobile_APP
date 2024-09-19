@@ -32,6 +32,7 @@ class _SignUpState extends State<SignUp> {
   var selectedRemarks = 'REGULAR'; // Default choice
   var branchController = TextEditingController(text: 'Branch');
   bool isActivate = false;
+  bool isLoading = false;
   int type = 1;
 
   String? fnameError;
@@ -47,301 +48,321 @@ class _SignUpState extends State<SignUp> {
   @override
   Widget build(BuildContext context) {
     List<String> remarksChoices = ['REGULAR', 'RELIVER', 'PROBATIONARY'];
-    return Scaffold(
-      backgroundColor: Colors.white,
-      body: SingleChildScrollView(
-        child: Center(
-          child: Container(
-            height: 1200,
-            width: 500,
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [
-                  Colors.green[600]!,
-                  Colors.green[800]!,
-                  Colors.green[900]!,
-                ],
-              ),
-              borderRadius: BorderRadius.circular(30),
-            ),
-            padding: const EdgeInsets.all(20),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.start,
-              children: [
-                const SizedBox(height: 20),
-                Text(
-                  'SIGN UP',
-                  style: GoogleFonts.roboto(
-                    color: Colors.white,
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
+    return new WillPopScope(
+        onWillPop: () async => false,
+        child: new Scaffold(
+          backgroundColor: Colors.white,
+          body: SingleChildScrollView(
+            child: Center(
+              child: Container(
+                height: 1200,
+                width: 500,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      Colors.green[600]!,
+                      Colors.green[800]!,
+                      Colors.green[900]!,
+                    ],
                   ),
+                  borderRadius: BorderRadius.circular(30),
                 ),
-                const SizedBox(height: 30),
-                DropdownButtonFormField<String>(
-                  value: selectedRemarks,
-                  onChanged: (String? newValue) {
-                    setState(() {
-                      selectedRemarks = newValue!;
-                      remarksController.text = newValue;
-                    });
-                  },
-                  items: remarksChoices
-                      .map<DropdownMenuItem<String>>((String value) {
-                    return DropdownMenuItem<String>(
-                      value: value,
-                      child: Text(
-                        value,
-                        style: TextStyle(
-                          color: Colors.black,
+                padding: const EdgeInsets.all(20),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: [
+                    const SizedBox(height: 20),
+                    Text(
+                      'SIGN UP',
+                      style: GoogleFonts.roboto(
+                        color: Colors.white,
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 30),
+                    DropdownButtonFormField<String>(
+                      value: selectedRemarks,
+                      onChanged: (String? newValue) {
+                        setState(() {
+                          selectedRemarks = newValue!;
+                          remarksController.text = newValue;
+                        });
+                      },
+                      items: remarksChoices
+                          .map<DropdownMenuItem<String>>((String value) {
+                        return DropdownMenuItem<String>(
+                          value: value,
+                          child: Text(
+                            value,
+                            style: TextStyle(
+                              color: Colors.black,
+                            ),
+                          ),
+                        );
+                      }).toList(),
+                      decoration: InputDecoration(
+                        hintText: 'Remarks',
+                        fillColor: Colors.white,
+                        filled: true,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(20),
                         ),
                       ),
-                    );
-                  }).toList(),
-                  decoration: InputDecoration(
-                    hintText: 'Remarks',
-                    fillColor: Colors.white,
-                    filled: true,
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(20),
                     ),
-                  ),
-                ),
-                const SizedBox(height: 20),
-                TextField(
-                  enabled: false, // Disable the TextField
-                  controller: branchController,
-                  decoration: InputDecoration(
-                    hintText: 'Branch',
-                    fillColor: Colors.white,
-                    filled: true,
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 20),
-                TextField(
-                  obscureText: false,
-                  controller: fnameController,
-                  decoration: InputDecoration(
-                    hintText: 'First Name',
-                    fillColor: Colors.white,
-                    filled: true,
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    errorText: fnameError,
-                  ),
-                ),
-                const SizedBox(height: 20),
-                TextField(
-                  obscureText: false,
-                  controller: mnameController,
-                  decoration: InputDecoration(
-                    hintText: 'Middle Name (Optional)',
-                    fillColor: Colors.white,
-                    filled: true,
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 20), // Add space between fields
-                TextField(
-                  obscureText: false,
-                  controller: lnameController,
-                  decoration: InputDecoration(
-                    hintText: 'Last Name',
-                    fillColor: Colors.white,
-                    filled: true,
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    errorText: lnameError,
-                  ),
-                ),
-                const SizedBox(height: 20), // Add space between fields
-                TextField(
-                  obscureText: false,
-                  controller: addressController,
-                  decoration: InputDecoration(
-                    hintText: 'Email',
-                    fillColor: Colors.white,
-                    filled: true,
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    errorText: addressError,
-                  ),
-                ),
-                const SizedBox(height: 20), // Add space between fields
-                TextField(
-                  obscureText: false,
-                  controller: contactNumController,
-                  keyboardType:
-                      TextInputType.number, // Set keyboard type to number
-                  inputFormatters: [
-                    FilteringTextInputFormatter.digitsOnly, // Allow only digits
-                    LengthLimitingTextInputFormatter(
-                        11), // Limit to 11 characters
-                  ],
-                  decoration: InputDecoration(
-                    hintText: 'Contact Number',
-                    fillColor: Colors.white,
-                    filled: true,
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    errorText: contactNumError,
-                  ),
-                  onChanged: (value) {
-                    setState(() {
-                      // You can add any additional logic here if needed
-                    });
-                  },
-                ),
-                const SizedBox(height: 20), // Add space between fields
-                TextField(
-                  obscureText: false,
-                  controller: usernameController,
-                  decoration: InputDecoration(
-                    hintText: 'Username',
-                    fillColor: Colors.white,
-                    filled: true,
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    errorText: usernameError,
-                  ),
-                ),
-                const SizedBox(height: 20), // Add space between fields
-                TextField(
-                  obscureText: obsurePassword,
-                  controller: passwordController,
-                  decoration: InputDecoration(
-                    hintText: 'Password',
-                    fillColor: Colors.white,
-                    filled: true,
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    errorText: passwordError,
-                    suffixIcon: IconButton(
-                      icon: Icon(
-                        obsurePassword
-                            ? Icons.visibility_off
-                            : Icons.visibility,
+                    const SizedBox(height: 20),
+                    TextField(
+                      enabled: false, // Disable the TextField
+                      controller: branchController,
+                      decoration: InputDecoration(
+                        hintText: 'Branch',
+                        fillColor: Colors.white,
+                        filled: true,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(20),
+                        ),
                       ),
-                      onPressed: () {
+                    ),
+                    const SizedBox(height: 20),
+                    TextField(
+                      obscureText: false,
+                      controller: fnameController,
+                      decoration: InputDecoration(
+                        hintText: 'First Name',
+                        fillColor: Colors.white,
+                        filled: true,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        errorText: fnameError,
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    TextField(
+                      obscureText: false,
+                      controller: mnameController,
+                      decoration: InputDecoration(
+                        hintText: 'Middle Name (Optional)',
+                        fillColor: Colors.white,
+                        filled: true,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 20), // Add space between fields
+                    TextField(
+                      obscureText: false,
+                      controller: lnameController,
+                      decoration: InputDecoration(
+                        hintText: 'Last Name',
+                        fillColor: Colors.white,
+                        filled: true,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        errorText: lnameError,
+                      ),
+                    ),
+                    const SizedBox(height: 20), // Add space between fields
+                    TextField(
+                      obscureText: false,
+                      controller: addressController,
+                      decoration: InputDecoration(
+                        hintText: 'Email',
+                        fillColor: Colors.white,
+                        filled: true,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        errorText: addressError,
+                      ),
+                    ),
+                    const SizedBox(height: 20), // Add space between fields
+                    TextField(
+                      obscureText: false,
+                      controller: contactNumController,
+                      keyboardType:
+                          TextInputType.number, // Set keyboard type to number
+                      inputFormatters: [
+                        FilteringTextInputFormatter
+                            .digitsOnly, // Allow only digits
+                        LengthLimitingTextInputFormatter(
+                            11), // Limit to 11 characters
+                      ],
+                      decoration: InputDecoration(
+                        hintText: 'Contact Number',
+                        fillColor: Colors.white,
+                        filled: true,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        errorText: contactNumError,
+                      ),
+                      onChanged: (value) {
                         setState(() {
-                          obsurePassword = !obsurePassword;
+                          // You can add any additional logic here if needed
                         });
                       },
                     ),
-                  ),
-                ),
-                const SizedBox(height: 20), // Add space between fields
-                TextField(
-                  obscureText: obsureConfirmPassword,
-                  controller: confirmPassController,
-                  decoration: InputDecoration(
-                    hintText: 'Confirm Password',
-                    fillColor: Colors.white,
-                    filled: true,
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    errorText: confirmPassError,
-                    suffixIcon: IconButton(
-                      icon: Icon(
-                        obsureConfirmPassword
-                            ? Icons.visibility_off
-                            : Icons.visibility,
+                    const SizedBox(height: 20), // Add space between fields
+                    TextField(
+                      obscureText: false,
+                      controller: usernameController,
+                      decoration: InputDecoration(
+                        hintText: 'Username',
+                        fillColor: Colors.white,
+                        filled: true,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        errorText: usernameError,
                       ),
-                      onPressed: () {
-                        setState(() {
-                          obsureConfirmPassword = !obsureConfirmPassword;
-                        });
-                      },
                     ),
-                  ),
-                ),
-                const SizedBox(height: 35), // Add space between fields
-                ElevatedButton(
-                  onPressed: () async {
-                    if (_validateFields()) {
-                      if (passwordController.text ==
-                          confirmPassController.text) {
-                        if (await _checkEmailExists(addressController.text)) {
-                          setState(() {
-                            addressError = "Email Already Exists";
-                          });
-                        } else {
-                          _signUp(
-                              fnameController.text,
-                              mnameController.text,
-                              lnameController.text,
-                              addressController.text,
-                              usernameController.text,
-                              passwordController.text,
-                              contactNumController.text,
-                              branchController.text,
-                              selectedRemarks,
-                              isActivate,
-                              type);
+                    const SizedBox(height: 20), // Add space between fields
+                    TextField(
+                      obscureText: obsurePassword,
+                      controller: passwordController,
+                      decoration: InputDecoration(
+                        hintText: 'Password',
+                        fillColor: Colors.white,
+                        filled: true,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        errorText: passwordError,
+                        suffixIcon: IconButton(
+                          icon: Icon(
+                            obsurePassword
+                                ? Icons.visibility_off
+                                : Icons.visibility,
+                          ),
+                          onPressed: () {
+                            setState(() {
+                              obsurePassword = !obsurePassword;
+                            });
+                          },
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 20), // Add space between fields
+                    TextField(
+                      obscureText: obsureConfirmPassword,
+                      controller: confirmPassController,
+                      decoration: InputDecoration(
+                        hintText: 'Confirm Password',
+                        fillColor: Colors.white,
+                        filled: true,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        errorText: confirmPassError,
+                        suffixIcon: IconButton(
+                          icon: Icon(
+                            obsureConfirmPassword
+                                ? Icons.visibility_off
+                                : Icons.visibility,
+                          ),
+                          onPressed: () {
+                            setState(() {
+                              obsureConfirmPassword = !obsureConfirmPassword;
+                            });
+                          },
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 35), // Add space between fields
+                    ElevatedButton(
+                      onPressed: () async {
+                        if (_validateFields()) {
+                          if (passwordController.text ==
+                              confirmPassController.text) {
+                            if (await _checkEmailExists(
+                                addressController.text)) {
+                              setState(() {
+                                addressError = "Email Already Exists";
+                              });
+                            } else {
+                              setState(() {
+                                isLoading = true; // Set loading to true
+                              });
+
+                              await _signUp(
+                                fnameController.text,
+                                mnameController.text,
+                                lnameController.text,
+                                addressController.text,
+                                usernameController.text,
+                                passwordController.text,
+                                contactNumController.text,
+                                branchController.text,
+                                selectedRemarks,
+                                isActivate,
+                                type,
+                              );
+
+                              setState(() {
+                                isLoading =
+                                    false; // Set loading to false after sign-up completes
+                              });
+                            }
+                          } else {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text("Passwords do not match")),
+                            );
+                          }
                         }
-                      } else {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text("Passwords do not match")),
-                        );
-                      }
-                    }
-                  },
-                  style: ElevatedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 15),
-                    minimumSize: const Size(double.infinity, 50),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                  ),
-                  child: Text(
-                    'SUBMIT',
-                    style: GoogleFonts.roboto(
-                      color: Colors.green,
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 15),
-                Text(
-                  "Already have an account? ",
-                  style: GoogleFonts.roboto(color: Colors.white),
-                ),
-                GestureDetector(
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => LoginPage(),
+                      },
+                      style: ElevatedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 15),
+                        minimumSize: const Size(double.infinity, 50),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(20),
+                        ),
                       ),
-                    );
-                  },
-                  child: Text(
-                    'SIGN IN',
-                    style: GoogleFonts.roboto(
-                      color: Colors.blue[400],
-                      fontWeight: FontWeight.bold,
+                      child: isLoading
+                          ? CircularProgressIndicator(
+                              color: Colors.green,
+                            )
+                          : Text(
+                              'SUBMIT',
+                              style: GoogleFonts.roboto(
+                                color: Colors.green,
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
                     ),
-                  ),
+
+                    const SizedBox(height: 15),
+                    Text(
+                      "Already have an account? ",
+                      style: GoogleFonts.roboto(color: Colors.white),
+                    ),
+                    const SizedBox(height: 15),
+                    GestureDetector(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => LoginPage(),
+                          ),
+                        );
+                      },
+                      child: Text(
+                        'SIGN IN',
+                        style: GoogleFonts.roboto(
+                            color: Colors.blue[400],
+                            fontWeight: FontWeight.bold,
+                            fontSize: 20),
+                      ),
+                    ),
+                  ],
                 ),
-              ],
+              ),
             ),
           ),
-        ),
-      ),
-    );
+        ));
   }
 
   Future<void> _signUp(

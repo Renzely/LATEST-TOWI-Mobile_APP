@@ -218,330 +218,354 @@ class _ReturnVendorState extends State<ReturnVendor> {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      home: Scaffold(
-        appBar: AppBar(
-          backgroundColor: Colors.green[600],
-          elevation: 0,
-          title: Text(
-            'Return to Vendor Input',
-            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-          ),
-        ),
-        body: SingleChildScrollView(
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                SizedBox(height: 16),
-                Text(
-                  'Input ID',
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                ),
-                SizedBox(height: 8),
-                TextFormField(
-                  initialValue: generateInputID(),
-                  enabled: false,
-                  decoration: InputDecoration(
-                    border: OutlineInputBorder(),
-                    contentPadding: EdgeInsets.symmetric(horizontal: 12),
-                    hintText: 'Auto-generated Input ID',
-                  ),
-                ),
-                Text(
-                  'Date',
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                ),
-                SizedBox(height: 8),
-                Container(
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: TextFormField(
-                          decoration: InputDecoration(
-                            enabled: false,
-                            border: OutlineInputBorder(),
-                            contentPadding:
-                                EdgeInsets.symmetric(horizontal: 12),
-                            hintText:
-                                DateFormat('yyyy-MM-dd').format(selectedDate),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                SizedBox(height: 16),
-                Text(
-                  'Merchandiser',
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                ),
-                TextFormField(
-                  enabled: false,
-                  initialValue: '${widget.userName} ${widget.userLastName}',
-                  decoration: InputDecoration(
-                    border: OutlineInputBorder(),
-                    contentPadding: EdgeInsets.symmetric(horizontal: 12),
-                    labelText: '',
-                  ),
-                ),
-                SizedBox(height: 16),
-                Text(
-                  'Outlet',
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                ),
-                SizedBox(height: 10),
-                DropdownButtonFormField<String>(
-                  isExpanded: true,
-                  value: selectedOutlet,
-                  decoration: InputDecoration(
-                    border: OutlineInputBorder(),
-                    contentPadding: EdgeInsets.symmetric(horizontal: 12),
-                  ),
-                  items: outletOptions.map((String outlet) {
-                    return DropdownMenuItem(
-                      value: outlet,
-                      child: Text(outlet),
-                    );
-                  }).toList(),
-                  onChanged: outletOptions.length == 1
-                      ? null
-                      : (String? newValue) {
-                          if (newValue != null) {
-                            setState(() {
-                              selectedOutlet = newValue;
-                            });
-                          }
-                        },
-                ),
-                SizedBox(height: 16),
-                Text(
-                  'Pending or Not Pending',
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                ),
-                SizedBox(height: 10),
-                DropdownButtonFormField<String>(
-                  value: isPending ? 'Pending' : 'Not Pending',
-                  decoration: InputDecoration(
-                    border: OutlineInputBorder(),
-                    contentPadding: EdgeInsets.symmetric(horizontal: 12),
-                  ),
-                  items: ['Pending', 'Not Pending'].map((String value) {
-                    return DropdownMenuItem<String>(
-                      value: value,
-                      child: Text(value),
-                    );
-                  }).toList(),
-                  onChanged: (String? newValue) {
-                    if (newValue != null) {
-                      setState(() {
-                        isPending = newValue == 'Pending';
-                      });
-                    }
-                  },
-                ),
-                SizedBox(height: 16),
-                Text(
-                  'Category',
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                ),
-                SizedBox(height: 10),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children:
-                      _categoryToSkuDescriptions.keys.map((String category) {
-                    return OutlinedButton(
-                      onPressed: () => _toggleDropdown(category),
-                      style: OutlinedButton.styleFrom(
-                        side: BorderSide(
-                          width: 2.0,
-                          color: selectedCategory == category
-                              ? Colors.green
-                              : Colors.blueGrey.shade200,
-                        ),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(4),
-                        ),
-                      ),
-                      child: Text(
-                        category,
-                        style: TextStyle(color: Colors.black),
-                      ),
-                    );
-                  }).toList(),
-                ),
-                SizedBox(height: 16),
-                DropdownButtonFormField<String>(
-                  value: selectedItem,
-                  decoration: InputDecoration(
-                    border: OutlineInputBorder(),
-                    contentPadding: EdgeInsets.symmetric(horizontal: 12),
-                  ),
-                  items: itemOptions.map((String item) {
-                    return DropdownMenuItem<String>(
-                      value: item,
-                      child: SizedBox(
-                        width: 350,
-                        child: Tooltip(
-                          message: item,
-                          child: Text(
-                            item,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                      ),
-                    );
-                  }).toList(),
-                  onChanged: (String? newValue) {
-                    if (newValue != null) {
-                      setState(() {
-                        selectedItem = newValue;
-                      });
-                    }
-                  },
-                ),
-                if (!isPending)
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      SizedBox(height: 16),
-                      Text(
-                        'Quantity',
-                        style: TextStyle(
-                            fontWeight: FontWeight.bold, fontSize: 16),
-                      ),
-                      TextFormField(
-                        decoration: InputDecoration(
-                          hintText: 'Input Quantity',
-                          border: OutlineInputBorder(),
-                          contentPadding: EdgeInsets.symmetric(horizontal: 12),
-                        ),
-                        onChanged: (value) {
-                          setState(() {
-                            quantity = value;
-                            checkSaveEnabled();
-                          });
-                        },
-                      ),
-                      SizedBox(height: 16),
-                      Text(
-                        'Driver\'s Name',
-                        style: TextStyle(
-                            fontWeight: FontWeight.bold, fontSize: 16),
-                      ),
-                      TextFormField(
-                        decoration: InputDecoration(
-                          hintText: 'Input Driver\'s Name',
-                          border: OutlineInputBorder(),
-                          contentPadding: EdgeInsets.symmetric(horizontal: 12),
-                        ),
-                        onChanged: (value) {
-                          setState(() {
-                            driverName = value;
-                            checkSaveEnabled();
-                          });
-                        },
-                      ),
-                      SizedBox(height: 16),
-                      Text(
-                        'Plate Number',
-                        style: TextStyle(
-                            fontWeight: FontWeight.bold, fontSize: 16),
-                      ),
-                      TextFormField(
-                        decoration: InputDecoration(
-                          hintText: 'Input Plate Number',
-                          border: OutlineInputBorder(),
-                          contentPadding: EdgeInsets.symmetric(horizontal: 12),
-                        ),
-                        onChanged: (value) {
-                          setState(() {
-                            plateNumber = value;
-                            checkSaveEnabled();
-                          });
-                        },
-                      ),
-                      SizedBox(height: 16),
-                      Text(
-                        'Pull Out Reason',
-                        style: TextStyle(
-                            fontWeight: FontWeight.bold, fontSize: 16),
-                      ),
-                      TextFormField(
-                        decoration: InputDecoration(
-                          hintText: 'Input Pull Out Reason',
-                          border: OutlineInputBorder(),
-                          contentPadding: EdgeInsets.symmetric(horizontal: 12),
-                        ),
-                        onChanged: (value) {
-                          setState(() {
-                            pullOutReason = value;
-                            checkSaveEnabled();
-                          });
-                        },
-                      ),
-                    ],
-                  ),
-                SizedBox(height: 16),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    return new WillPopScope(
+        onWillPop: () async => false,
+        child: new MaterialApp(
+          debugShowCheckedModeBanner: false,
+          home: Scaffold(
+            appBar: AppBar(
+              backgroundColor: Colors.green[600],
+              elevation: 0,
+              title: Text(
+                'Return to Vendor Input',
+                style:
+                    TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+              ),
+            ),
+            body: SingleChildScrollView(
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    ElevatedButton(
-                      onPressed: () {
-                        Navigator.of(context).pushReplacement(
-                          MaterialPageRoute(
-                            builder: (context) => RTV(
-                              userName: widget.userName,
-                              userLastName: widget.userLastName,
-                              userEmail: widget.userEmail,
-                              userContactNum: widget.userContactNum,
-                              userMiddleName: widget.userMiddleName,
+                    SizedBox(height: 16),
+                    Text(
+                      'Input ID',
+                      style:
+                          TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                    ),
+                    SizedBox(height: 8),
+                    TextFormField(
+                      initialValue: generateInputID(),
+                      enabled: false,
+                      decoration: InputDecoration(
+                        border: OutlineInputBorder(),
+                        contentPadding: EdgeInsets.symmetric(horizontal: 12),
+                        hintText: 'Auto-generated Input ID',
+                      ),
+                    ),
+                    Text(
+                      'Date',
+                      style:
+                          TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                    ),
+                    SizedBox(height: 8),
+                    Container(
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: TextFormField(
+                              decoration: InputDecoration(
+                                enabled: false,
+                                border: OutlineInputBorder(),
+                                contentPadding:
+                                    EdgeInsets.symmetric(horizontal: 12),
+                                hintText: DateFormat('yyyy-MM-dd')
+                                    .format(selectedDate),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    SizedBox(height: 16),
+                    Text(
+                      'Merchandiser',
+                      style:
+                          TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                    ),
+                    TextFormField(
+                      enabled: false,
+                      initialValue: '${widget.userName} ${widget.userLastName}',
+                      decoration: InputDecoration(
+                        border: OutlineInputBorder(),
+                        contentPadding: EdgeInsets.symmetric(horizontal: 12),
+                        labelText: '',
+                      ),
+                    ),
+                    SizedBox(height: 16),
+                    Text(
+                      'Outlet',
+                      style:
+                          TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                    ),
+                    SizedBox(height: 10),
+                    DropdownButtonFormField<String>(
+                      isExpanded: true,
+                      value: selectedOutlet,
+                      decoration: InputDecoration(
+                        border: OutlineInputBorder(),
+                        contentPadding: EdgeInsets.symmetric(horizontal: 12),
+                      ),
+                      items: outletOptions.map((String outlet) {
+                        return DropdownMenuItem(
+                          value: outlet,
+                          child: Text(outlet),
+                        );
+                      }).toList(),
+                      onChanged: outletOptions.length == 1
+                          ? null
+                          : (String? newValue) {
+                              if (newValue != null) {
+                                setState(() {
+                                  selectedOutlet = newValue;
+                                });
+                              }
+                            },
+                    ),
+                    SizedBox(height: 16),
+                    Text(
+                      'Pending or Not Pending',
+                      style:
+                          TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                    ),
+                    SizedBox(height: 10),
+                    DropdownButtonFormField<String>(
+                      value: isPending ? 'Pending' : 'Not Pending',
+                      decoration: InputDecoration(
+                        border: OutlineInputBorder(),
+                        contentPadding: EdgeInsets.symmetric(horizontal: 12),
+                      ),
+                      items: ['Pending', 'Not Pending'].map((String value) {
+                        return DropdownMenuItem<String>(
+                          value: value,
+                          child: Text(value),
+                        );
+                      }).toList(),
+                      onChanged: (String? newValue) {
+                        if (newValue != null) {
+                          setState(() {
+                            isPending = newValue == 'Pending';
+                          });
+                        }
+                      },
+                    ),
+                    SizedBox(height: 16),
+                    Text(
+                      'Category',
+                      style:
+                          TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                    ),
+                    SizedBox(height: 10),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: _categoryToSkuDescriptions.keys
+                          .map((String category) {
+                        return OutlinedButton(
+                          onPressed: () => _toggleDropdown(category),
+                          style: OutlinedButton.styleFrom(
+                            side: BorderSide(
+                              width: 2.0,
+                              color: selectedCategory == category
+                                  ? Colors.green
+                                  : Colors.blueGrey.shade200,
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                          ),
+                          child: Text(
+                            category,
+                            style: TextStyle(color: Colors.black),
+                          ),
+                        );
+                      }).toList(),
+                    ),
+                    SizedBox(height: 16),
+                    Text(
+                      'SKU Description',
+                      style:
+                          TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                    ),
+                    SizedBox(height: 10),
+                    DropdownButtonFormField<String>(
+                      value: selectedItem,
+                      decoration: InputDecoration(
+                        border: OutlineInputBorder(),
+                        contentPadding: EdgeInsets.symmetric(horizontal: 12),
+                      ),
+                      items: itemOptions.map((String item) {
+                        return DropdownMenuItem<String>(
+                          value: item,
+                          child: SizedBox(
+                            width: 300,
+                            child: Tooltip(
+                              message: item,
+                              child: Text(
+                                item,
+                                overflow: TextOverflow
+                                    .ellipsis, // Handle long text with ellipsis
+                                softWrap:
+                                    false, // Prevent wrapping of long text
+                              ),
                             ),
                           ),
                         );
+                      }).toList(),
+                      onChanged: (String? newValue) {
+                        if (newValue != null) {
+                          setState(() {
+                            selectedItem = newValue;
+                          });
+                        }
                       },
-                      style: ElevatedButton.styleFrom(
-                        padding: EdgeInsets.symmetric(vertical: 15),
-                        backgroundColor: Colors.green,
-                        minimumSize: Size(150, 50),
-                      ),
-                      child: Text(
-                        'Cancel',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
                     ),
-                    ElevatedButton(
-                      onPressed: isPending
-                          ? _confirmSaveReturnToVendor
-                          : (isSaveEnabled ? _confirmSaveReturnToVendor : null),
-                      style: ElevatedButton.styleFrom(
-                        padding: EdgeInsets.symmetric(vertical: 15),
-                        backgroundColor: (isSaveEnabled || isPending)
-                            ? Colors.green
-                            : Colors.grey,
-                        minimumSize: Size(150, 50),
+                    if (!isPending)
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          SizedBox(height: 16),
+                          Text(
+                            'Quantity',
+                            style: TextStyle(
+                                fontWeight: FontWeight.bold, fontSize: 16),
+                          ),
+                          TextFormField(
+                            decoration: InputDecoration(
+                              hintText: 'Input Quantity',
+                              border: OutlineInputBorder(),
+                              contentPadding:
+                                  EdgeInsets.symmetric(horizontal: 12),
+                            ),
+                            onChanged: (value) {
+                              setState(() {
+                                quantity = value;
+                                checkSaveEnabled();
+                              });
+                            },
+                          ),
+                          SizedBox(height: 16),
+                          Text(
+                            'Driver\'s Name',
+                            style: TextStyle(
+                                fontWeight: FontWeight.bold, fontSize: 16),
+                          ),
+                          TextFormField(
+                            decoration: InputDecoration(
+                              hintText: 'Input Driver\'s Name',
+                              border: OutlineInputBorder(),
+                              contentPadding:
+                                  EdgeInsets.symmetric(horizontal: 12),
+                            ),
+                            onChanged: (value) {
+                              setState(() {
+                                driverName = value;
+                                checkSaveEnabled();
+                              });
+                            },
+                          ),
+                          SizedBox(height: 16),
+                          Text(
+                            'Plate Number',
+                            style: TextStyle(
+                                fontWeight: FontWeight.bold, fontSize: 16),
+                          ),
+                          TextFormField(
+                            decoration: InputDecoration(
+                              hintText: 'Input Plate Number',
+                              border: OutlineInputBorder(),
+                              contentPadding:
+                                  EdgeInsets.symmetric(horizontal: 12),
+                            ),
+                            onChanged: (value) {
+                              setState(() {
+                                plateNumber = value;
+                                checkSaveEnabled();
+                              });
+                            },
+                          ),
+                          SizedBox(height: 16),
+                          Text(
+                            'Pull Out Reason',
+                            style: TextStyle(
+                                fontWeight: FontWeight.bold, fontSize: 16),
+                          ),
+                          TextFormField(
+                            decoration: InputDecoration(
+                              hintText: 'Input Pull Out Reason',
+                              border: OutlineInputBorder(),
+                              contentPadding:
+                                  EdgeInsets.symmetric(horizontal: 12),
+                            ),
+                            onChanged: (value) {
+                              setState(() {
+                                pullOutReason = value;
+                                checkSaveEnabled();
+                              });
+                            },
+                          ),
+                        ],
                       ),
-                      child: Text(
-                        'Save',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
+                    SizedBox(height: 16),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        ElevatedButton(
+                          onPressed: () {
+                            Navigator.of(context).pushReplacement(
+                              MaterialPageRoute(
+                                builder: (context) => RTV(
+                                  userName: widget.userName,
+                                  userLastName: widget.userLastName,
+                                  userEmail: widget.userEmail,
+                                  userContactNum: widget.userContactNum,
+                                  userMiddleName: widget.userMiddleName,
+                                ),
+                              ),
+                            );
+                          },
+                          style: ElevatedButton.styleFrom(
+                            padding: EdgeInsets.symmetric(vertical: 15),
+                            backgroundColor: Colors.green,
+                            minimumSize: Size(150, 50),
+                          ),
+                          child: Text(
+                            'Cancel',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
                         ),
-                      ),
+                        ElevatedButton(
+                          onPressed: isPending
+                              ? _confirmSaveReturnToVendor
+                              : (isSaveEnabled
+                                  ? _confirmSaveReturnToVendor
+                                  : null),
+                          style: ElevatedButton.styleFrom(
+                            padding: EdgeInsets.symmetric(vertical: 15),
+                            backgroundColor: (isSaveEnabled || isPending)
+                                ? Colors.green
+                                : Colors.grey,
+                            minimumSize: Size(150, 50),
+                          ),
+                          child: Text(
+                            'Save',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),
-              ],
+              ),
             ),
           ),
-        ),
-      ),
-    );
+        ));
   }
 
   void _toggleDropdown(String value) {
