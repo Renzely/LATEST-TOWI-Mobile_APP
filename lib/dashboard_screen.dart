@@ -34,23 +34,26 @@ class Attendance extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SideBarLayout(
-      title: "Attendance",
-      mainContent: SingleChildScrollView(
-        // Wrap the Column with SingleChildScrollView
-        child: Column(
-          children: [
-            DateTimeWidget(),
-            AttendanceWidget(userEmail: userEmail), // Pass the userEmail here
-          ],
-        ),
-      ),
-      userName: userName,
-      userLastName: userLastName,
-      userEmail: userEmail,
-      userContactNum: userContactNum,
-      userMiddleName: userMiddleName,
-    );
+    return new WillPopScope(
+        onWillPop: () async => false,
+        child: new SideBarLayout(
+          title: "Attendance",
+          mainContent: SingleChildScrollView(
+            // Wrap the Column with SingleChildScrollView
+            child: Column(
+              children: [
+                DateTimeWidget(),
+                AttendanceWidget(
+                    userEmail: userEmail), // Pass the userEmail here
+              ],
+            ),
+          ),
+          userName: userName,
+          userLastName: userLastName,
+          userEmail: userEmail,
+          userContactNum: userContactNum,
+          userMiddleName: userMiddleName,
+        ));
   }
 }
 
@@ -66,11 +69,15 @@ class AttendanceWidget extends StatefulWidget {
 class _AttendanceWidgetState extends State<AttendanceWidget> {
   String? timeInLocation = 'No location';
   String? timeOutLocation = 'No location';
+  bool _isTimeInLoading = false; // For Time In button loading state
+  bool _isTimeOutLoading = false; // For Time Out button loading state
 
   @override
   void initState() {
     super.initState();
     _initializeAttendanceStatus();
+    _isTimeInLoading = false;
+    _isTimeOutLoading = false;
   }
 
   void _initializeAttendanceStatus() async {
@@ -166,14 +173,36 @@ class _AttendanceWidgetState extends State<AttendanceWidget> {
   Future<void> _confirmAndRecordTimeIn(BuildContext context) async {
     bool confirmed = await _showConfirmationDialog('Time In');
     if (confirmed) {
-      _recordTimeIn(context);
+      setState(() {
+        _isTimeInLoading = true; // Start loading
+      });
+
+      try {
+        _recordTimeIn(context);
+      } finally {
+        setState(() {
+          _isTimeInLoading =
+              false; // Ensure loading stops even if an error occurs
+        });
+      }
     }
   }
 
   Future<void> _confirmAndRecordTimeOut(BuildContext context) async {
     bool confirmed = await _showConfirmationDialog('Time Out');
     if (confirmed) {
-      _recordTimeOut(context);
+      setState(() {
+        _isTimeOutLoading = true; // Start loading
+      });
+
+      try {
+        _recordTimeOut(context);
+      } finally {
+        setState(() {
+          _isTimeOutLoading =
+              false; // Ensure loading stops even if an error occurs
+        });
+      }
     }
   }
 
@@ -194,6 +223,10 @@ class _AttendanceWidgetState extends State<AttendanceWidget> {
       await prefs.setString('timeInLocation', location);
     }
 
+    setState(() {
+      _isTimeInLoading = true; // Start loading
+    });
+
     try {
       var result = await MongoDatabase.logTimeIn(widget.userEmail, location);
       if (result == "Success") {
@@ -203,9 +236,15 @@ class _AttendanceWidgetState extends State<AttendanceWidget> {
         _showSnackbar(context, 'Time In recorded successfully');
       } else {
         print('Failed to record Time In for ${widget.userEmail}');
+        _showSnackbar(context, 'Failed to record Time In');
       }
     } catch (e) {
       print('Error recording time in: $e');
+      _showSnackbar(context, 'Error recording Time In');
+    } finally {
+      setState(() {
+        _isTimeInLoading = false; // Stop loading after process completes
+      });
     }
   }
 
@@ -226,6 +265,10 @@ class _AttendanceWidgetState extends State<AttendanceWidget> {
       await prefs.setString('timeOutLocation', location);
     }
 
+    setState(() {
+      _isTimeOutLoading = true; // Start loading
+    });
+
     try {
       var result = await MongoDatabase.logTimeOut(widget.userEmail, location);
       if (result == "Success") {
@@ -235,9 +278,15 @@ class _AttendanceWidgetState extends State<AttendanceWidget> {
         _showSnackbar(context, 'Time Out recorded successfully');
       } else {
         print('Failed to record Time Out for ${widget.userEmail}');
+        _showSnackbar(context, 'Failed to record Time Out');
       }
     } catch (e) {
       print('Error recording time out: $e');
+      _showSnackbar(context, 'Error recording Time Out');
+    } finally {
+      setState(() {
+        _isTimeOutLoading = false; // Stop loading after process completes
+      });
     }
   }
 
@@ -252,140 +301,154 @@ class _AttendanceWidgetState extends State<AttendanceWidget> {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<AttendanceModel>(
-      builder: (context, attendanceModel, child) {
-        return Container(
-          padding: EdgeInsets.symmetric(vertical: 20),
-          child: Column(
-            children: [
-              Text(
-                "TIME IN",
-                style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold),
-              ),
-              SizedBox(height: 20),
-              ElevatedButton(
-                onPressed: !attendanceModel.isTimeInRecorded
-                    ? () => _confirmAndRecordTimeIn(context)
-                    : null,
-                style: ButtonStyle(
-                  padding: MaterialStateProperty.all<EdgeInsetsGeometry>(
-                    const EdgeInsets.symmetric(vertical: 30),
-                  ),
-                  minimumSize: MaterialStateProperty.all<Size>(
-                    const Size(150, 50),
-                  ),
-                  backgroundColor: MaterialStateProperty.resolveWith<Color>(
-                    (states) {
-                      if (!attendanceModel.isTimeInRecorded) {
-                        return Colors.green;
-                      } else {
-                        return Colors.grey;
-                      }
-                    },
-                  ),
+    return new WillPopScope(
+      onWillPop: () async => false,
+      child: new Consumer<AttendanceModel>(
+        builder: (context, attendanceModel, child) {
+          return Container(
+            padding: EdgeInsets.symmetric(vertical: 20),
+            child: Column(
+              children: [
+                Text(
+                  "TIME IN",
+                  style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold),
                 ),
-                child: const Text(
-                  "Time In",
+                SizedBox(height: 20),
+                ElevatedButton(
+                  onPressed:
+                      !attendanceModel.isTimeInRecorded && !_isTimeInLoading
+                          ? () => _confirmAndRecordTimeIn(context)
+                          : null,
+                  style: ButtonStyle(
+                    padding: MaterialStateProperty.all<EdgeInsetsGeometry>(
+                      const EdgeInsets.symmetric(vertical: 30),
+                    ),
+                    minimumSize: MaterialStateProperty.all<Size>(
+                      const Size(150, 50),
+                    ),
+                    backgroundColor: MaterialStateProperty.resolveWith<Color>(
+                      (states) {
+                        if (!attendanceModel.isTimeInRecorded) {
+                          return Colors.green;
+                        } else {
+                          return Colors.grey;
+                        }
+                      },
+                    ),
+                  ),
+                  child: _isTimeInLoading
+                      ? CircularProgressIndicator(
+                          color: Colors.white,
+                        )
+                      : const Text(
+                          "Time In",
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 20,
+                          ),
+                        ),
+                ),
+                SizedBox(height: 30),
+                Text(
+                  "Time In: ${attendanceModel.timeIn ?? 'Not recorded'}",
                   style: TextStyle(
-                    color: Colors.white,
                     fontWeight: FontWeight.bold,
-                    fontSize: 20,
+                    fontSize: 15,
                   ),
                 ),
-              ),
-              SizedBox(height: 30),
-              Text(
-                "Time In: ${attendanceModel.timeIn ?? 'Not recorded'}",
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 15,
-                ),
-              ),
-              Text(
-                "Location: $timeInLocation",
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 10,
-                ),
-              ),
-              SizedBox(height: 40),
-              Text(
-                "TIME OUT",
-                style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold),
-              ),
-              SizedBox(height: 20),
-              ElevatedButton(
-                onPressed: attendanceModel.isTimeInRecorded &&
-                        !attendanceModel.isTimeOutRecorded
-                    ? () => _confirmAndRecordTimeOut(context)
-                    : null,
-                style: ButtonStyle(
-                  padding: MaterialStateProperty.all<EdgeInsetsGeometry>(
-                    const EdgeInsets.symmetric(vertical: 30),
-                  ),
-                  minimumSize: MaterialStateProperty.all<Size>(
-                    const Size(150, 50),
-                  ),
-                  backgroundColor: MaterialStateProperty.resolveWith<Color>(
-                    (states) {
-                      if (attendanceModel.isTimeInRecorded &&
-                          !attendanceModel.isTimeOutRecorded) {
-                        return Colors.red;
-                      } else {
-                        return Colors.grey;
-                      }
-                    },
-                  ),
-                ),
-                child: const Text(
-                  "Time Out",
+                Text(
+                  "Location: $timeInLocation",
                   style: TextStyle(
-                    color: Colors.white,
                     fontWeight: FontWeight.bold,
-                    fontSize: 20,
+                    fontSize: 10,
                   ),
                 ),
-              ),
-              SizedBox(height: 30),
-              Text(
-                "Time Out: ${attendanceModel.timeOut ?? 'Not recorded'}",
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 15,
+                SizedBox(height: 40),
+                Text(
+                  "TIME OUT",
+                  style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold),
                 ),
-              ),
-              Text(
-                "Location: $timeOutLocation",
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 10,
+                SizedBox(height: 20),
+                ElevatedButton(
+                  onPressed: attendanceModel.isTimeInRecorded &&
+                          !attendanceModel.isTimeOutRecorded &&
+                          !_isTimeOutLoading
+                      ? () => _confirmAndRecordTimeOut(context)
+                      : null,
+                  style: ButtonStyle(
+                    padding: MaterialStateProperty.all<EdgeInsetsGeometry>(
+                      const EdgeInsets.symmetric(vertical: 30),
+                    ),
+                    minimumSize: MaterialStateProperty.all<Size>(
+                      const Size(150, 50),
+                    ),
+                    backgroundColor: MaterialStateProperty.resolveWith<Color>(
+                      (states) {
+                        if (attendanceModel.isTimeInRecorded &&
+                            !attendanceModel.isTimeOutRecorded) {
+                          return Colors.red;
+                        } else {
+                          return Colors.grey;
+                        }
+                      },
+                    ),
+                  ),
+                  child: _isTimeOutLoading
+                      ? CircularProgressIndicator(
+                          color: Colors.white,
+                        )
+                      : const Text(
+                          "Time Out",
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 20,
+                          ),
+                        ),
                 ),
-              ),
-            ],
-          ),
-        );
-      },
+                SizedBox(height: 30),
+                Text(
+                  "Time Out: ${attendanceModel.timeOut ?? 'Not recorded'}",
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 15,
+                  ),
+                ),
+                Text(
+                  "Location: $timeOutLocation",
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 10,
+                  ),
+                ),
+              ],
+            ),
+          );
+        },
+      ),
     );
   }
 
   Future<bool> _showConfirmationDialog(String action) async {
     return await showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text('Confirm $action'),
-        content: Text('Are you sure you want to record $action?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: Text('Cancel'),
+          context: context,
+          builder: (context) => AlertDialog(
+            title: Text('Confirm $action'),
+            content: Text('Are you sure you want to record $action?'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(false),
+                child: Text('Cancel'),
+              ),
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(true),
+                child: Text('Confirm'),
+              ),
+            ],
           ),
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            child: Text('Confirm'),
-          ),
-        ],
-      ),
-    );
+        ) ??
+        false;
   }
 }
 
@@ -512,526 +575,534 @@ class _InventoryState extends State<Inventory> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: SideBarLayout(
-        title: "Inventory",
-        mainContent: RefreshIndicator(
-          onRefresh: () async {
-            _fetchData();
-          },
-          child: FutureBuilder<List<InventoryItem>>(
-            future: _futureInventory,
-            builder: (context, snapshot) {
-              if (snapshot.connectionState == ConnectionState.waiting) {
-                return Center(
-                  child: CircularProgressIndicator(
-                    color: Colors.green,
-                    backgroundColor: Colors.transparent,
-                  ),
-                );
-              } else if (snapshot.hasError) {
-                return Center(
-                  child: Text('Error: ${snapshot.error}'),
-                );
-              } else {
-                List<InventoryItem> inventoryItems = snapshot.data ?? [];
-                if (inventoryItems.isEmpty) {
-                  return Center(
-                    child: Text(
-                      'No inventory created',
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 18,
-                        color: Colors.black,
+    return new WillPopScope(
+        onWillPop: () async => false,
+        child: new Scaffold(
+          body: SideBarLayout(
+            title: "Inventory",
+            mainContent: RefreshIndicator(
+              onRefresh: () async {
+                _fetchData();
+              },
+              child: FutureBuilder<List<InventoryItem>>(
+                future: _futureInventory,
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return Center(
+                      child: CircularProgressIndicator(
+                        color: Colors.green,
+                        backgroundColor: Colors.transparent,
                       ),
-                    ),
-                  );
-                } else {
-                  // Calculate total number of pages
-                  int totalPages = (inventoryItems.length / pageSize).ceil();
+                    );
+                  } else if (snapshot.hasError) {
+                    return Center(
+                      child: Text('Error: ${snapshot.error}'),
+                    );
+                  } else {
+                    List<InventoryItem> inventoryItems = snapshot.data ?? [];
+                    if (inventoryItems.isEmpty) {
+                      return Center(
+                        child: Text(
+                          'No inventory created',
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 18,
+                            color: Colors.black,
+                          ),
+                        ),
+                      );
+                    } else {
+                      // Calculate total number of pages
+                      int totalPages =
+                          (inventoryItems.length / pageSize).ceil();
 
-                  // Ensure currentPage does not exceed totalPages
-                  currentPage = currentPage.clamp(0, totalPages - 1);
+                      // Ensure currentPage does not exceed totalPages
+                      currentPage = currentPage.clamp(0, totalPages - 1);
 
-                  // Calculate startIndex and endIndex for current page
-                  int startIndex = currentPage * pageSize;
-                  int endIndex = (currentPage + 1) * pageSize;
+                      // Calculate startIndex and endIndex for current page
+                      int startIndex = currentPage * pageSize;
+                      int endIndex = (currentPage + 1) * pageSize;
 
-                  // Slice the list based on current page and page size
-                  List<InventoryItem> currentPageItems = inventoryItems.reversed
-                      .toList()
-                      .sublist(
-                          startIndex, endIndex.clamp(0, inventoryItems.length));
+                      // Slice the list based on current page and page size
+                      List<InventoryItem> currentPageItems =
+                          inventoryItems.reversed.toList().sublist(startIndex,
+                              endIndex.clamp(0, inventoryItems.length));
 
-                  return Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      return Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
-                          IconButton(
-                            icon: Icon(Icons.arrow_back),
-                            onPressed: currentPage > 0
-                                ? () {
-                                    setState(() {
-                                      currentPage--;
-                                    });
-                                  }
-                                : null,
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              IconButton(
+                                icon: Icon(Icons.arrow_back),
+                                onPressed: currentPage > 0
+                                    ? () {
+                                        setState(() {
+                                          currentPage--;
+                                        });
+                                      }
+                                    : null,
+                              ),
+                              Text(
+                                'Page ${currentPage + 1} of $totalPages',
+                                style: TextStyle(fontWeight: FontWeight.bold),
+                              ),
+                              IconButton(
+                                icon: Icon(Icons.arrow_forward),
+                                onPressed: currentPage < totalPages - 1
+                                    ? () {
+                                        setState(() {
+                                          currentPage++;
+                                        });
+                                      }
+                                    : null,
+                              ),
+                            ],
                           ),
-                          Text(
-                            'Page ${currentPage + 1} of $totalPages',
-                            style: TextStyle(fontWeight: FontWeight.bold),
-                          ),
-                          IconButton(
-                            icon: Icon(Icons.arrow_forward),
-                            onPressed: currentPage < totalPages - 1
-                                ? () {
-                                    setState(() {
-                                      currentPage++;
-                                    });
-                                  }
-                                : null,
-                          ),
-                        ],
-                      ),
-                      Expanded(
-                        child: ListView.builder(
-                            itemCount: currentPageItems.length,
-                            itemBuilder: (context, index) {
-                              InventoryItem item = currentPageItems[index];
-                              return FutureBuilder<bool>(
-                                key: ValueKey(item.inputId),
-                                future: _getEditingStatus(
-                                    item.inputId, widget.userEmail),
-                                builder: (context, snapshot) {
-                                  // If there's an error, show error icon and disable the edit button
-                                  if (snapshot.hasError) {
-                                    return ListTile(
-                                      title: Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.spaceBetween,
-                                        children: [
-                                          Text(item.week),
-                                          Icon(Icons.error), // Show error icon
-                                        ],
-                                      ),
-                                    );
-                                  }
+                          Expanded(
+                            child: ListView.builder(
+                                itemCount: currentPageItems.length,
+                                itemBuilder: (context, index) {
+                                  InventoryItem item = currentPageItems[index];
+                                  return FutureBuilder<bool>(
+                                    key: ValueKey(item.inputId),
+                                    future: _getEditingStatus(
+                                        item.inputId, widget.userEmail),
+                                    builder: (context, snapshot) {
+                                      // If there's an error, show error icon and disable the edit button
+                                      if (snapshot.hasError) {
+                                        return ListTile(
+                                          title: Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.spaceBetween,
+                                            children: [
+                                              Text(item.week),
+                                              Icon(Icons
+                                                  .error), // Show error icon
+                                            ],
+                                          ),
+                                        );
+                                      }
 
-                                  // Use false as default for isEditing to avoid premature disabling
-                                  bool isEditing = snapshot.data ?? true;
+                                      // Use false as default for isEditing to avoid premature disabling
+                                      bool isEditing = snapshot.data ?? true;
 
-                                  // Debugging line to check the isEditing value
-                                  print(
-                                      'Item ${item.inputId} isEditing: $isEditing');
+                                      // Debugging line to check the isEditing value
+                                      print(
+                                          'Item ${item.inputId} isEditing: $isEditing');
 
-                                  // Disable the button permanently if `isEditing` is true
-                                  return ListTile(
-                                    title: Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.spaceBetween,
-                                      children: [
-                                        Text(item.week),
-                                        IconButton(
-                                          icon: Icon(Icons.edit),
-                                          onPressed: item.status == 'Carried' &&
-                                                  !isEditing
-                                              ? () async {
-                                                  // Set editing status to true
-                                                  await _updateEditingStatus(
-                                                      item.inputId,
-                                                      widget.userEmail,
-                                                      false);
+                                      // Disable the button permanently if `isEditing` is true
+                                      return ListTile(
+                                        title: Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.spaceBetween,
+                                          children: [
+                                            Text(item.week),
+                                            IconButton(
+                                              icon: Icon(Icons.edit),
+                                              onPressed: item.status ==
+                                                          'Carried' &&
+                                                      !isEditing
+                                                  ? () async {
+                                                      // Set editing status to true
+                                                      await _updateEditingStatus(
+                                                          item.inputId,
+                                                          widget.userEmail,
+                                                          false);
 
-                                                  // Navigate to the Edit screen
-                                                  await Navigator.push(
-                                                    context,
-                                                    MaterialPageRoute(
-                                                      builder: (context) =>
-                                                          EditInventoryScreen(
-                                                        inventoryItem: item,
-                                                        userEmail:
-                                                            widget.userEmail,
-                                                      ),
-                                                    ),
-                                                  );
+                                                      // Navigate to the Edit screen
+                                                      await Navigator.push(
+                                                        context,
+                                                        MaterialPageRoute(
+                                                          builder: (context) =>
+                                                              EditInventoryScreen(
+                                                            inventoryItem: item,
+                                                            userEmail: widget
+                                                                .userEmail,
+                                                          ),
+                                                        ),
+                                                      );
 
-                                                  // After editing, reset editing status to false
-                                                  await _updateEditingStatus(
-                                                      item.inputId,
-                                                      widget.userEmail,
-                                                      true);
+                                                      // After editing, reset editing status to false
+                                                      await _updateEditingStatus(
+                                                          item.inputId,
+                                                          widget.userEmail,
+                                                          true);
 
-                                                  setState(
-                                                      () {}); // Refresh UI after editing
-                                                }
-                                              : null, // Button permanently disabled if isEditing is true
+                                                      setState(
+                                                          () {}); // Refresh UI after editing
+                                                    }
+                                                  : null, // Button permanently disabled if isEditing is true
+                                            ),
+                                          ],
                                         ),
-                                      ],
-                                    ),
-                                    subtitle: Container(
-                                      decoration: BoxDecoration(
-                                        color: Colors.grey.shade200,
-                                        border: Border.all(
-                                          color: Colors.black,
-                                          width: 1.0,
-                                        ),
-                                      ),
-                                      padding: EdgeInsets.all(8.0),
-                                      child: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          Text(
-                                            'Date: ',
-                                            style: TextStyle(
-                                                fontWeight: FontWeight.bold,
-                                                color: Colors.black),
-                                          ),
-                                          Text(
-                                            '${item.date}',
-                                            style:
-                                                TextStyle(color: Colors.black),
-                                          ),
-                                          SizedBox(height: 10),
-                                          Text(
-                                            'Input ID: ',
-                                            style: TextStyle(
-                                                fontWeight: FontWeight.bold,
-                                                color: Colors.black),
-                                          ),
-                                          Text(
-                                            '${item.inputId}',
-                                            style:
-                                                TextStyle(color: Colors.black),
-                                          ),
-                                          SizedBox(height: 10),
-                                          Text(
-                                            'Merchandiser: ',
-                                            style: TextStyle(
-                                                fontWeight: FontWeight.bold,
-                                                color: Colors.black),
-                                          ),
-                                          Text(
-                                            '${item.name}',
-                                            style:
-                                                TextStyle(color: Colors.black),
-                                          ),
-                                          SizedBox(height: 10),
-                                          Text(
-                                            'Account Name Branch Manning: ',
-                                            style: TextStyle(
-                                                fontWeight: FontWeight.bold,
-                                                color: Colors.black),
-                                          ),
-                                          Text(
-                                            '${item.accountNameBranchManning}',
-                                            style:
-                                                TextStyle(color: Colors.black),
-                                          ),
-                                          SizedBox(height: 10),
-                                          Text(
-                                            'Period: ',
-                                            style: TextStyle(
-                                                fontWeight: FontWeight.bold,
-                                                color: Colors.black),
-                                          ),
-                                          Text(
-                                            '${item.period}',
-                                            style:
-                                                TextStyle(color: Colors.black),
-                                          ),
-                                          SizedBox(height: 10),
-                                          Text(
-                                            'Month: ',
-                                            style: TextStyle(
-                                                fontWeight: FontWeight.bold,
-                                                color: Colors.black),
-                                          ),
-                                          Text(
-                                            '${item.month}',
-                                            style:
-                                                TextStyle(color: Colors.black),
-                                          ),
-                                          SizedBox(height: 10),
-                                          Text(
-                                            'Week: ',
-                                            style: TextStyle(
-                                                fontWeight: FontWeight.bold,
-                                                color: Colors.black),
-                                          ),
-                                          Text(
-                                            '${item.week}',
-                                            style:
-                                                TextStyle(color: Colors.black),
-                                          ),
-                                          SizedBox(height: 10),
-                                          Text(
-                                            'Category: ',
-                                            style: TextStyle(
-                                                fontWeight: FontWeight.bold,
-                                                color: Colors.black),
-                                          ),
-                                          Text('${item.category}'),
-                                          SizedBox(height: 10),
-                                          Text(
-                                            'SKU Description: ',
-                                            style: TextStyle(
-                                                fontWeight: FontWeight.bold,
-                                                color: Colors.black),
-                                          ),
-                                          Text(
-                                            '${item.skuDescription}',
-                                            style:
-                                                TextStyle(color: Colors.black),
-                                          ),
-                                          SizedBox(height: 10),
-                                          Text(
-                                            'Products: ',
-                                            style: TextStyle(
-                                                fontWeight: FontWeight.bold,
-                                                color: Colors.black),
-                                          ),
-                                          Text(
-                                            '${item.products}',
-                                            style:
-                                                TextStyle(color: Colors.black),
-                                          ),
-                                          SizedBox(height: 10),
-                                          Text(
-                                            'SKU Code: ',
-                                            style: TextStyle(
-                                                fontWeight: FontWeight.bold,
-                                                color: Colors.black),
-                                          ),
-                                          Text(
-                                            '${item.skuCode}',
-                                            style:
-                                                TextStyle(color: Colors.black),
-                                          ),
-                                          SizedBox(height: 10),
-                                          Text(
-                                            'Status: ',
-                                            style: TextStyle(
-                                                fontWeight: FontWeight.bold,
-                                                color: Colors.black),
-                                          ),
-                                          Text(
-                                            '${item.status}',
-                                            style:
-                                                TextStyle(color: Colors.black),
-                                          ),
-                                          SizedBox(height: 10),
-                                          Text(
-                                            'Beginning: ',
-                                            style: TextStyle(
-                                                fontWeight: FontWeight.bold,
-                                                color: Colors.black),
-                                          ),
-                                          Text(
-                                            '${item.beginning}',
-                                            style:
-                                                TextStyle(color: Colors.black),
-                                          ),
-                                          SizedBox(height: 10),
-                                          Text(
-                                            'Delivery: ',
-                                            style: TextStyle(
-                                                fontWeight: FontWeight.bold,
-                                                color: Colors.black),
-                                          ),
-                                          Text(
-                                            '${item.delivery}',
-                                            style:
-                                                TextStyle(color: Colors.black),
-                                          ),
-                                          SizedBox(height: 10),
-                                          Text(
-                                            'Ending: ',
-                                            style: TextStyle(
-                                                fontWeight: FontWeight.bold,
-                                                color: Colors.black),
-                                          ),
-                                          Text(
-                                            '${item.ending}',
-                                            style:
-                                                TextStyle(color: Colors.black),
-                                          ),
-                                          SizedBox(height: 10),
-                                          Text(
-                                            'Expiration: ',
-                                            style: TextStyle(
-                                              fontWeight: FontWeight.bold,
+                                        subtitle: Container(
+                                          decoration: BoxDecoration(
+                                            color: Colors.grey.shade200,
+                                            border: Border.all(
                                               color: Colors.black,
+                                              width: 1.0,
                                             ),
                                           ),
-                                          SizedBox(height: 10),
-                                          Column(
+                                          padding: EdgeInsets.all(8.0),
+                                          child: Column(
                                             crossAxisAlignment:
                                                 CrossAxisAlignment.start,
-                                            children:
-                                                item.expiryFields.map((expiry) {
-                                              return Column(
+                                            children: [
+                                              Text(
+                                                'Date: ',
+                                                style: TextStyle(
+                                                    fontWeight: FontWeight.bold,
+                                                    color: Colors.black),
+                                              ),
+                                              Text(
+                                                '${item.date}',
+                                                style: TextStyle(
+                                                    color: Colors.black),
+                                              ),
+                                              SizedBox(height: 10),
+                                              Text(
+                                                'Input ID: ',
+                                                style: TextStyle(
+                                                    fontWeight: FontWeight.bold,
+                                                    color: Colors.black),
+                                              ),
+                                              Text(
+                                                '${item.inputId}',
+                                                style: TextStyle(
+                                                    color: Colors.black),
+                                              ),
+                                              SizedBox(height: 10),
+                                              Text(
+                                                'Merchandiser: ',
+                                                style: TextStyle(
+                                                    fontWeight: FontWeight.bold,
+                                                    color: Colors.black),
+                                              ),
+                                              Text(
+                                                '${item.name}',
+                                                style: TextStyle(
+                                                    color: Colors.black),
+                                              ),
+                                              SizedBox(height: 10),
+                                              Text(
+                                                'Account Name Branch Manning: ',
+                                                style: TextStyle(
+                                                    fontWeight: FontWeight.bold,
+                                                    color: Colors.black),
+                                              ),
+                                              Text(
+                                                '${item.accountNameBranchManning}',
+                                                style: TextStyle(
+                                                    color: Colors.black),
+                                              ),
+                                              SizedBox(height: 10),
+                                              Text(
+                                                'Period: ',
+                                                style: TextStyle(
+                                                    fontWeight: FontWeight.bold,
+                                                    color: Colors.black),
+                                              ),
+                                              Text(
+                                                '${item.period}',
+                                                style: TextStyle(
+                                                    color: Colors.black),
+                                              ),
+                                              SizedBox(height: 10),
+                                              Text(
+                                                'Month: ',
+                                                style: TextStyle(
+                                                    fontWeight: FontWeight.bold,
+                                                    color: Colors.black),
+                                              ),
+                                              Text(
+                                                '${item.month}',
+                                                style: TextStyle(
+                                                    color: Colors.black),
+                                              ),
+                                              SizedBox(height: 10),
+                                              Text(
+                                                'Week: ',
+                                                style: TextStyle(
+                                                    fontWeight: FontWeight.bold,
+                                                    color: Colors.black),
+                                              ),
+                                              Text(
+                                                '${item.week}',
+                                                style: TextStyle(
+                                                    color: Colors.black),
+                                              ),
+                                              SizedBox(height: 10),
+                                              Text(
+                                                'Category: ',
+                                                style: TextStyle(
+                                                    fontWeight: FontWeight.bold,
+                                                    color: Colors.black),
+                                              ),
+                                              Text('${item.category}'),
+                                              SizedBox(height: 10),
+                                              Text(
+                                                'SKU Description: ',
+                                                style: TextStyle(
+                                                    fontWeight: FontWeight.bold,
+                                                    color: Colors.black),
+                                              ),
+                                              Text(
+                                                '${item.skuDescription}',
+                                                style: TextStyle(
+                                                    color: Colors.black),
+                                              ),
+                                              SizedBox(height: 10),
+                                              Text(
+                                                'Products: ',
+                                                style: TextStyle(
+                                                    fontWeight: FontWeight.bold,
+                                                    color: Colors.black),
+                                              ),
+                                              Text(
+                                                '${item.products}',
+                                                style: TextStyle(
+                                                    color: Colors.black),
+                                              ),
+                                              SizedBox(height: 10),
+                                              Text(
+                                                'SKU Code: ',
+                                                style: TextStyle(
+                                                    fontWeight: FontWeight.bold,
+                                                    color: Colors.black),
+                                              ),
+                                              Text(
+                                                '${item.skuCode}',
+                                                style: TextStyle(
+                                                    color: Colors.black),
+                                              ),
+                                              SizedBox(height: 10),
+                                              Text(
+                                                'Status: ',
+                                                style: TextStyle(
+                                                    fontWeight: FontWeight.bold,
+                                                    color: Colors.black),
+                                              ),
+                                              Text(
+                                                '${item.status}',
+                                                style: TextStyle(
+                                                    color: Colors.black),
+                                              ),
+                                              SizedBox(height: 10),
+                                              Text(
+                                                'Beginning: ',
+                                                style: TextStyle(
+                                                    fontWeight: FontWeight.bold,
+                                                    color: Colors.black),
+                                              ),
+                                              Text(
+                                                '${item.beginning}',
+                                                style: TextStyle(
+                                                    color: Colors.black),
+                                              ),
+                                              SizedBox(height: 10),
+                                              Text(
+                                                'Delivery: ',
+                                                style: TextStyle(
+                                                    fontWeight: FontWeight.bold,
+                                                    color: Colors.black),
+                                              ),
+                                              Text(
+                                                '${item.delivery}',
+                                                style: TextStyle(
+                                                    color: Colors.black),
+                                              ),
+                                              SizedBox(height: 10),
+                                              Text(
+                                                'Ending: ',
+                                                style: TextStyle(
+                                                    fontWeight: FontWeight.bold,
+                                                    color: Colors.black),
+                                              ),
+                                              Text(
+                                                '${item.ending}',
+                                                style: TextStyle(
+                                                    color: Colors.black),
+                                              ),
+                                              SizedBox(height: 10),
+                                              Text(
+                                                'Expiration: ',
+                                                style: TextStyle(
+                                                  fontWeight: FontWeight.bold,
+                                                  color: Colors.black,
+                                                ),
+                                              ),
+                                              SizedBox(height: 10),
+                                              Column(
                                                 crossAxisAlignment:
                                                     CrossAxisAlignment.start,
-                                                children: [
-                                                  Text(
-                                                    'Expiry Date: ${expiry['expiryMonth']}',
-                                                    style: TextStyle(
-                                                        color: Colors.black),
-                                                  ),
-                                                  Text(
-                                                    'Quantity: ${expiry['expiryPcs']}',
-                                                    style: TextStyle(
-                                                        color: Colors.black),
-                                                  ),
-                                                  if (expiry.containsKey(
-                                                      'manualPcsInput')) // Check if 'manualPcsInput' exists
-                                                    Text(
-                                                      'Manual PCS Input: ${expiry['expiryPcs']}',
-                                                      style: TextStyle(
-                                                          color: Colors.black),
-                                                    ),
-                                                  SizedBox(
-                                                      height:
-                                                          10), // Adjust spacing as needed
-                                                ],
-                                              );
-                                            }).toList(),
+                                                children: item.expiryFields
+                                                    .map((expiry) {
+                                                  return Column(
+                                                    crossAxisAlignment:
+                                                        CrossAxisAlignment
+                                                            .start,
+                                                    children: [
+                                                      Text(
+                                                        'Expiry Date: ${expiry['expiryMonth']}',
+                                                        style: TextStyle(
+                                                            color:
+                                                                Colors.black),
+                                                      ),
+                                                      Text(
+                                                        'Quantity: ${expiry['expiryPcs']}',
+                                                        style: TextStyle(
+                                                            color:
+                                                                Colors.black),
+                                                      ),
+                                                      if (expiry.containsKey(
+                                                          'manualPcsInput')) // Check if 'manualPcsInput' exists
+                                                        Text(
+                                                          'Manual PCS Input: ${expiry['expiryPcs']}',
+                                                          style: TextStyle(
+                                                              color:
+                                                                  Colors.black),
+                                                        ),
+                                                      SizedBox(
+                                                          height:
+                                                              10), // Adjust spacing as needed
+                                                    ],
+                                                  );
+                                                }).toList(),
+                                              ),
+                                              SizedBox(height: 10),
+                                              Text(
+                                                'Offtake: ',
+                                                style: TextStyle(
+                                                    fontWeight: FontWeight.bold,
+                                                    color: Colors.black),
+                                              ),
+                                              Text(
+                                                '${item.offtake}',
+                                                style: TextStyle(
+                                                    color: Colors.black),
+                                              ),
+                                              SizedBox(height: 10),
+                                              Text(
+                                                'Inventory Days Level: ',
+                                                style: TextStyle(
+                                                    fontWeight: FontWeight.bold,
+                                                    color: Colors.black),
+                                              ),
+                                              Text(
+                                                '${item.inventoryDaysLevel}',
+                                                style: TextStyle(
+                                                    color: Colors.black),
+                                              ),
+                                              SizedBox(height: 10),
+                                              Text(
+                                                'Number of Days OOS: ',
+                                                style: TextStyle(
+                                                    fontWeight: FontWeight.bold,
+                                                    color: Colors.black),
+                                              ),
+                                              Text(
+                                                '${item.noOfDaysOOS}',
+                                                style: TextStyle(
+                                                    color: Colors.black),
+                                              ),
+                                              SizedBox(height: 10),
+                                              Text(
+                                                'Remarks: ',
+                                                style: TextStyle(
+                                                    fontWeight: FontWeight.bold,
+                                                    color: Colors.black),
+                                              ),
+                                              Text(
+                                                '${item.remarksOOS}',
+                                                style: TextStyle(
+                                                    color: Colors.black),
+                                              ),
+                                              SizedBox(height: 10),
+                                              Text(
+                                                'Reason: ',
+                                                style: TextStyle(
+                                                    fontWeight: FontWeight.bold,
+                                                    color: Colors.black),
+                                              ),
+                                              Text(
+                                                '${item.reasonOOS}',
+                                                style: TextStyle(
+                                                    color: Colors.black),
+                                              ),
+                                            ],
                                           ),
-                                          SizedBox(height: 10),
-                                          Text(
-                                            'Offtake: ',
-                                            style: TextStyle(
-                                                fontWeight: FontWeight.bold,
-                                                color: Colors.black),
-                                          ),
-                                          Text(
-                                            '${item.offtake}',
-                                            style:
-                                                TextStyle(color: Colors.black),
-                                          ),
-                                          SizedBox(height: 10),
-                                          Text(
-                                            'Inventory Days Level: ',
-                                            style: TextStyle(
-                                                fontWeight: FontWeight.bold,
-                                                color: Colors.black),
-                                          ),
-                                          Text(
-                                            '${item.inventoryDaysLevel}',
-                                            style:
-                                                TextStyle(color: Colors.black),
-                                          ),
-                                          SizedBox(height: 10),
-                                          Text(
-                                            'Number of Days OOS: ',
-                                            style: TextStyle(
-                                                fontWeight: FontWeight.bold,
-                                                color: Colors.black),
-                                          ),
-                                          Text(
-                                            '${item.noOfDaysOOS}',
-                                            style:
-                                                TextStyle(color: Colors.black),
-                                          ),
-                                          SizedBox(height: 10),
-                                          Text(
-                                            'Remarks: ',
-                                            style: TextStyle(
-                                                fontWeight: FontWeight.bold,
-                                                color: Colors.black),
-                                          ),
-                                          Text(
-                                            '${item.remarksOOS}',
-                                            style:
-                                                TextStyle(color: Colors.black),
-                                          ),
-                                          SizedBox(height: 10),
-                                          Text(
-                                            'Reason: ',
-                                            style: TextStyle(
-                                                fontWeight: FontWeight.bold,
-                                                color: Colors.black),
-                                          ),
-                                          Text(
-                                            '${item.reasonOOS}',
-                                            style:
-                                                TextStyle(color: Colors.black),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
+                                        ),
+                                      );
+                                    },
                                   );
-                                },
-                              );
-                            }),
-                      )
-                    ],
-                  );
-                }
-              }
-            },
-          ),
-        ),
-        appBarActions: [
-          IconButton(
-            icon: Icon(
-              Icons.refresh,
-              color: Colors.white,
-            ),
-            onPressed: () {
-              _fetchData();
-            },
-          ),
-          PopupMenuButton<String>(
-            onSelected: (value) {
-              setState(() {
-                _sortByLatest = value == 'latestToOldest';
-                _fetchData(); // Reload data based on new sort order
-              });
-            },
-            itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
-              PopupMenuItem<String>(
-                value: 'latestToOldest',
-                child: Text('Sort by Latest to Oldest'),
+                                }),
+                          )
+                        ],
+                      );
+                    }
+                  }
+                },
               ),
-              PopupMenuItem<String>(
-                value: 'oldestToLatest',
-                child: Text('Sort by Oldest to Latest'),
+            ),
+            appBarActions: [
+              IconButton(
+                icon: Icon(
+                  Icons.refresh,
+                  color: Colors.white,
+                ),
+                onPressed: () {
+                  _fetchData();
+                },
+              ),
+              PopupMenuButton<String>(
+                onSelected: (value) {
+                  setState(() {
+                    _sortByLatest = value == 'latestToOldest';
+                    _fetchData(); // Reload data based on new sort order
+                  });
+                },
+                itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
+                  PopupMenuItem<String>(
+                    value: 'latestToOldest',
+                    child: Text('Sort by Latest to Oldest'),
+                  ),
+                  PopupMenuItem<String>(
+                    value: 'oldestToLatest',
+                    child: Text('Sort by Oldest to Latest'),
+                  ),
+                ],
               ),
             ],
+            userName: widget.userName,
+            userLastName: widget.userLastName,
+            userEmail: widget.userEmail,
+            userContactNum: widget.userContactNum,
+            userMiddleName: widget.userMiddleName,
           ),
-        ],
-        userName: widget.userName,
-        userLastName: widget.userLastName,
-        userEmail: widget.userEmail,
-        userContactNum: widget.userContactNum,
-        userMiddleName: widget.userMiddleName,
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          Navigator.of(context).push(
-            MaterialPageRoute(
-              builder: (context) => AddInventory(
-                userName: widget.userName,
-                userLastName: widget.userLastName,
-                userEmail: widget.userEmail,
-                userContactNum: widget.userContactNum,
-                userMiddleName: widget.userMiddleName,
-              ),
+          floatingActionButton: FloatingActionButton(
+            onPressed: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (context) => AddInventory(
+                    userName: widget.userName,
+                    userLastName: widget.userLastName,
+                    userEmail: widget.userEmail,
+                    userContactNum: widget.userContactNum,
+                    userMiddleName: widget.userMiddleName,
+                  ),
+                ),
+              );
+            },
+            child: Icon(
+              Icons.assignment_add,
+              color: Colors.white,
             ),
-          );
-        },
-        child: Icon(
-          Icons.assignment_add,
-          color: Colors.white,
-        ),
-        backgroundColor: Colors.green,
-      ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
-    );
+            backgroundColor: Colors.green,
+          ),
+          floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
+        ));
   }
 }
 
@@ -1088,7 +1159,7 @@ class _RTVState extends State<RTV> {
         if (_sortByLatest) {
           return a.date.compareTo(b.date); // Sort by latest to oldest
         } else {
-          return a.date.compareTo(b.date); // Sort by oldest to latest
+          return b.date.compareTo(a.date); // Sort by oldest to latest
         }
       });
       return rtvItems;
@@ -1100,342 +1171,346 @@ class _RTVState extends State<RTV> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: SideBarLayout(
-        title: "Return To Vendor",
-        mainContent: RefreshIndicator(
-          onRefresh: () async {
-            _fetchData();
-          },
-          child: FutureBuilder<List<ReturnToVendor>>(
-              future: _futureRTV,
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return Center(
-                      child: CircularProgressIndicator(
-                    color: Colors.green,
-                    backgroundColor: Colors.transparent,
-                  ));
-                } else if (snapshot.hasError) {
-                  return Center(
-                    child: Text('Error: ${snapshot.error}'),
-                  );
-                } else {
-                  List<ReturnToVendor> rtvItems = snapshot.data ?? [];
-                  if (rtvItems.isEmpty) {
-                    return Center(
-                      child: Text(
-                        'No RTV created',
-                        style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 18,
-                            color: Colors.black),
-                      ),
-                    );
-                  } else {
-                    return ListView.builder(
-                        itemCount: rtvItems.length,
-                        itemBuilder: (context, index) {
-                          ReturnToVendor item = rtvItems[index];
-                          bool isEditable = item.quantity == "Pending" &&
-                              item.driverName == "Pending" &&
-                              item.plateNumber == "Pending" &&
-                              item.pullOutReason == "Pending";
-
-                          return ListTile(
-                              title: Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Text(
-                                    '${item.date}',
-                                    style: TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.black),
-                                  ),
-                                  isEditable
-                                      ? IconButton(
-                                          icon: Icon(Icons.edit,
-                                              color: Colors.black),
-                                          onPressed: () {
-                                            Navigator.of(context).push(
-                                              MaterialPageRoute(
-                                                builder: (context) =>
-                                                    EditRTVScreen(item: item),
-                                              ),
-                                            );
-                                          },
-                                        )
-                                      : IconButton(
-                                          icon: Icon(Icons.edit,
-                                              color: Colors.grey),
-                                          onPressed: null,
-                                        ),
-                                ],
-                              ),
-                              subtitle: Container(
-                                decoration: BoxDecoration(
-                                  color: Colors.grey.shade200,
-                                  border: Border.all(
-                                    color: Colors.black,
-                                    width: 1.0,
-                                  ),
-                                ),
-                                padding: EdgeInsets.all(8.0),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    RichText(
-                                      text: TextSpan(
-                                        children: [
-                                          TextSpan(
-                                            text: 'Input ID: ',
-                                            style: TextStyle(
-                                              fontWeight: FontWeight.bold,
-                                              color: Colors.black,
-                                            ),
-                                          ),
-                                          TextSpan(
-                                            text: item.inputId,
-                                            style: TextStyle(
-                                              fontWeight: FontWeight.normal,
-                                              color: Colors.black,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                    SizedBox(height: 10),
-                                    RichText(
-                                      text: TextSpan(
-                                        children: [
-                                          TextSpan(
-                                            text: 'Date: ',
-                                            style: TextStyle(
-                                              fontWeight: FontWeight.bold,
-                                              color: Colors.black,
-                                            ),
-                                          ),
-                                          TextSpan(
-                                            text: item.date,
-                                            style: TextStyle(
-                                              fontWeight: FontWeight.normal,
-                                              color: Colors.black,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                    SizedBox(height: 10),
-                                    RichText(
-                                      text: TextSpan(
-                                        children: [
-                                          TextSpan(
-                                            text: 'Outlet: ',
-                                            style: TextStyle(
-                                              fontWeight: FontWeight.bold,
-                                              color: Colors.black,
-                                            ),
-                                          ),
-                                          TextSpan(
-                                            text: item.outlet,
-                                            style: TextStyle(
-                                              fontWeight: FontWeight.normal,
-                                              color: Colors.black,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                    SizedBox(height: 10),
-                                    RichText(
-                                      text: TextSpan(
-                                        children: [
-                                          TextSpan(
-                                            text: 'Category: ',
-                                            style: TextStyle(
-                                              fontWeight: FontWeight.bold,
-                                              color: Colors.black,
-                                            ),
-                                          ),
-                                          TextSpan(
-                                            text: item.category,
-                                            style: TextStyle(
-                                              fontWeight: FontWeight.normal,
-                                              color: Colors.black,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                    SizedBox(height: 10),
-                                    RichText(
-                                      text: TextSpan(
-                                        children: [
-                                          TextSpan(
-                                            text: 'Item: ',
-                                            style: TextStyle(
-                                              fontWeight: FontWeight.bold,
-                                              color: Colors.black,
-                                            ),
-                                          ),
-                                          TextSpan(
-                                            text: item.item,
-                                            style: TextStyle(
-                                              fontWeight: FontWeight.normal,
-                                              color: Colors.black,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                    SizedBox(height: 10),
-                                    RichText(
-                                      text: TextSpan(
-                                        children: [
-                                          TextSpan(
-                                            text: 'Quantity: ',
-                                            style: TextStyle(
-                                              fontWeight: FontWeight.bold,
-                                              color: Colors.black,
-                                            ),
-                                          ),
-                                          TextSpan(
-                                            text: item.quantity,
-                                            style: TextStyle(
-                                              fontWeight: FontWeight.normal,
-                                              color: Colors.black,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                    SizedBox(height: 10),
-                                    RichText(
-                                      text: TextSpan(
-                                        children: [
-                                          TextSpan(
-                                            text: 'Driver\'s Name: ',
-                                            style: TextStyle(
-                                              fontWeight: FontWeight.bold,
-                                              color: Colors.black,
-                                            ),
-                                          ),
-                                          TextSpan(
-                                            text: item.driverName,
-                                            style: TextStyle(
-                                              fontWeight: FontWeight.normal,
-                                              color: Colors.black,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                    SizedBox(height: 10),
-                                    RichText(
-                                      text: TextSpan(
-                                        children: [
-                                          TextSpan(
-                                            text: 'Plate Number: ',
-                                            style: TextStyle(
-                                              fontWeight: FontWeight.bold,
-                                              color: Colors.black,
-                                            ),
-                                          ),
-                                          TextSpan(
-                                            text: item.plateNumber,
-                                            style: TextStyle(
-                                              fontWeight: FontWeight.normal,
-                                              color: Colors.black,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                    SizedBox(height: 10),
-                                    RichText(
-                                      text: TextSpan(
-                                        children: [
-                                          TextSpan(
-                                            text: 'Pull Out Reason: ',
-                                            style: TextStyle(
-                                              fontWeight: FontWeight.bold,
-                                              color: Colors.black,
-                                            ),
-                                          ),
-                                          TextSpan(
-                                            text: item.pullOutReason,
-                                            style: TextStyle(
-                                              fontWeight: FontWeight.normal,
-                                              color: Colors.black,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ));
-                        });
-                  }
-                }
-              }),
-        ),
-        appBarActions: [
-          IconButton(
-            icon: Icon(
-              Icons.refresh,
-              color: Colors.white,
-            ),
-            onPressed: () {
-              _fetchData();
-            },
-          ),
-          PopupMenuButton<String>(
-            onSelected: (value) {
-              setState(() {
-                _sortByLatest = value == 'latestToOldest';
+    return new WillPopScope(
+        onWillPop: () async => false,
+        child: new Scaffold(
+          body: SideBarLayout(
+            title: "Return To Vendor",
+            mainContent: RefreshIndicator(
+              onRefresh: () async {
                 _fetchData();
-              });
-            },
-            itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
-              PopupMenuItem<String>(
-                value: 'latestToOldest',
-                child: Text('Sort by Latest to Oldest'),
+              },
+              child: FutureBuilder<List<ReturnToVendor>>(
+                  future: _futureRTV,
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return Center(
+                          child: CircularProgressIndicator(
+                        color: Colors.green,
+                        backgroundColor: Colors.transparent,
+                      ));
+                    } else if (snapshot.hasError) {
+                      return Center(
+                        child: Text('Error: ${snapshot.error}'),
+                      );
+                    } else {
+                      List<ReturnToVendor> rtvItems = snapshot.data ?? [];
+                      if (rtvItems.isEmpty) {
+                        return Center(
+                          child: Text(
+                            'No RTV created',
+                            style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 18,
+                                color: Colors.black),
+                          ),
+                        );
+                      } else {
+                        return ListView.builder(
+                            itemCount: rtvItems.length,
+                            itemBuilder: (context, index) {
+                              ReturnToVendor item = rtvItems[index];
+                              bool isEditable = item.quantity == "Pending" &&
+                                  item.driverName == "Pending" &&
+                                  item.plateNumber == "Pending" &&
+                                  item.pullOutReason == "Pending";
+
+                              return ListTile(
+                                  title: Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Text(
+                                        '${item.date}',
+                                        style: TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                            color: Colors.black),
+                                      ),
+                                      isEditable
+                                          ? IconButton(
+                                              icon: Icon(Icons.edit,
+                                                  color: Colors.black),
+                                              onPressed: () {
+                                                Navigator.of(context).push(
+                                                  MaterialPageRoute(
+                                                    builder: (context) =>
+                                                        EditRTVScreen(
+                                                            item: item),
+                                                  ),
+                                                );
+                                              },
+                                            )
+                                          : IconButton(
+                                              icon: Icon(Icons.edit,
+                                                  color: Colors.grey),
+                                              onPressed: null,
+                                            ),
+                                    ],
+                                  ),
+                                  subtitle: Container(
+                                    decoration: BoxDecoration(
+                                      color: Colors.grey.shade200,
+                                      border: Border.all(
+                                        color: Colors.black,
+                                        width: 1.0,
+                                      ),
+                                    ),
+                                    padding: EdgeInsets.all(8.0),
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        RichText(
+                                          text: TextSpan(
+                                            children: [
+                                              TextSpan(
+                                                text: 'Input ID: ',
+                                                style: TextStyle(
+                                                  fontWeight: FontWeight.bold,
+                                                  color: Colors.black,
+                                                ),
+                                              ),
+                                              TextSpan(
+                                                text: item.inputId,
+                                                style: TextStyle(
+                                                  fontWeight: FontWeight.normal,
+                                                  color: Colors.black,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                        SizedBox(height: 10),
+                                        RichText(
+                                          text: TextSpan(
+                                            children: [
+                                              TextSpan(
+                                                text: 'Date: ',
+                                                style: TextStyle(
+                                                  fontWeight: FontWeight.bold,
+                                                  color: Colors.black,
+                                                ),
+                                              ),
+                                              TextSpan(
+                                                text: item.date,
+                                                style: TextStyle(
+                                                  fontWeight: FontWeight.normal,
+                                                  color: Colors.black,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                        SizedBox(height: 10),
+                                        RichText(
+                                          text: TextSpan(
+                                            children: [
+                                              TextSpan(
+                                                text: 'Outlet: ',
+                                                style: TextStyle(
+                                                  fontWeight: FontWeight.bold,
+                                                  color: Colors.black,
+                                                ),
+                                              ),
+                                              TextSpan(
+                                                text: item.outlet,
+                                                style: TextStyle(
+                                                  fontWeight: FontWeight.normal,
+                                                  color: Colors.black,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                        SizedBox(height: 10),
+                                        RichText(
+                                          text: TextSpan(
+                                            children: [
+                                              TextSpan(
+                                                text: 'Category: ',
+                                                style: TextStyle(
+                                                  fontWeight: FontWeight.bold,
+                                                  color: Colors.black,
+                                                ),
+                                              ),
+                                              TextSpan(
+                                                text: item.category,
+                                                style: TextStyle(
+                                                  fontWeight: FontWeight.normal,
+                                                  color: Colors.black,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                        SizedBox(height: 10),
+                                        RichText(
+                                          text: TextSpan(
+                                            children: [
+                                              TextSpan(
+                                                text: 'Item: ',
+                                                style: TextStyle(
+                                                  fontWeight: FontWeight.bold,
+                                                  color: Colors.black,
+                                                ),
+                                              ),
+                                              TextSpan(
+                                                text: item.item,
+                                                style: TextStyle(
+                                                  fontWeight: FontWeight.normal,
+                                                  color: Colors.black,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                        SizedBox(height: 10),
+                                        RichText(
+                                          text: TextSpan(
+                                            children: [
+                                              TextSpan(
+                                                text: 'Quantity: ',
+                                                style: TextStyle(
+                                                  fontWeight: FontWeight.bold,
+                                                  color: Colors.black,
+                                                ),
+                                              ),
+                                              TextSpan(
+                                                text: item.quantity,
+                                                style: TextStyle(
+                                                  fontWeight: FontWeight.normal,
+                                                  color: Colors.black,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                        SizedBox(height: 10),
+                                        RichText(
+                                          text: TextSpan(
+                                            children: [
+                                              TextSpan(
+                                                text: 'Driver\'s Name: ',
+                                                style: TextStyle(
+                                                  fontWeight: FontWeight.bold,
+                                                  color: Colors.black,
+                                                ),
+                                              ),
+                                              TextSpan(
+                                                text: item.driverName,
+                                                style: TextStyle(
+                                                  fontWeight: FontWeight.normal,
+                                                  color: Colors.black,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                        SizedBox(height: 10),
+                                        RichText(
+                                          text: TextSpan(
+                                            children: [
+                                              TextSpan(
+                                                text: 'Plate Number: ',
+                                                style: TextStyle(
+                                                  fontWeight: FontWeight.bold,
+                                                  color: Colors.black,
+                                                ),
+                                              ),
+                                              TextSpan(
+                                                text: item.plateNumber,
+                                                style: TextStyle(
+                                                  fontWeight: FontWeight.normal,
+                                                  color: Colors.black,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                        SizedBox(height: 10),
+                                        RichText(
+                                          text: TextSpan(
+                                            children: [
+                                              TextSpan(
+                                                text: 'Pull Out Reason: ',
+                                                style: TextStyle(
+                                                  fontWeight: FontWeight.bold,
+                                                  color: Colors.black,
+                                                ),
+                                              ),
+                                              TextSpan(
+                                                text: item.pullOutReason,
+                                                style: TextStyle(
+                                                  fontWeight: FontWeight.normal,
+                                                  color: Colors.black,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ));
+                            });
+                      }
+                    }
+                  }),
+            ),
+            appBarActions: [
+              IconButton(
+                icon: Icon(
+                  Icons.refresh,
+                  color: Colors.white,
+                ),
+                onPressed: () {
+                  _fetchData();
+                },
               ),
-              PopupMenuItem<String>(
-                value: 'oldestToLatest',
-                child: Text('Sort by Oldest to Latest'),
+              PopupMenuButton<String>(
+                onSelected: (value) {
+                  setState(() {
+                    _sortByLatest = value == 'latestToOldest';
+                    _fetchData();
+                  });
+                },
+                itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
+                  PopupMenuItem<String>(
+                    value: 'latestToOldest',
+                    child: Text('Sort by Latest to Oldest'),
+                  ),
+                  PopupMenuItem<String>(
+                    value: 'oldestToLatest',
+                    child: Text('Sort by Oldest to Latest'),
+                  ),
+                ],
               ),
             ],
+            userName: widget.userName,
+            userLastName: widget.userLastName,
+            userEmail: widget.userEmail,
+            userContactNum: widget.userContactNum,
+            userMiddleName: widget.userMiddleName,
           ),
-        ],
-        userName: widget.userName,
-        userLastName: widget.userLastName,
-        userEmail: widget.userEmail,
-        userContactNum: widget.userContactNum,
-        userMiddleName: widget.userMiddleName,
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          Navigator.of(context).push(MaterialPageRoute(
-            builder: (context) => ReturnVendor(
-              userName: widget.userName,
-              userLastName: widget.userLastName,
-              userEmail: widget.userEmail,
-              userContactNum: widget.userContactNum,
-              userMiddleName: widget.userMiddleName,
+          floatingActionButton: FloatingActionButton(
+            onPressed: () {
+              Navigator.of(context).push(MaterialPageRoute(
+                builder: (context) => ReturnVendor(
+                  userName: widget.userName,
+                  userLastName: widget.userLastName,
+                  userEmail: widget.userEmail,
+                  userContactNum: widget.userContactNum,
+                  userMiddleName: widget.userMiddleName,
+                ),
+              ));
+            },
+            child: Icon(
+              Icons.assignment_add,
+              color: Colors.white,
             ),
-          ));
-        },
-        child: Icon(
-          Icons.assignment_add,
-          color: Colors.white,
-        ),
-        backgroundColor: Colors.green,
-      ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
-    );
+            backgroundColor: Colors.green,
+          ),
+          floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
+        ));
   }
 }
 
@@ -1456,117 +1531,119 @@ class Setting extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SideBarLayout(
-      title: "Settings",
-      mainContent: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(
-              horizontal: 16.0), // Add some padding around the form
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.start,
-            children: [
-              SizedBox(height: 20),
-              Text(
-                'First Name: ',
-                style:
-                    TextStyle(fontWeight: FontWeight.bold, color: Colors.black),
-              ),
-              TextFormField(
-                readOnly: true,
-                initialValue: userName,
-                decoration: InputDecoration(
-                  border: OutlineInputBorder(),
-                ),
-              ),
-              SizedBox(height: 20),
-              Text(
-                'Middle Name: ',
-                style:
-                    TextStyle(fontWeight: FontWeight.bold, color: Colors.black),
-              ),
-              TextFormField(
-                readOnly: true,
-                initialValue: userMiddleName,
-                decoration: InputDecoration(
-                  border: OutlineInputBorder(),
-                ),
-              ),
-              SizedBox(height: 20),
-              Text(
-                'Last Name: ',
-                style:
-                    TextStyle(fontWeight: FontWeight.bold, color: Colors.black),
-              ),
-              TextFormField(
-                readOnly: true,
-                initialValue: userLastName,
-                decoration: InputDecoration(
-                  border: OutlineInputBorder(),
-                ),
-              ),
-              SizedBox(height: 20),
-              Text(
-                'Contact Number: ',
-                style:
-                    TextStyle(fontWeight: FontWeight.bold, color: Colors.black),
-              ),
-              TextFormField(
-                readOnly: true,
-                initialValue: userContactNum,
-                decoration: InputDecoration(
-                  border: OutlineInputBorder(),
-                ),
-              ),
-              SizedBox(height: 20),
-              Text(
-                'Email Address: ',
-                style:
-                    TextStyle(fontWeight: FontWeight.bold, color: Colors.black),
-              ),
-              TextFormField(
-                initialValue: userEmail,
-                readOnly: true,
-                decoration: InputDecoration(
-                  border: OutlineInputBorder(),
-                ),
-              ),
-              SizedBox(
-                  height:
-                      210), // Add space between the text fields and the button
-              Center(
-                child: SizedBox(
-                  height: 50,
-                  width: 350,
-                  child: ElevatedButton(
-                    onPressed: () {
-                      _logout(context);
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.green[900],
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(50),
-                      ),
+    return new WillPopScope(
+        onWillPop: () async => false,
+        child: new SideBarLayout(
+          title: "Settings",
+          mainContent: SingleChildScrollView(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(
+                  horizontal: 16.0), // Add some padding around the form
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: [
+                  SizedBox(height: 20),
+                  Text(
+                    'First Name: ',
+                    style: TextStyle(
+                        fontWeight: FontWeight.bold, color: Colors.black),
+                  ),
+                  TextFormField(
+                    readOnly: true,
+                    initialValue: userName,
+                    decoration: InputDecoration(
+                      border: OutlineInputBorder(),
                     ),
-                    child: Text(
-                      'LOG OUT',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
+                  ),
+                  SizedBox(height: 20),
+                  Text(
+                    'Middle Name: ',
+                    style: TextStyle(
+                        fontWeight: FontWeight.bold, color: Colors.black),
+                  ),
+                  TextFormField(
+                    readOnly: true,
+                    initialValue: userMiddleName,
+                    decoration: InputDecoration(
+                      border: OutlineInputBorder(),
+                    ),
+                  ),
+                  SizedBox(height: 20),
+                  Text(
+                    'Last Name: ',
+                    style: TextStyle(
+                        fontWeight: FontWeight.bold, color: Colors.black),
+                  ),
+                  TextFormField(
+                    readOnly: true,
+                    initialValue: userLastName,
+                    decoration: InputDecoration(
+                      border: OutlineInputBorder(),
+                    ),
+                  ),
+                  SizedBox(height: 20),
+                  Text(
+                    'Contact Number: ',
+                    style: TextStyle(
+                        fontWeight: FontWeight.bold, color: Colors.black),
+                  ),
+                  TextFormField(
+                    readOnly: true,
+                    initialValue: userContactNum,
+                    decoration: InputDecoration(
+                      border: OutlineInputBorder(),
+                    ),
+                  ),
+                  SizedBox(height: 20),
+                  Text(
+                    'Email Address: ',
+                    style: TextStyle(
+                        fontWeight: FontWeight.bold, color: Colors.black),
+                  ),
+                  TextFormField(
+                    initialValue: userEmail,
+                    readOnly: true,
+                    decoration: InputDecoration(
+                      border: OutlineInputBorder(),
+                    ),
+                  ),
+                  SizedBox(
+                      height:
+                          210), // Add space between the text fields and the button
+                  Center(
+                    child: SizedBox(
+                      height: 50,
+                      width: 350,
+                      child: ElevatedButton(
+                        onPressed: () {
+                          _logout(context);
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.green[900],
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(50),
+                          ),
+                        ),
+                        child: Text(
+                          'LOG OUT',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
                       ),
                     ),
                   ),
-                ),
+                ],
               ),
-            ],
+            ),
           ),
-        ),
-      ),
-      userName: userName,
-      userLastName: userLastName,
-      userEmail: userEmail,
-      userContactNum: userContactNum,
-      userMiddleName: userMiddleName,
-    );
+          userName: userName,
+          userLastName: userLastName,
+          userEmail: userEmail,
+          userContactNum: userContactNum,
+          userMiddleName: userMiddleName,
+        ));
   }
 }
 
@@ -1654,55 +1731,16 @@ class _SideBarLayoutState extends State<SideBarLayout> {
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder(
-      future: _fetchUserInfo(),
-      builder: (BuildContext context, AsyncSnapshot<void> snapshot) {
-        return Scaffold(
-          appBar: AppBar(
-            backgroundColor: Colors.transparent,
-            elevation: 0,
-            flexibleSpace: Container(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [
-                    Colors.green[900]!,
-                    Colors.green[800]!,
-                    Colors.green[400]!,
-                  ],
-                ),
-              ),
-            ),
-            title: Text(
-              widget.title,
-              style:
-                  TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-            ),
-            leading: Builder(
-              builder: (context) => IconButton(
-                icon: Icon(
-                  Icons.menu,
-                  color: Colors.white,
-                ),
-                onPressed: () {
-                  Scaffold.of(context).openDrawer();
-                },
-              ),
-            ),
-            actions: widget.appBarActions,
-          ),
-          drawer: Drawer(
-            child: ListView(
-              padding: EdgeInsets.zero,
-              children: [
-                UserAccountsDrawerHeader(
-                  accountName: Text(
-                    '${widget.userName} ${widget.userLastName}',
-                    style: TextStyle(color: Colors.white),
-                  ),
-                  accountEmail: Text(
-                    widget.userEmail,
-                    style: TextStyle(color: Colors.white),
-                  ),
+    return new WillPopScope(
+        onWillPop: () async => false,
+        child: new FutureBuilder(
+          future: _fetchUserInfo(),
+          builder: (BuildContext context, AsyncSnapshot<void> snapshot) {
+            return Scaffold(
+              appBar: AppBar(
+                backgroundColor: Colors.transparent,
+                elevation: 0,
+                flexibleSpace: Container(
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
                       colors: [
@@ -1713,80 +1751,121 @@ class _SideBarLayoutState extends State<SideBarLayout> {
                     ),
                   ),
                 ),
-                ListTile(
-                  leading: const Icon(
-                    Icons.account_circle_outlined,
+                title: Text(
+                  widget.title,
+                  style: TextStyle(
+                      color: Colors.white, fontWeight: FontWeight.bold),
+                ),
+                leading: Builder(
+                  builder: (context) => IconButton(
+                    icon: Icon(
+                      Icons.menu,
+                      color: Colors.white,
+                    ),
+                    onPressed: () {
+                      Scaffold.of(context).openDrawer();
+                    },
                   ),
-                  title: const Text('Attendance'),
-                  onTap: () {
-                    Navigator.of(context).push(
-                      MaterialPageRoute(
-                          builder: (context) => Attendance(
-                                userName: widget.userName,
-                                userLastName: widget.userLastName,
-                                userEmail: widget.userEmail,
-                                userContactNum: widget.userContactNum,
-                                userMiddleName: widget.userMiddleName,
-                              )),
-                    );
-                  },
                 ),
-                ListTile(
-                  leading: const Icon(Icons.inventory_2_outlined),
-                  title: const Text('Inventory'),
-                  onTap: () {
-                    Navigator.of(context).push(
-                      MaterialPageRoute(
-                          builder: (context) => Inventory(
-                                userName: widget.userName,
-                                userLastName: widget.userLastName,
-                                userEmail: widget.userEmail,
-                                userContactNum: widget.userContactNum,
-                                userMiddleName: widget.userMiddleName,
-                              )),
-                    );
-                  },
+                actions: widget.appBarActions,
+              ),
+              drawer: Drawer(
+                child: ListView(
+                  padding: EdgeInsets.zero,
+                  children: [
+                    UserAccountsDrawerHeader(
+                      accountName: Text(
+                        '${widget.userName} ${widget.userLastName}',
+                        style: TextStyle(color: Colors.white),
+                      ),
+                      accountEmail: Text(
+                        widget.userEmail,
+                        style: TextStyle(color: Colors.white),
+                      ),
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [
+                            Colors.green[900]!,
+                            Colors.green[800]!,
+                            Colors.green[400]!,
+                          ],
+                        ),
+                      ),
+                    ),
+                    ListTile(
+                      leading: const Icon(
+                        Icons.account_circle_outlined,
+                      ),
+                      title: const Text('Attendance'),
+                      onTap: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                              builder: (context) => Attendance(
+                                    userName: widget.userName,
+                                    userLastName: widget.userLastName,
+                                    userEmail: widget.userEmail,
+                                    userContactNum: widget.userContactNum,
+                                    userMiddleName: widget.userMiddleName,
+                                  )),
+                        );
+                      },
+                    ),
+                    ListTile(
+                      leading: const Icon(Icons.inventory_2_outlined),
+                      title: const Text('Inventory'),
+                      onTap: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                              builder: (context) => Inventory(
+                                    userName: widget.userName,
+                                    userLastName: widget.userLastName,
+                                    userEmail: widget.userEmail,
+                                    userContactNum: widget.userContactNum,
+                                    userMiddleName: widget.userMiddleName,
+                                  )),
+                        );
+                      },
+                    ),
+                    ListTile(
+                      leading: const Icon(Icons.assignment_return_outlined),
+                      title: const Text('Return To Vendor'),
+                      onTap: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                              builder: (context) => RTV(
+                                    userName: widget.userName,
+                                    userLastName: widget.userLastName,
+                                    userEmail: widget.userEmail,
+                                    userContactNum: widget.userContactNum,
+                                    userMiddleName: widget.userMiddleName,
+                                  )),
+                        );
+                      },
+                    ),
+                    const Divider(color: Colors.black),
+                    ListTile(
+                      leading: const Icon(Icons.settings_outlined),
+                      title: const Text('Settings'),
+                      onTap: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                              builder: (context) => Setting(
+                                    userName: widget.userName,
+                                    userLastName: widget.userLastName,
+                                    userEmail: widget.userEmail,
+                                    userContactNum: widget.userContactNum,
+                                    userMiddleName: widget.userMiddleName,
+                                  )),
+                        );
+                      },
+                    ),
+                  ],
                 ),
-                ListTile(
-                  leading: const Icon(Icons.assignment_return_outlined),
-                  title: const Text('Return To Vendor'),
-                  onTap: () {
-                    Navigator.of(context).push(
-                      MaterialPageRoute(
-                          builder: (context) => RTV(
-                                userName: widget.userName,
-                                userLastName: widget.userLastName,
-                                userEmail: widget.userEmail,
-                                userContactNum: widget.userContactNum,
-                                userMiddleName: widget.userMiddleName,
-                              )),
-                    );
-                  },
-                ),
-                const Divider(color: Colors.black),
-                ListTile(
-                  leading: const Icon(Icons.settings_outlined),
-                  title: const Text('Settings'),
-                  onTap: () {
-                    Navigator.of(context).push(
-                      MaterialPageRoute(
-                          builder: (context) => Setting(
-                                userName: widget.userName,
-                                userLastName: widget.userLastName,
-                                userEmail: widget.userEmail,
-                                userContactNum: widget.userContactNum,
-                                userMiddleName: widget.userMiddleName,
-                              )),
-                    );
-                  },
-                ),
-              ],
-            ),
-          ),
-          body: widget.mainContent,
-        );
-      },
-    );
+              ),
+              body: widget.mainContent,
+            );
+          },
+        ));
   }
 }
 

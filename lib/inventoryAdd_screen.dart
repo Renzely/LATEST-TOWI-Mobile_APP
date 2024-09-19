@@ -124,918 +124,963 @@ class _AddInventoryState extends State<AddInventory> {
     super.dispose();
   }
 
-  String generateInputID() {
-    var timestamp = DateTime.now().millisecondsSinceEpoch;
-    var random =
-        Random().nextInt(10000); // Generate a random number between 0 and 9999
-    var paddedRandom =
-        random.toString().padLeft(4, '0'); // Ensure it has 4 digits
-    return '2000$paddedRandom';
-  }
+  // String generateInputID() {
+  //   var timestamp = DateTime.now().millisecondsSinceEpoch;
+  //   var random =
+  //       Random().nextInt(10000); // Generate a random number between 0 and 9999
+  //   var paddedRandom =
+  //       random.toString().padLeft(4, '0'); // Ensure it has 4 digits
+  //   return '2000$paddedRandom';
+  // }
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-        debugShowCheckedModeBanner: false,
-        home: Scaffold(
-          appBar: AppBar(
-            backgroundColor: Colors.green[600],
-            elevation: 0,
-            title: Text(
-              'Inventory Input',
-              style:
-                  TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-            ),
-          ),
-          body: SingleChildScrollView(
-            child: Center(
-              child: Container(
-                padding: EdgeInsets.all(20.0),
-                width: MediaQuery.of(context).size.width * 1.0,
-                child: Form(
-                  key: _formKey,
-                  child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Date',
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16,
-                          ),
-                        ),
-                        SizedBox(height: 8),
-                        Container(
-                          child: Row(
-                            children: [
-                              Expanded(
-                                child: TextFormField(
-                                  controller: _dateController,
-                                  readOnly: true,
-                                  decoration: InputDecoration(
-                                    border: OutlineInputBorder(),
-                                    contentPadding:
-                                        EdgeInsets.symmetric(horizontal: 12),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        SizedBox(height: 16),
-                        Text(
-                          'Input ID',
-                          style: TextStyle(
-                              fontWeight: FontWeight.bold, fontSize: 16),
-                        ),
-                        SizedBox(height: 8),
-                        TextFormField(
-                          initialValue: generateInputID(),
-                          readOnly: true,
-                          decoration: InputDecoration(
-                            border: OutlineInputBorder(),
-                            contentPadding:
-                                EdgeInsets.symmetric(horizontal: 12),
-                            hintText: 'Auto-generated Input ID',
-                          ),
-                        ),
-                        SizedBox(height: 16),
-                        Text(
-                          'Merchandiser',
-                          style: TextStyle(
-                              fontWeight: FontWeight.bold, fontSize: 16),
-                        ),
-                        SizedBox(height: 8),
-                        TextFormField(
-                          initialValue:
-                              '${widget.userName} ${widget.userLastName}',
-                          readOnly: true,
-                          decoration: InputDecoration(
-                            border: OutlineInputBorder(),
-                            contentPadding:
-                                EdgeInsets.symmetric(horizontal: 12),
-                          ),
-                        ),
-                        SizedBox(height: 16),
-                        Text(
-                          'Branch/Outlet',
-                          style: TextStyle(
-                              fontWeight: FontWeight.bold, fontSize: 16),
-                        ),
-                        SizedBox(height: 10),
-                        Container(
-                          decoration: BoxDecoration(
-                            border: Border(
-                              bottom: BorderSide(
-                                color: Colors.black,
-                                width: 1.0,
+    return new WillPopScope(
+        onWillPop: () async => false,
+        child: new MaterialApp(
+            debugShowCheckedModeBanner: false,
+            home: Scaffold(
+              appBar: AppBar(
+                backgroundColor: Colors.green[600],
+                elevation: 0,
+                title: Text(
+                  'Inventory Input',
+                  style: TextStyle(
+                      color: Colors.white, fontWeight: FontWeight.bold),
+                ),
+              ),
+              body: SingleChildScrollView(
+                child: Center(
+                  child: Container(
+                    padding: EdgeInsets.all(20.0),
+                    width: MediaQuery.of(context).size.width * 1.0,
+                    child: Form(
+                      key: _formKey,
+                      child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Date',
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16,
                               ),
                             ),
-                          ),
-                          child: Row(
-                            children: [
-                              Expanded(
-                                child: Stack(
-                                  alignment: Alignment.centerRight,
-                                  children: [
-                                    DropdownButtonFormField<String>(
-                                      isExpanded: true,
-                                      value: _selectedAccount,
-                                      items: _branchList.map((branch) {
-                                        return DropdownMenuItem<String>(
-                                          value: branch,
-                                          child: Text(branch),
-                                        );
-                                      }).toList(),
-                                      onChanged: _branchList.length > 1
-                                          ? (value) {
-                                              setState(() {
-                                                _selectedAccount = value;
-                                                _isSaveEnabled =
-                                                    _selectedAccount != null &&
-                                                        _selectedPeriod != null;
-                                              });
-                                            }
-                                          : null, // Disable onChange when there is only one branch
+                            SizedBox(height: 8),
+                            Container(
+                              child: Row(
+                                children: [
+                                  Expanded(
+                                    child: TextFormField(
+                                      controller: _dateController,
+                                      readOnly: true,
                                       decoration: InputDecoration(
-                                        hintText: 'Select',
                                         border: OutlineInputBorder(),
                                         contentPadding: EdgeInsets.symmetric(
                                             horizontal: 12),
                                       ),
                                     ),
-                                    // Conditionally show clear button
-                                    if (_selectedAccount != null)
-                                      Positioned(
-                                        right: 8.0,
-                                        child: IconButton(
-                                          icon: Icon(Icons.clear),
-                                          onPressed: () {
-                                            setState(() {
-                                              _selectedAccount = null;
-                                              _selectedPeriod = null;
-                                              _showAdditionalInfo = false;
-                                              _isSaveEnabled = false;
-                                            });
-                                          },
+                                  ),
+                                ],
+                              ),
+                            ),
+                            // SizedBox(height: 16),
+                            // Text(
+                            //   'Input ID',
+                            //   style: TextStyle(
+                            //       fontWeight: FontWeight.bold, fontSize: 16),
+                            // ),
+                            // SizedBox(height: 8),
+                            // TextFormField(
+                            //   initialValue: generateInputID(),
+                            //   readOnly: true,
+                            //   decoration: InputDecoration(
+                            //     border: OutlineInputBorder(),
+                            //     contentPadding:
+                            //         EdgeInsets.symmetric(horizontal: 12),
+                            //     hintText: 'Auto-generated Input ID',
+                            //   ),
+                            // ),
+                            SizedBox(height: 16),
+                            Text(
+                              'Merchandiser',
+                              style: TextStyle(
+                                  fontWeight: FontWeight.bold, fontSize: 16),
+                            ),
+                            SizedBox(height: 8),
+                            TextFormField(
+                              initialValue:
+                                  '${widget.userName} ${widget.userLastName}',
+                              readOnly: true,
+                              decoration: InputDecoration(
+                                border: OutlineInputBorder(),
+                                contentPadding:
+                                    EdgeInsets.symmetric(horizontal: 12),
+                              ),
+                            ),
+                            SizedBox(height: 16),
+                            Text(
+                              'Branch/Outlet',
+                              style: TextStyle(
+                                  fontWeight: FontWeight.bold, fontSize: 16),
+                            ),
+                            SizedBox(height: 10),
+                            Container(
+                              decoration: BoxDecoration(
+                                border: Border(
+                                  bottom: BorderSide(
+                                    color: Colors.black,
+                                    width: 1.0,
+                                  ),
+                                ),
+                              ),
+                              child: Row(
+                                children: [
+                                  Expanded(
+                                    child: Stack(
+                                      alignment: Alignment.centerRight,
+                                      children: [
+                                        DropdownButtonFormField<String>(
+                                          isExpanded: true,
+                                          value: _selectedAccount,
+                                          items: _branchList.map((branch) {
+                                            return DropdownMenuItem<String>(
+                                              value: branch,
+                                              child: Text(branch),
+                                            );
+                                          }).toList(),
+                                          onChanged: _branchList.length > 1
+                                              ? (value) {
+                                                  setState(() {
+                                                    _selectedAccount = value;
+                                                    _isSaveEnabled =
+                                                        _selectedAccount !=
+                                                                null &&
+                                                            _selectedPeriod !=
+                                                                null;
+                                                  });
+                                                }
+                                              : null, // Disable onChange when there is only one branch
+                                          decoration: InputDecoration(
+                                            hintText: 'Select',
+                                            border: OutlineInputBorder(),
+                                            contentPadding:
+                                                EdgeInsets.symmetric(
+                                                    horizontal: 12),
+                                          ),
                                         ),
+                                        // Conditionally show clear button
+                                        if (_selectedAccount != null)
+                                          Positioned(
+                                            right: 8.0,
+                                            child: IconButton(
+                                              icon: Icon(Icons.clear),
+                                              onPressed: () {
+                                                setState(() {
+                                                  _selectedAccount = null;
+                                                  _selectedPeriod = null;
+                                                  _showAdditionalInfo = false;
+                                                  _isSaveEnabled = false;
+                                                });
+                                              },
+                                            ),
+                                          ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            if (_selectedAccount != null) ...[
+                              SizedBox(height: 16),
+                              Text(
+                                'Additional Information',
+                              ),
+                              SizedBox(height: 8),
+                              Text(
+                                'Weeks Covered',
+                                style: TextStyle(
+                                    fontWeight: FontWeight.bold, fontSize: 16),
+                              ),
+                              SizedBox(height: 8),
+                              Container(
+                                decoration: BoxDecoration(
+                                  border: Border(
+                                    bottom: BorderSide(
+                                      color: Colors.black,
+                                      width: 1.0,
+                                    ),
+                                  ),
+                                ),
+                                child: Row(
+                                  children: [
+                                    Expanded(
+                                      child: Stack(
+                                        alignment: Alignment.centerRight,
+                                        children: [
+                                          DropdownButtonFormField<String>(
+                                            value: _selectedPeriod,
+                                            items: [
+                                              DropdownMenuItem(
+                                                child: Text('Dec23-Dec29'),
+                                                value: 'Dec23-Dec29',
+                                              ),
+                                              DropdownMenuItem(
+                                                child: Text('Dec30-Jan05'),
+                                                value: 'Dec30-Jan05',
+                                              ),
+                                              DropdownMenuItem(
+                                                child: Text('Jan06-Jan12'),
+                                                value: 'Jan06-Jan12',
+                                              ),
+                                              DropdownMenuItem(
+                                                child: Text('Jan13-Jan19'),
+                                                value: 'Jan13-Jan19',
+                                              ),
+                                              DropdownMenuItem(
+                                                child: Text('Jan20-Jan26'),
+                                                value: 'Jan20-Jan26',
+                                              ),
+                                              DropdownMenuItem(
+                                                child: Text('Jan27-Feb02'),
+                                                value: 'Jan27-Feb02',
+                                              ),
+                                              DropdownMenuItem(
+                                                child: Text('Feb03-Feb09'),
+                                                value: 'Feb03-Feb09',
+                                              ),
+                                              DropdownMenuItem(
+                                                child: Text('Feb10-Feb16'),
+                                                value: 'Feb10-Feb16',
+                                              ),
+                                              DropdownMenuItem(
+                                                child: Text('Feb17-Feb23'),
+                                                value: 'Feb17-Feb23',
+                                              ),
+                                              DropdownMenuItem(
+                                                child: Text('Feb24-Mar01'),
+                                                value: 'Feb24-Mar01',
+                                              ),
+                                              DropdownMenuItem(
+                                                child: Text('Mar02-Mar08'),
+                                                value: 'Mar02-Mar08',
+                                              ),
+                                              DropdownMenuItem(
+                                                child: Text('Mar09-Mar15'),
+                                                value: 'Mar09-Mar15',
+                                              ),
+                                              DropdownMenuItem(
+                                                child: Text('Mar16-Mar22'),
+                                                value: 'Mar16-Mar22',
+                                              ),
+                                              DropdownMenuItem(
+                                                child: Text('Mar23-Mar29'),
+                                                value: 'Mar23-Mar29',
+                                              ),
+                                              DropdownMenuItem(
+                                                child: Text('Mar30-Apr05'),
+                                                value: 'Mar30-Apr05',
+                                              ),
+                                              DropdownMenuItem(
+                                                child: Text('Apr06-Apr12'),
+                                                value: 'Apr06-Apr12',
+                                              ),
+                                              DropdownMenuItem(
+                                                child: Text('Apr13-Apr19'),
+                                                value: 'Apr13-Apr19',
+                                              ),
+                                              DropdownMenuItem(
+                                                child: Text('Apr20-Apr26'),
+                                                value: 'Apr20-Apr26',
+                                              ),
+                                              DropdownMenuItem(
+                                                child: Text('Apr27-May03'),
+                                                value: 'Apr27-May03',
+                                              ),
+                                              DropdownMenuItem(
+                                                child: Text('May04-May10'),
+                                                value: 'May04-May10',
+                                              ),
+                                              DropdownMenuItem(
+                                                child: Text('May11-May17'),
+                                                value: 'May11-May17',
+                                              ),
+                                              DropdownMenuItem(
+                                                child: Text('May18-May24'),
+                                                value: 'May18-May24',
+                                              ),
+                                              DropdownMenuItem(
+                                                child: Text('May25-May31'),
+                                                value: 'May25-May31',
+                                              ),
+                                              DropdownMenuItem(
+                                                child: Text('Jun01-Jun07'),
+                                                value: 'Jun01-Jun07',
+                                              ),
+                                              DropdownMenuItem(
+                                                child: Text('Jun08-Jun14'),
+                                                value: 'Jun08-Jun14',
+                                              ),
+                                              DropdownMenuItem(
+                                                child: Text('Jun15-Jun21'),
+                                                value: 'Jun15-Jun21',
+                                              ),
+                                              DropdownMenuItem(
+                                                child: Text('Jun22-Jun28'),
+                                                value: 'Jun22-Jun28',
+                                              ),
+                                              DropdownMenuItem(
+                                                child: Text('Jul06-Jul12'),
+                                                value: 'Jul06-Jul12',
+                                              ),
+                                              DropdownMenuItem(
+                                                child: Text('Jul13-Jul19'),
+                                                value: 'Jul13-Jul19',
+                                              ),
+                                              DropdownMenuItem(
+                                                child: Text('Jul20-Jul26'),
+                                                value: 'Jul20-Jul26',
+                                              ),
+                                              DropdownMenuItem(
+                                                child: Text('Jul27-Aug02'),
+                                                value: 'Jul27-Aug02',
+                                              ),
+                                              DropdownMenuItem(
+                                                child: Text('Aug03-Aug09'),
+                                                value: 'Aug03-Aug09',
+                                              ),
+                                              DropdownMenuItem(
+                                                child: Text('Aug10-Aug16'),
+                                                value: 'Aug10-Aug16',
+                                              ),
+                                              DropdownMenuItem(
+                                                child: Text('Aug24-Aug30'),
+                                                value: 'Aug24-Aug30',
+                                              ),
+                                              DropdownMenuItem(
+                                                child: Text('Aug31-Sep06'),
+                                                value: 'Aug31-Sep06',
+                                              ),
+                                              DropdownMenuItem(
+                                                child: Text('Sep07-Sep13'),
+                                                value: 'Sep07-Sep13',
+                                              ),
+                                              DropdownMenuItem(
+                                                child: Text('Sep14-Sep20'),
+                                                value: 'Sep14-Sep20',
+                                              ),
+                                              DropdownMenuItem(
+                                                child: Text('Sep21-Sep27'),
+                                                value: 'Sep21-Sep27',
+                                              ),
+                                              DropdownMenuItem(
+                                                child: Text('Sep28-Oct04'),
+                                                value: 'Sep28-Oct04',
+                                              ),
+                                              DropdownMenuItem(
+                                                child: Text('Oct05-Oct11'),
+                                                value: 'Oct05-Oct11',
+                                              ),
+                                              DropdownMenuItem(
+                                                child: Text('Oct12-Oct18'),
+                                                value: 'Oct12-Oct18',
+                                              ),
+                                              DropdownMenuItem(
+                                                child: Text('Oct19-Oct25'),
+                                                value: 'Oct19-Oct25',
+                                              ),
+                                              DropdownMenuItem(
+                                                child: Text('Oct26-Nov01'),
+                                                value: 'Oct26-Nov01',
+                                              ),
+                                              DropdownMenuItem(
+                                                child: Text('Nov02-Nov08'),
+                                                value: 'Nov02-Nov08',
+                                              ),
+                                              DropdownMenuItem(
+                                                child: Text('Nov09-Nov15'),
+                                                value: 'Nov09-Nov15',
+                                              ),
+                                              DropdownMenuItem(
+                                                child: Text('Nov16-Nov22'),
+                                                value: 'Nov16-Nov22',
+                                              ),
+                                              DropdownMenuItem(
+                                                child: Text('Nov23-Nov29'),
+                                                value: 'Nov23-Nov29',
+                                              ),
+                                              DropdownMenuItem(
+                                                child: Text('Nov30-Dec06'),
+                                                value: 'Nov30-Dec06',
+                                              ),
+                                              DropdownMenuItem(
+                                                child: Text('Dec07-Dec13'),
+                                                value: 'Dec07-Dec13',
+                                              ),
+                                              DropdownMenuItem(
+                                                child: Text('Dec14-Dec20'),
+                                                value: 'Dec14-Dec20',
+                                              ),
+                                              DropdownMenuItem(
+                                                child: Text('Dec21-Dec27'),
+                                                value: 'Dec21-Dec27',
+                                              ),
+                                            ],
+                                            onChanged: (value) {
+                                              setState(() {
+                                                _selectedPeriod = value;
+                                                _isSaveEnabled =
+                                                    _selectedAccount != null &&
+                                                        _selectedPeriod != null;
+                                                switch (value) {
+                                                  case 'Dec23-Dec29':
+                                                    _monthController.text =
+                                                        'December';
+                                                    _weekController.text =
+                                                        'Week 52';
+                                                    _showAdditionalInfo = true;
+                                                    break;
+                                                  case 'Dec30-Jan05':
+                                                    _monthController.text =
+                                                        'January';
+                                                    _weekController.text =
+                                                        'Week 1';
+                                                    _showAdditionalInfo = true;
+                                                    break;
+                                                  case 'Jan06-Jan12':
+                                                    _monthController.text =
+                                                        'January';
+                                                    _weekController.text =
+                                                        'Week 2';
+                                                    _showAdditionalInfo = true;
+                                                    break;
+                                                  case 'Jan13-Jan19':
+                                                    _monthController.text =
+                                                        'January';
+                                                    _weekController.text =
+                                                        'Week 3';
+                                                    _showAdditionalInfo = true;
+                                                    break;
+                                                  case 'Jan20-Jan26':
+                                                    _monthController.text =
+                                                        'January';
+                                                    _weekController.text =
+                                                        'Week 4';
+                                                    _showAdditionalInfo = true;
+                                                    break;
+                                                  case 'Jan27-Feb02':
+                                                    _monthController.text =
+                                                        'February';
+                                                    _weekController.text =
+                                                        'Week 5';
+                                                    _showAdditionalInfo = true;
+                                                    break;
+                                                  case 'Feb03-Feb09':
+                                                    _monthController.text =
+                                                        'February';
+                                                    _weekController.text =
+                                                        'Week 6';
+                                                    _showAdditionalInfo = true;
+                                                    break;
+                                                  case 'Feb10-Feb16':
+                                                    _monthController.text =
+                                                        'February';
+                                                    _weekController.text =
+                                                        'Week 7';
+                                                    _showAdditionalInfo = true;
+                                                    break;
+                                                  case 'Feb17-Feb23':
+                                                    _monthController.text =
+                                                        'February';
+                                                    _weekController.text =
+                                                        'Week 8';
+                                                    _showAdditionalInfo = true;
+                                                    break;
+                                                  case 'Feb24-Mar01':
+                                                    _monthController.text =
+                                                        'March';
+                                                    _weekController.text =
+                                                        'Week 9';
+                                                    _showAdditionalInfo = true;
+                                                    break;
+                                                  case 'Mar02-Mar08':
+                                                    _monthController.text =
+                                                        'March';
+                                                    _weekController.text =
+                                                        'Week 10';
+                                                    _showAdditionalInfo = true;
+                                                    break;
+                                                  case 'Mar09-Mar15':
+                                                    _monthController.text =
+                                                        'March';
+                                                    _weekController.text =
+                                                        'Week 11';
+                                                    _showAdditionalInfo = true;
+                                                    break;
+                                                  case 'Mar16-Mar22':
+                                                    _monthController.text =
+                                                        'March';
+                                                    _weekController.text =
+                                                        'Week 12';
+                                                    _showAdditionalInfo = true;
+                                                    break;
+                                                  case 'Mar23-Mar29':
+                                                    _monthController.text =
+                                                        'March';
+                                                    _weekController.text =
+                                                        'Week 13';
+                                                    _showAdditionalInfo = true;
+                                                    break;
+                                                  case 'Mar30-Apr05':
+                                                    _monthController.text =
+                                                        'April';
+                                                    _weekController.text =
+                                                        'Week 14';
+                                                    _showAdditionalInfo = true;
+                                                    break;
+                                                  case 'Apr06-Apr12':
+                                                    _monthController.text =
+                                                        'April';
+                                                    _weekController.text =
+                                                        'Week 15';
+                                                    _showAdditionalInfo = true;
+                                                    break;
+                                                  case 'Apr13-Apr19':
+                                                    _monthController.text =
+                                                        'April';
+                                                    _weekController.text =
+                                                        'Week 16';
+                                                    _showAdditionalInfo = true;
+                                                    break;
+                                                  case 'Apr20-Apr26':
+                                                    _monthController.text =
+                                                        'April';
+                                                    _weekController.text =
+                                                        'Week 17';
+                                                    _showAdditionalInfo = true;
+                                                    break;
+                                                  case 'Apr27-May03':
+                                                    _monthController.text =
+                                                        'May';
+                                                    _weekController.text =
+                                                        'Week 18';
+                                                    _showAdditionalInfo = true;
+                                                    break;
+                                                  case 'May04-May10':
+                                                    _monthController.text =
+                                                        'May';
+                                                    _weekController.text =
+                                                        'Week 19';
+                                                    _showAdditionalInfo = true;
+                                                    break;
+                                                  case 'May11-May17':
+                                                    _monthController.text =
+                                                        'May';
+                                                    _weekController.text =
+                                                        'Week 20';
+                                                    _showAdditionalInfo = true;
+                                                    break;
+                                                  case 'May18-May24':
+                                                    _monthController.text =
+                                                        'May';
+                                                    _weekController.text =
+                                                        'Week 21';
+                                                    _showAdditionalInfo = true;
+                                                    break;
+                                                  case 'May25-May31':
+                                                    _monthController.text =
+                                                        'May';
+                                                    _weekController.text =
+                                                        'Week 22';
+                                                    _showAdditionalInfo = true;
+                                                    break;
+                                                  case 'Jun01-Jun07':
+                                                    _monthController.text =
+                                                        'June';
+                                                    _weekController.text =
+                                                        'Week 23';
+                                                    _showAdditionalInfo = true;
+                                                    break;
+                                                  case 'Jun08-Jun14':
+                                                    _monthController.text =
+                                                        'June';
+                                                    _weekController.text =
+                                                        'Week 24';
+                                                    _showAdditionalInfo = true;
+                                                    break;
+                                                  case 'Jun15-Jun21':
+                                                    _monthController.text =
+                                                        'June';
+                                                    _weekController.text =
+                                                        'Week 25';
+                                                    _showAdditionalInfo = true;
+                                                    break;
+                                                  case 'Jun22-Jun28':
+                                                    _monthController.text =
+                                                        'June';
+                                                    _weekController.text =
+                                                        'Week 26';
+                                                    _showAdditionalInfo = true;
+                                                    break;
+                                                  case 'Jun29-Jul05':
+                                                    _monthController.text =
+                                                        'July';
+                                                    _weekController.text =
+                                                        'Week 27';
+                                                    _showAdditionalInfo = true;
+                                                    break;
+                                                  case 'Jul06-Jul12':
+                                                    _monthController.text =
+                                                        'July';
+                                                    _weekController.text =
+                                                        'Week 28';
+                                                    _showAdditionalInfo = true;
+                                                    break;
+                                                  case 'Jul13-Jul19':
+                                                    _monthController.text =
+                                                        'July';
+                                                    _weekController.text =
+                                                        'Week 29';
+                                                    _showAdditionalInfo = true;
+                                                    break;
+                                                  case 'Jul20-Jul26':
+                                                    _monthController.text =
+                                                        'July';
+                                                    _weekController.text =
+                                                        'Week 30';
+                                                    _showAdditionalInfo = true;
+                                                    break;
+                                                  case 'Jul27-Aug02':
+                                                    _monthController.text =
+                                                        'August';
+                                                    _weekController.text =
+                                                        'Week 31';
+                                                    _showAdditionalInfo = true;
+                                                    break;
+                                                  case 'Aug03-Aug09':
+                                                    _monthController.text =
+                                                        'August';
+                                                    _weekController.text =
+                                                        'Week 32';
+                                                    _showAdditionalInfo = true;
+                                                    break;
+                                                  case 'Aug10-Aug16':
+                                                    _monthController.text =
+                                                        'August';
+                                                    _weekController.text =
+                                                        'Week 33';
+                                                    _showAdditionalInfo = true;
+                                                    break;
+                                                  case 'Aug17-Aug23':
+                                                    _monthController.text =
+                                                        'August';
+                                                    _weekController.text =
+                                                        'Week 34';
+                                                    _showAdditionalInfo = true;
+                                                    break;
+                                                  case 'Aug24-Aug30':
+                                                    _monthController.text =
+                                                        'August';
+                                                    _weekController.text =
+                                                        'Week 35';
+                                                    _showAdditionalInfo = true;
+                                                    break;
+                                                  case 'Aug31-Sep06':
+                                                    _monthController.text =
+                                                        'September';
+                                                    _weekController.text =
+                                                        'Week 36';
+                                                    _showAdditionalInfo = true;
+                                                    break;
+                                                  case 'Sep07-Sep13':
+                                                    _monthController.text =
+                                                        'September';
+                                                    _weekController.text =
+                                                        'Week 37';
+                                                    _showAdditionalInfo = true;
+                                                    break;
+                                                  case 'Sep14-Sep20':
+                                                    _monthController.text =
+                                                        'September';
+                                                    _weekController.text =
+                                                        'Week 38';
+                                                    _showAdditionalInfo = true;
+                                                    break;
+                                                  case 'Sep21-Sep27':
+                                                    _monthController.text =
+                                                        'September';
+                                                    _weekController.text =
+                                                        'Week 39';
+                                                    _showAdditionalInfo = true;
+                                                    break;
+                                                  case 'Sep28-Oct04':
+                                                    _monthController.text =
+                                                        'October';
+                                                    _weekController.text =
+                                                        'Week 40';
+                                                    _showAdditionalInfo = true;
+                                                    break;
+                                                  case 'Oct05-Oct11':
+                                                    _monthController.text =
+                                                        'October';
+                                                    _weekController.text =
+                                                        'Week 41';
+                                                    _showAdditionalInfo = true;
+                                                    break;
+                                                  case 'Oct12-Oct18':
+                                                    _monthController.text =
+                                                        'October';
+                                                    _weekController.text =
+                                                        'Week 42';
+                                                    _showAdditionalInfo = true;
+                                                    break;
+                                                  case 'Oct19-Oct25':
+                                                    _monthController.text =
+                                                        'October';
+                                                    _weekController.text =
+                                                        'Week 43';
+                                                    _showAdditionalInfo = true;
+                                                    break;
+                                                  case 'Oct26-Nov01':
+                                                    _monthController.text =
+                                                        'November';
+                                                    _weekController.text =
+                                                        'Week 44';
+                                                    _showAdditionalInfo = true;
+                                                    break;
+                                                  case 'Nov02-Nov08':
+                                                    _monthController.text =
+                                                        'November';
+                                                    _weekController.text =
+                                                        'Week 45';
+                                                    _showAdditionalInfo = true;
+                                                    break;
+                                                  case 'Nov09-Nov15':
+                                                    _monthController.text =
+                                                        'November';
+                                                    _weekController.text =
+                                                        'Week 46';
+                                                    _showAdditionalInfo = true;
+                                                    break;
+                                                  case 'Nov16-Nov22':
+                                                    _monthController.text =
+                                                        'November';
+                                                    _weekController.text =
+                                                        'Week 47';
+                                                    _showAdditionalInfo = true;
+                                                    break;
+                                                  case 'Nov23-Nov29':
+                                                    _monthController.text =
+                                                        'November';
+                                                    _weekController.text =
+                                                        'Week 48';
+                                                    _showAdditionalInfo = true;
+                                                    break;
+                                                  case 'Nov30-Dec06':
+                                                    _monthController.text =
+                                                        'December';
+                                                    _weekController.text =
+                                                        'Week 49';
+                                                    _showAdditionalInfo = true;
+                                                    break;
+                                                  case 'Dec07-Dec13':
+                                                    _monthController.text =
+                                                        'December';
+                                                    _weekController.text =
+                                                        'Week 50';
+                                                    _showAdditionalInfo = true;
+                                                    break;
+                                                  case 'Dec14-Dec20':
+                                                    _monthController.text =
+                                                        'December';
+                                                    _weekController.text =
+                                                        'Week 51';
+                                                    _showAdditionalInfo = true;
+                                                    break;
+                                                  case 'Dec21-Dec27':
+                                                    _monthController.text =
+                                                        'December';
+                                                    _weekController.text =
+                                                        'Week 52';
+                                                    _showAdditionalInfo = true;
+                                                    break;
+
+                                                  default:
+                                                    _monthController.clear();
+                                                    _weekController.clear();
+                                                    _showAdditionalInfo = false;
+                                                    break;
+                                                }
+                                              });
+                                            },
+                                            decoration: InputDecoration(
+                                              hintText: 'Select Period',
+                                              border: OutlineInputBorder(),
+                                              contentPadding:
+                                                  EdgeInsets.symmetric(
+                                                      horizontal: 12),
+                                            ),
+                                          ),
+                                          if (_selectedPeriod != null)
+                                            Positioned(
+                                              right: 8.0,
+                                              child: IconButton(
+                                                icon: Icon(Icons.clear),
+                                                onPressed: () {
+                                                  setState(() {
+                                                    _selectedPeriod = null;
+                                                    _showAdditionalInfo = false;
+                                                    _isSaveEnabled = false;
+                                                  });
+                                                },
+                                              ),
+                                            ),
+                                        ],
                                       ),
+                                    ),
                                   ],
                                 ),
                               ),
-                            ],
-                          ),
-                        ),
-                        if (_selectedAccount != null) ...[
-                          SizedBox(height: 16),
-                          Text(
-                            'Additional Information',
-                          ),
-                          SizedBox(height: 8),
-                          Text(
-                            'Weeks Covered',
-                            style: TextStyle(
-                                fontWeight: FontWeight.bold, fontSize: 16),
-                          ),
-                          SizedBox(height: 8),
-                          Container(
-                            decoration: BoxDecoration(
-                              border: Border(
-                                bottom: BorderSide(
-                                  color: Colors.black,
-                                  width: 1.0,
+                              if (_showAdditionalInfo) ...[
+                                SizedBox(height: 16),
+                                Text('Month',
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 16,
+                                    )),
+                                SizedBox(height: 8),
+                                TextFormField(
+                                  decoration: InputDecoration(
+                                    hintText: 'Select Period',
+                                    border: OutlineInputBorder(),
+                                    contentPadding:
+                                        EdgeInsets.symmetric(horizontal: 12),
+                                  ),
+                                  controller: _monthController,
+                                  readOnly: true,
                                 ),
-                              ),
-                            ),
-                            child: Row(
+                                SizedBox(height: 8),
+                                Text(
+                                  'Week',
+                                  style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 16),
+                                ),
+                                TextFormField(
+                                  decoration: InputDecoration(
+                                    hintText: 'Select Period',
+                                    border: OutlineInputBorder(),
+                                    contentPadding:
+                                        EdgeInsets.symmetric(horizontal: 12),
+                                  ),
+                                  controller: _weekController,
+                                  readOnly: true,
+                                ),
+                              ],
+                            ],
+                            SizedBox(height: 20),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                               children: [
-                                Expanded(
-                                  child: Stack(
-                                    alignment: Alignment.centerRight,
-                                    children: [
-                                      DropdownButtonFormField<String>(
-                                        value: _selectedPeriod,
-                                        items: [
-                                          DropdownMenuItem(
-                                            child: Text('Dec23-Dec29'),
-                                            value: 'Dec23-Dec29',
-                                          ),
-                                          DropdownMenuItem(
-                                            child: Text('Dec30-Jan05'),
-                                            value: 'Dec30-Jan05',
-                                          ),
-                                          DropdownMenuItem(
-                                            child: Text('Jan06-Jan12'),
-                                            value: 'Jan06-Jan12',
-                                          ),
-                                          DropdownMenuItem(
-                                            child: Text('Jan13-Jan19'),
-                                            value: 'Jan13-Jan19',
-                                          ),
-                                          DropdownMenuItem(
-                                            child: Text('Jan20-Jan26'),
-                                            value: 'Jan20-Jan26',
-                                          ),
-                                          DropdownMenuItem(
-                                            child: Text('Jan27-Feb02'),
-                                            value: 'Jan27-Feb02',
-                                          ),
-                                          DropdownMenuItem(
-                                            child: Text('Feb03-Feb09'),
-                                            value: 'Feb03-Feb09',
-                                          ),
-                                          DropdownMenuItem(
-                                            child: Text('Feb10-Feb16'),
-                                            value: 'Feb10-Feb16',
-                                          ),
-                                          DropdownMenuItem(
-                                            child: Text('Feb17-Feb23'),
-                                            value: 'Feb17-Feb23',
-                                          ),
-                                          DropdownMenuItem(
-                                            child: Text('Feb24-Mar01'),
-                                            value: 'Feb24-Mar01',
-                                          ),
-                                          DropdownMenuItem(
-                                            child: Text('Mar02-Mar08'),
-                                            value: 'Mar02-Mar08',
-                                          ),
-                                          DropdownMenuItem(
-                                            child: Text('Mar09-Mar15'),
-                                            value: 'Mar09-Mar15',
-                                          ),
-                                          DropdownMenuItem(
-                                            child: Text('Mar16-Mar22'),
-                                            value: 'Mar16-Mar22',
-                                          ),
-                                          DropdownMenuItem(
-                                            child: Text('Mar23-Mar29'),
-                                            value: 'Mar23-Mar29',
-                                          ),
-                                          DropdownMenuItem(
-                                            child: Text('Mar30-Apr05'),
-                                            value: 'Mar30-Apr05',
-                                          ),
-                                          DropdownMenuItem(
-                                            child: Text('Apr06-Apr12'),
-                                            value: 'Apr06-Apr12',
-                                          ),
-                                          DropdownMenuItem(
-                                            child: Text('Apr13-Apr19'),
-                                            value: 'Apr13-Apr19',
-                                          ),
-                                          DropdownMenuItem(
-                                            child: Text('Apr20-Apr26'),
-                                            value: 'Apr20-Apr26',
-                                          ),
-                                          DropdownMenuItem(
-                                            child: Text('Apr27-May03'),
-                                            value: 'Apr27-May03',
-                                          ),
-                                          DropdownMenuItem(
-                                            child: Text('May04-May10'),
-                                            value: 'May04-May10',
-                                          ),
-                                          DropdownMenuItem(
-                                            child: Text('May11-May17'),
-                                            value: 'May11-May17',
-                                          ),
-                                          DropdownMenuItem(
-                                            child: Text('May18-May24'),
-                                            value: 'May18-May24',
-                                          ),
-                                          DropdownMenuItem(
-                                            child: Text('May25-May31'),
-                                            value: 'May25-May31',
-                                          ),
-                                          DropdownMenuItem(
-                                            child: Text('Jun01-Jun07'),
-                                            value: 'Jun01-Jun07',
-                                          ),
-                                          DropdownMenuItem(
-                                            child: Text('Jun08-Jun14'),
-                                            value: 'Jun08-Jun14',
-                                          ),
-                                          DropdownMenuItem(
-                                            child: Text('Jun15-Jun21'),
-                                            value: 'Jun15-Jun21',
-                                          ),
-                                          DropdownMenuItem(
-                                            child: Text('Jun22-Jun28'),
-                                            value: 'Jun22-Jun28',
-                                          ),
-                                          DropdownMenuItem(
-                                            child: Text('Jul06-Jul12'),
-                                            value: 'Jul06-Jul12',
-                                          ),
-                                          DropdownMenuItem(
-                                            child: Text('Jul13-Jul19'),
-                                            value: 'Jul13-Jul19',
-                                          ),
-                                          DropdownMenuItem(
-                                            child: Text('Jul20-Jul26'),
-                                            value: 'Jul20-Jul26',
-                                          ),
-                                          DropdownMenuItem(
-                                            child: Text('Jul27-Aug02'),
-                                            value: 'Jul27-Aug02',
-                                          ),
-                                          DropdownMenuItem(
-                                            child: Text('Aug03-Aug09'),
-                                            value: 'Aug03-Aug09',
-                                          ),
-                                          DropdownMenuItem(
-                                            child: Text('Aug10-Aug16'),
-                                            value: 'Aug10-Aug16',
-                                          ),
-                                          DropdownMenuItem(
-                                            child: Text('Aug24-Aug30'),
-                                            value: 'Aug24-Aug30',
-                                          ),
-                                          DropdownMenuItem(
-                                            child: Text('Aug31-Sep06'),
-                                            value: 'Aug31-Sep06',
-                                          ),
-                                          DropdownMenuItem(
-                                            child: Text('Sep07-Sep13'),
-                                            value: 'Sep07-Sep13',
-                                          ),
-                                          DropdownMenuItem(
-                                            child: Text('Sep14-Sep20'),
-                                            value: 'Sep14-Sep20',
-                                          ),
-                                          DropdownMenuItem(
-                                            child: Text('Sep21-Sep27'),
-                                            value: 'Sep21-Sep27',
-                                          ),
-                                          DropdownMenuItem(
-                                            child: Text('Sep28-Oct04'),
-                                            value: 'Sep28-Oct04',
-                                          ),
-                                          DropdownMenuItem(
-                                            child: Text('Oct05-Oct11'),
-                                            value: 'Oct05-Oct11',
-                                          ),
-                                          DropdownMenuItem(
-                                            child: Text('Oct12-Oct18'),
-                                            value: 'Oct12-Oct18',
-                                          ),
-                                          DropdownMenuItem(
-                                            child: Text('Oct19-Oct25'),
-                                            value: 'Oct19-Oct25',
-                                          ),
-                                          DropdownMenuItem(
-                                            child: Text('Oct26-Nov01'),
-                                            value: 'Oct26-Nov01',
-                                          ),
-                                          DropdownMenuItem(
-                                            child: Text('Nov02-Nov08'),
-                                            value: 'Nov02-Nov08',
-                                          ),
-                                          DropdownMenuItem(
-                                            child: Text('Nov09-Nov15'),
-                                            value: 'Nov09-Nov15',
-                                          ),
-                                          DropdownMenuItem(
-                                            child: Text('Nov16-Nov22'),
-                                            value: 'Nov16-Nov22',
-                                          ),
-                                          DropdownMenuItem(
-                                            child: Text('Nov23-Nov29'),
-                                            value: 'Nov23-Nov29',
-                                          ),
-                                          DropdownMenuItem(
-                                            child: Text('Nov30-Dec06'),
-                                            value: 'Nov30-Dec06',
-                                          ),
-                                          DropdownMenuItem(
-                                            child: Text('Dec07-Dec13'),
-                                            value: 'Dec07-Dec13',
-                                          ),
-                                          DropdownMenuItem(
-                                            child: Text('Dec14-Dec20'),
-                                            value: 'Dec14-Dec20',
-                                          ),
-                                          DropdownMenuItem(
-                                            child: Text('Dec21-Dec27'),
-                                            value: 'Dec21-Dec27',
-                                          ),
-                                        ],
-                                        onChanged: (value) {
-                                          setState(() {
-                                            _selectedPeriod = value;
-                                            _isSaveEnabled =
-                                                _selectedAccount != null &&
-                                                    _selectedPeriod != null;
-                                            switch (value) {
-                                              case 'Dec23-Dec29':
-                                                _monthController.text =
-                                                    'December';
-                                                _weekController.text =
-                                                    'Week 52';
-                                                _showAdditionalInfo = true;
-                                                break;
-                                              case 'Dec30-Jan05':
-                                                _monthController.text =
-                                                    'January';
-                                                _weekController.text = 'Week 1';
-                                                _showAdditionalInfo = true;
-                                                break;
-                                              case 'Jan06-Jan12':
-                                                _monthController.text =
-                                                    'January';
-                                                _weekController.text = 'Week 2';
-                                                _showAdditionalInfo = true;
-                                                break;
-                                              case 'Jan13-Jan19':
-                                                _monthController.text =
-                                                    'January';
-                                                _weekController.text = 'Week 3';
-                                                _showAdditionalInfo = true;
-                                                break;
-                                              case 'Jan20-Jan26':
-                                                _monthController.text =
-                                                    'January';
-                                                _weekController.text = 'Week 4';
-                                                _showAdditionalInfo = true;
-                                                break;
-                                              case 'Jan27-Feb02':
-                                                _monthController.text =
-                                                    'February';
-                                                _weekController.text = 'Week 5';
-                                                _showAdditionalInfo = true;
-                                                break;
-                                              case 'Feb03-Feb09':
-                                                _monthController.text =
-                                                    'February';
-                                                _weekController.text = 'Week 6';
-                                                _showAdditionalInfo = true;
-                                                break;
-                                              case 'Feb10-Feb16':
-                                                _monthController.text =
-                                                    'February';
-                                                _weekController.text = 'Week 7';
-                                                _showAdditionalInfo = true;
-                                                break;
-                                              case 'Feb17-Feb23':
-                                                _monthController.text =
-                                                    'February';
-                                                _weekController.text = 'Week 8';
-                                                _showAdditionalInfo = true;
-                                                break;
-                                              case 'Feb24-Mar01':
-                                                _monthController.text = 'March';
-                                                _weekController.text = 'Week 9';
-                                                _showAdditionalInfo = true;
-                                                break;
-                                              case 'Mar02-Mar08':
-                                                _monthController.text = 'March';
-                                                _weekController.text =
-                                                    'Week 10';
-                                                _showAdditionalInfo = true;
-                                                break;
-                                              case 'Mar09-Mar15':
-                                                _monthController.text = 'March';
-                                                _weekController.text =
-                                                    'Week 11';
-                                                _showAdditionalInfo = true;
-                                                break;
-                                              case 'Mar16-Mar22':
-                                                _monthController.text = 'March';
-                                                _weekController.text =
-                                                    'Week 12';
-                                                _showAdditionalInfo = true;
-                                                break;
-                                              case 'Mar23-Mar29':
-                                                _monthController.text = 'March';
-                                                _weekController.text =
-                                                    'Week 13';
-                                                _showAdditionalInfo = true;
-                                                break;
-                                              case 'Mar30-Apr05':
-                                                _monthController.text = 'April';
-                                                _weekController.text =
-                                                    'Week 14';
-                                                _showAdditionalInfo = true;
-                                                break;
-                                              case 'Apr06-Apr12':
-                                                _monthController.text = 'April';
-                                                _weekController.text =
-                                                    'Week 15';
-                                                _showAdditionalInfo = true;
-                                                break;
-                                              case 'Apr13-Apr19':
-                                                _monthController.text = 'April';
-                                                _weekController.text =
-                                                    'Week 16';
-                                                _showAdditionalInfo = true;
-                                                break;
-                                              case 'Apr20-Apr26':
-                                                _monthController.text = 'April';
-                                                _weekController.text =
-                                                    'Week 17';
-                                                _showAdditionalInfo = true;
-                                                break;
-                                              case 'Apr27-May03':
-                                                _monthController.text = 'May';
-                                                _weekController.text =
-                                                    'Week 18';
-                                                _showAdditionalInfo = true;
-                                                break;
-                                              case 'May04-May10':
-                                                _monthController.text = 'May';
-                                                _weekController.text =
-                                                    'Week 19';
-                                                _showAdditionalInfo = true;
-                                                break;
-                                              case 'May11-May17':
-                                                _monthController.text = 'May';
-                                                _weekController.text =
-                                                    'Week 20';
-                                                _showAdditionalInfo = true;
-                                                break;
-                                              case 'May18-May24':
-                                                _monthController.text = 'May';
-                                                _weekController.text =
-                                                    'Week 21';
-                                                _showAdditionalInfo = true;
-                                                break;
-                                              case 'May25-May31':
-                                                _monthController.text = 'May';
-                                                _weekController.text =
-                                                    'Week 22';
-                                                _showAdditionalInfo = true;
-                                                break;
-                                              case 'Jun01-Jun07':
-                                                _monthController.text = 'June';
-                                                _weekController.text =
-                                                    'Week 23';
-                                                _showAdditionalInfo = true;
-                                                break;
-                                              case 'Jun08-Jun14':
-                                                _monthController.text = 'June';
-                                                _weekController.text =
-                                                    'Week 24';
-                                                _showAdditionalInfo = true;
-                                                break;
-                                              case 'Jun15-Jun21':
-                                                _monthController.text = 'June';
-                                                _weekController.text =
-                                                    'Week 25';
-                                                _showAdditionalInfo = true;
-                                                break;
-                                              case 'Jun22-Jun28':
-                                                _monthController.text = 'June';
-                                                _weekController.text =
-                                                    'Week 26';
-                                                _showAdditionalInfo = true;
-                                                break;
-                                              case 'Jun29-Jul05':
-                                                _monthController.text = 'July';
-                                                _weekController.text =
-                                                    'Week 27';
-                                                _showAdditionalInfo = true;
-                                                break;
-                                              case 'Jul06-Jul12':
-                                                _monthController.text = 'July';
-                                                _weekController.text =
-                                                    'Week 28';
-                                                _showAdditionalInfo = true;
-                                                break;
-                                              case 'Jul13-Jul19':
-                                                _monthController.text = 'July';
-                                                _weekController.text =
-                                                    'Week 29';
-                                                _showAdditionalInfo = true;
-                                                break;
-                                              case 'Jul20-Jul26':
-                                                _monthController.text = 'July';
-                                                _weekController.text =
-                                                    'Week 30';
-                                                _showAdditionalInfo = true;
-                                                break;
-                                              case 'Jul27-Aug02':
-                                                _monthController.text =
-                                                    'August';
-                                                _weekController.text =
-                                                    'Week 31';
-                                                _showAdditionalInfo = true;
-                                                break;
-                                              case 'Aug03-Aug09':
-                                                _monthController.text =
-                                                    'August';
-                                                _weekController.text =
-                                                    'Week 32';
-                                                _showAdditionalInfo = true;
-                                                break;
-                                              case 'Aug10-Aug16':
-                                                _monthController.text =
-                                                    'August';
-                                                _weekController.text =
-                                                    'Week 33';
-                                                _showAdditionalInfo = true;
-                                                break;
-                                              case 'Aug17-Aug23':
-                                                _monthController.text =
-                                                    'August';
-                                                _weekController.text =
-                                                    'Week 34';
-                                                _showAdditionalInfo = true;
-                                                break;
-                                              case 'Aug24-Aug30':
-                                                _monthController.text =
-                                                    'August';
-                                                _weekController.text =
-                                                    'Week 35';
-                                                _showAdditionalInfo = true;
-                                                break;
-                                              case 'Aug31-Sep06':
-                                                _monthController.text =
-                                                    'September';
-                                                _weekController.text =
-                                                    'Week 36';
-                                                _showAdditionalInfo = true;
-                                                break;
-                                              case 'Sep07-Sep13':
-                                                _monthController.text =
-                                                    'September';
-                                                _weekController.text =
-                                                    'Week 37';
-                                                _showAdditionalInfo = true;
-                                                break;
-                                              case 'Sep14-Sep20':
-                                                _monthController.text =
-                                                    'September';
-                                                _weekController.text =
-                                                    'Week 38';
-                                                _showAdditionalInfo = true;
-                                                break;
-                                              case 'Sep21-Sep27':
-                                                _monthController.text =
-                                                    'September';
-                                                _weekController.text =
-                                                    'Week 39';
-                                                _showAdditionalInfo = true;
-                                                break;
-                                              case 'Sep28-Oct04':
-                                                _monthController.text =
-                                                    'October';
-                                                _weekController.text =
-                                                    'Week 40';
-                                                _showAdditionalInfo = true;
-                                                break;
-                                              case 'Oct05-Oct11':
-                                                _monthController.text =
-                                                    'October';
-                                                _weekController.text =
-                                                    'Week 41';
-                                                _showAdditionalInfo = true;
-                                                break;
-                                              case 'Oct12-Oct18':
-                                                _monthController.text =
-                                                    'October';
-                                                _weekController.text =
-                                                    'Week 42';
-                                                _showAdditionalInfo = true;
-                                                break;
-                                              case 'Oct19-Oct25':
-                                                _monthController.text =
-                                                    'October';
-                                                _weekController.text =
-                                                    'Week 43';
-                                                _showAdditionalInfo = true;
-                                                break;
-                                              case 'Oct26-Nov01':
-                                                _monthController.text =
-                                                    'November';
-                                                _weekController.text =
-                                                    'Week 44';
-                                                _showAdditionalInfo = true;
-                                                break;
-                                              case 'Nov02-Nov08':
-                                                _monthController.text =
-                                                    'November';
-                                                _weekController.text =
-                                                    'Week 45';
-                                                _showAdditionalInfo = true;
-                                                break;
-                                              case 'Nov09-Nov15':
-                                                _monthController.text =
-                                                    'November';
-                                                _weekController.text =
-                                                    'Week 46';
-                                                _showAdditionalInfo = true;
-                                                break;
-                                              case 'Nov16-Nov22':
-                                                _monthController.text =
-                                                    'November';
-                                                _weekController.text =
-                                                    'Week 47';
-                                                _showAdditionalInfo = true;
-                                                break;
-                                              case 'Nov23-Nov29':
-                                                _monthController.text =
-                                                    'November';
-                                                _weekController.text =
-                                                    'Week 48';
-                                                _showAdditionalInfo = true;
-                                                break;
-                                              case 'Nov30-Dec06':
-                                                _monthController.text =
-                                                    'December';
-                                                _weekController.text =
-                                                    'Week 49';
-                                                _showAdditionalInfo = true;
-                                                break;
-                                              case 'Dec07-Dec13':
-                                                _monthController.text =
-                                                    'December';
-                                                _weekController.text =
-                                                    'Week 50';
-                                                _showAdditionalInfo = true;
-                                                break;
-                                              case 'Dec14-Dec20':
-                                                _monthController.text =
-                                                    'December';
-                                                _weekController.text =
-                                                    'Week 51';
-                                                _showAdditionalInfo = true;
-                                                break;
-                                              case 'Dec21-Dec27':
-                                                _monthController.text =
-                                                    'December';
-                                                _weekController.text =
-                                                    'Week 52';
-                                                _showAdditionalInfo = true;
-                                                break;
+                                ElevatedButton(
+                                  onPressed: () {
+                                    // Perform cancel action
 
-                                              default:
-                                                _monthController.clear();
-                                                _weekController.clear();
-                                                _showAdditionalInfo = false;
-                                                break;
-                                            }
-                                          });
-                                        },
-                                        decoration: InputDecoration(
-                                          hintText: 'Select Period',
-                                          border: OutlineInputBorder(),
-                                          contentPadding: EdgeInsets.symmetric(
-                                              horizontal: 12),
+                                    Navigator.of(context).pushReplacement(
+                                      MaterialPageRoute(
+                                        builder: (context) => Inventory(
+                                          userName: widget.userName,
+                                          userLastName: widget.userLastName,
+                                          userEmail: widget.userEmail,
+                                          userContactNum: widget.userContactNum,
+                                          userMiddleName: widget.userMiddleName,
                                         ),
                                       ),
-                                      if (_selectedPeriod != null)
-                                        Positioned(
-                                          right: 8.0,
-                                          child: IconButton(
-                                            icon: Icon(Icons.clear),
-                                            onPressed: () {
-                                              setState(() {
-                                                _selectedPeriod = null;
-                                                _showAdditionalInfo = false;
-                                                _isSaveEnabled = false;
-                                              });
-                                            },
-                                          ),
-                                        ),
-                                    ],
+                                    );
+                                  },
+                                  style: ButtonStyle(
+                                      padding: MaterialStateProperty.all<
+                                          EdgeInsetsGeometry>(
+                                        const EdgeInsets.symmetric(
+                                            vertical: 15),
+                                      ),
+                                      minimumSize:
+                                          MaterialStateProperty.all<Size>(
+                                        const Size(150, 50),
+                                      ),
+                                      backgroundColor:
+                                          MaterialStateProperty.all<Color>(
+                                              Colors.green)),
+                                  child: const Text(
+                                    'Cancel',
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
+                                ElevatedButton(
+                                  onPressed: _isSaveEnabled
+                                      ? () {
+                                          Navigator.of(context).pushReplacement(
+                                              MaterialPageRoute(
+                                                  builder: (context) =>
+                                                      SKUInventory(
+                                                        userName:
+                                                            widget.userName,
+                                                        userLastName:
+                                                            widget.userLastName,
+                                                        userEmail:
+                                                            widget.userEmail,
+                                                        userContactNum: widget
+                                                            .userContactNum,
+                                                        userMiddleName: widget
+                                                            .userMiddleName,
+                                                        selectedAccount:
+                                                            _selectedAccount ??
+                                                                '',
+                                                        SelectedPeriod:
+                                                            _selectedPeriod!,
+                                                        selectedWeek:
+                                                            _selectedWeek,
+                                                        selectedMonth:
+                                                            _selectedMonth,
+                                                        // inputid: generateInputID(),
+                                                      )));
+                                        }
+                                      : null,
+                                  style: ButtonStyle(
+                                    padding: MaterialStateProperty.all<
+                                        EdgeInsetsGeometry>(
+                                      const EdgeInsets.symmetric(vertical: 15),
+                                    ),
+                                    minimumSize:
+                                        MaterialStateProperty.all<Size>(
+                                      const Size(150, 50),
+                                    ),
+                                    backgroundColor: _isSaveEnabled
+                                        ? MaterialStateProperty.all<Color>(
+                                            Colors.green)
+                                        : MaterialStateProperty.all<Color>(
+                                            Colors.grey),
+                                  ),
+                                  child: const Text(
+                                    'Next',
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.bold,
+                                    ),
                                   ),
                                 ),
                               ],
                             ),
-                          ),
-                          if (_showAdditionalInfo) ...[
-                            SizedBox(height: 16),
-                            Text('Month',
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 16,
-                                )),
-                            SizedBox(height: 8),
-                            TextFormField(
-                              decoration: InputDecoration(
-                                hintText: 'Select Period',
-                                border: OutlineInputBorder(),
-                                contentPadding:
-                                    EdgeInsets.symmetric(horizontal: 12),
-                              ),
-                              controller: _monthController,
-                              readOnly: true,
-                            ),
-                            SizedBox(height: 8),
-                            Text(
-                              'Week',
-                              style: TextStyle(
-                                  fontWeight: FontWeight.bold, fontSize: 16),
-                            ),
-                            TextFormField(
-                              decoration: InputDecoration(
-                                hintText: 'Select Period',
-                                border: OutlineInputBorder(),
-                                contentPadding:
-                                    EdgeInsets.symmetric(horizontal: 12),
-                              ),
-                              controller: _weekController,
-                              readOnly: true,
-                            ),
-                          ],
-                        ],
-                        SizedBox(height: 20),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                          children: [
-                            ElevatedButton(
-                              onPressed: () {
-                                // Perform cancel action
-
-                                Navigator.of(context).pushReplacement(
-                                  MaterialPageRoute(
-                                    builder: (context) => Inventory(
-                                      userName: widget.userName,
-                                      userLastName: widget.userLastName,
-                                      userEmail: widget.userEmail,
-                                      userContactNum: widget.userContactNum,
-                                      userMiddleName: widget.userMiddleName,
-                                    ),
-                                  ),
-                                );
-                              },
-                              style: ButtonStyle(
-                                  padding: MaterialStateProperty.all<
-                                      EdgeInsetsGeometry>(
-                                    const EdgeInsets.symmetric(vertical: 15),
-                                  ),
-                                  minimumSize: MaterialStateProperty.all<Size>(
-                                    const Size(150, 50),
-                                  ),
-                                  backgroundColor:
-                                      MaterialStateProperty.all<Color>(
-                                          Colors.green)),
-                              child: const Text(
-                                'Cancel',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ),
-                            ElevatedButton(
-                              onPressed: _isSaveEnabled
-                                  ? () {
-                                      Navigator.of(context).pushReplacement(
-                                          MaterialPageRoute(
-                                              builder: (context) =>
-                                                  SKUInventory(
-                                                    userName: widget.userName,
-                                                    userLastName:
-                                                        widget.userLastName,
-                                                    userEmail: widget.userEmail,
-                                                    userContactNum:
-                                                        widget.userContactNum,
-                                                    userMiddleName:
-                                                        widget.userMiddleName,
-                                                    selectedAccount:
-                                                        _selectedAccount ?? '',
-                                                    SelectedPeriod:
-                                                        _selectedPeriod!,
-                                                    selectedWeek: _selectedWeek,
-                                                    selectedMonth:
-                                                        _selectedMonth,
-                                                    inputid: generateInputID(),
-                                                  )));
-                                    }
-                                  : null,
-                              style: ButtonStyle(
-                                padding: MaterialStateProperty.all<
-                                    EdgeInsetsGeometry>(
-                                  const EdgeInsets.symmetric(vertical: 15),
-                                ),
-                                minimumSize: MaterialStateProperty.all<Size>(
-                                  const Size(150, 50),
-                                ),
-                                backgroundColor: _isSaveEnabled
-                                    ? MaterialStateProperty.all<Color>(
-                                        Colors.green)
-                                    : MaterialStateProperty.all<Color>(
-                                        Colors.grey),
-                              ),
-                              child: const Text(
-                                'Next',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ]),
+                          ]),
+                    ),
+                  ),
                 ),
               ),
-            ),
-          ),
-        ));
+            )));
   }
 
   Future<void> _selectDate(BuildContext context) async {
@@ -1062,7 +1107,7 @@ class SKUInventory extends StatefulWidget {
   final String SelectedPeriod;
   final String selectedWeek;
   final String selectedMonth;
-  final String inputid;
+  //final String inputid;
   String userContactNum;
   String userMiddleName;
 
@@ -1074,7 +1119,7 @@ class SKUInventory extends StatefulWidget {
     required this.SelectedPeriod,
     required this.selectedWeek,
     required this.selectedMonth,
-    required this.inputid,
+    // required this.inputid,
     required this.userContactNum,
     required this.userMiddleName,
   });
@@ -1095,6 +1140,7 @@ class _SKUInventoryState extends State<SKUInventory> {
   String? _remarksOOS;
   String? _reasonOOS;
   String? _selectedNoDeliveryOption;
+  String _inputid = '';
   int? _selectedNumberOfDaysOOS;
   bool _showCarriedTextField = false;
   bool _showNotCarriedTextField = false;
@@ -1120,6 +1166,15 @@ class _SKUInventoryState extends State<SKUInventory> {
   String selectedBranch = 'BranchName'; // Get this from user input or selection
   List<String> _availableSkuDescriptions = [];
 
+  String generateInputID() {
+    var timestamp = DateTime.now().millisecondsSinceEpoch;
+    var random =
+        Random().nextInt(10000); // Generate a random number between 0 and 9999
+    var paddedRandom =
+        random.toString().padLeft(4, '0'); // Ensure it has 4 digits
+    return '2000$paddedRandom';
+  }
+
   Future<void> _updateEditingStatus(
       String inputId, String userEmail, bool isEditing) async {
     try {
@@ -1141,6 +1196,7 @@ class _SKUInventoryState extends State<SKUInventory> {
   }
 
   void _saveInventoryItem() async {
+    String inputid = _inputid;
     String AccountManning = _selectedaccountname ?? '';
     String period = _selectedPeriod ?? '';
     String Version = _versionSelected ?? '';
@@ -1198,7 +1254,7 @@ class _SKUInventoryState extends State<SKUInventory> {
       id: ObjectId(), // Generate this as needed
       userEmail: widget.userEmail,
       date: DateFormat('yyyy-MM-dd').format(DateTime.now()), // Current date
-      inputId: widget.inputid,
+      inputId: inputid,
       name: '${widget.userName} ${widget.userLastName}',
       accountNameBranchManning: widget.selectedAccount,
       period: widget.SelectedPeriod,
@@ -1225,7 +1281,7 @@ class _SKUInventoryState extends State<SKUInventory> {
 
     // Update status of the original item if editing
     if (_isEditing) {
-      await _updateEditingStatus(widget.inputid, widget.userEmail, false);
+      await _updateEditingStatus(inputid, widget.userEmail, false);
     }
   }
 
@@ -1846,6 +1902,7 @@ class _SKUInventoryState extends State<SKUInventory> {
   @override
   void initState() {
     super.initState();
+    _inputid = generateInputID();
     // loadSkuDescriptions(selectedBranch);
     _beginningController.addListener(_calculateOfftake);
     _deliveryController.addListener(_calculateOfftake);
@@ -1932,1075 +1989,1174 @@ class _SKUInventoryState extends State<SKUInventory> {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-        debugShowCheckedModeBanner: false,
-        home: Scaffold(
-          appBar: AppBar(
-              backgroundColor: Colors.green[600],
-              elevation: 0,
-              title: Text(
-                'Inventory Input',
-                style:
-                    TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-              ),
-              leading: IconButton(
-                icon: Icon(Icons.arrow_back),
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => AddInventory(
-                              userName: widget.userName,
-                              userLastName: widget.userLastName,
-                              userEmail: widget.userEmail,
-                              userContactNum: widget.userContactNum,
-                              userMiddleName: widget.userMiddleName,
-                            )),
-                  );
-                },
-              )),
-          body: Padding(
-            padding: const EdgeInsets.all(12.0),
-            child: SingleChildScrollView(
-              // Wrap with SingleChildScrollView
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: <Widget>[
-                  Text(
-                    'Week Number',
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+    return new WillPopScope(
+        onWillPop: () async => false,
+        child: new MaterialApp(
+            debugShowCheckedModeBanner: false,
+            home: Scaffold(
+              appBar: AppBar(
+                  backgroundColor: Colors.green[600],
+                  elevation: 0,
+                  title: Text(
+                    'Inventory Input',
+                    style: TextStyle(
+                        color: Colors.white, fontWeight: FontWeight.bold),
                   ),
-                  TextField(
-                    controller: _accountNameController,
-                    readOnly: true,
-                    decoration: InputDecoration(
-                      border: OutlineInputBorder(),
-                      contentPadding: EdgeInsets.symmetric(horizontal: 12),
-                      hintText: widget.selectedWeek,
-                    ),
-                  ),
-                  Text(
-                    'Month',
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                  ),
-                  TextField(
-                    controller: _accountNameController,
-                    readOnly: true,
-                    decoration: InputDecoration(
-                      border: OutlineInputBorder(),
-                      contentPadding: EdgeInsets.symmetric(horizontal: 12),
-                      hintText: widget.selectedMonth,
-                    ),
-                  ),
-                  SizedBox(height: 10),
-                  Text(
-                    'Branch/Outlet',
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                  ),
-                  TextField(
-                    controller: _accountNameController,
-                    readOnly: true,
-                    decoration: InputDecoration(
-                      hintText: widget.selectedAccount,
-                      border: OutlineInputBorder(),
-                      contentPadding: EdgeInsets.symmetric(horizontal: 12),
-                    ),
-                  ),
-                  SizedBox(height: 20),
-                  Text(
-                    'Category',
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                  ),
-                  SizedBox(height: 10),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      Expanded(
-                        child: OutlinedButton(
-                          onPressed: _versionSelected == 'V1' ||
-                                  _versionSelected == null
-                              ? () => _toggleDropdown('V1')
-                              : null,
-                          style: OutlinedButton.styleFrom(
-                            side: BorderSide(
-                                width: 2.0,
-                                color: _versionSelected == 'V1'
-                                    ? Colors.green
-                                    : Colors.blueGrey.shade200),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(4),
-                            ),
-                          ),
-                          child: Text(
-                            'V1',
-                            style: TextStyle(color: Colors.black),
-                          ),
+                  leading: IconButton(
+                    icon: Icon(Icons.arrow_back),
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => AddInventory(
+                                  userName: widget.userName,
+                                  userLastName: widget.userLastName,
+                                  userEmail: widget.userEmail,
+                                  userContactNum: widget.userContactNum,
+                                  userMiddleName: widget.userMiddleName,
+                                )),
+                      );
+                    },
+                  )),
+              body: Padding(
+                padding: const EdgeInsets.all(12.0),
+                child: SingleChildScrollView(
+                  // Wrap with SingleChildScrollView
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: <Widget>[
+                      SizedBox(height: 10),
+                      Text(
+                        'Input ID',
+                        style: TextStyle(
+                            fontWeight: FontWeight.bold, fontSize: 16),
+                      ),
+                      SizedBox(height: 8),
+                      TextFormField(
+                        initialValue: generateInputID(),
+                        readOnly: true,
+                        decoration: InputDecoration(
+                          border: OutlineInputBorder(),
+                          contentPadding: EdgeInsets.symmetric(horizontal: 12),
+                          hintText: 'Auto-generated Input ID',
                         ),
                       ),
-                      SizedBox(
-                          width: 8), // Add spacing between buttons if needed
-                      Expanded(
-                        child: OutlinedButton(
-                          onPressed: _versionSelected == 'V2' ||
-                                  _versionSelected == null
-                              ? () => _toggleDropdown('V2')
-                              : null,
-                          style: OutlinedButton.styleFrom(
-                            side: BorderSide(
-                                width: 2.0,
-                                color: _versionSelected == 'V2'
-                                    ? Colors.green
-                                    : Colors.blueGrey.shade200),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(4),
-                            ),
-                          ),
-                          child: Text(
-                            'V2',
-                            style: TextStyle(color: Colors.black),
-                          ),
+                      SizedBox(height: 10),
+                      Text(
+                        'Week Number',
+                        style: TextStyle(
+                            fontWeight: FontWeight.bold, fontSize: 16),
+                      ),
+                      TextField(
+                        controller: _accountNameController,
+                        readOnly: true,
+                        decoration: InputDecoration(
+                          border: OutlineInputBorder(),
+                          contentPadding: EdgeInsets.symmetric(horizontal: 12),
+                          hintText: widget.selectedWeek,
                         ),
                       ),
-                      SizedBox(
-                          width: 8), // Add spacing between buttons if needed
-                      Expanded(
-                        child: OutlinedButton(
-                          onPressed: _versionSelected == 'V3' ||
-                                  _versionSelected == null
-                              ? () => _toggleDropdown('V3')
-                              : null,
-                          style: OutlinedButton.styleFrom(
-                            side: BorderSide(
-                                width: 2.0,
-                                color: _versionSelected == 'V3'
-                                    ? Colors.green
-                                    : Colors.blueGrey.shade200),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(4),
-                            ),
-                          ),
-                          child: Text(
-                            'V3',
-                            style: TextStyle(color: Colors.black),
-                          ),
+                      SizedBox(height: 10),
+                      Text(
+                        'Month',
+                        style: TextStyle(
+                            fontWeight: FontWeight.bold, fontSize: 16),
+                      ),
+                      TextField(
+                        controller: _accountNameController,
+                        readOnly: true,
+                        decoration: InputDecoration(
+                          border: OutlineInputBorder(),
+                          contentPadding: EdgeInsets.symmetric(horizontal: 12),
+                          hintText: widget.selectedMonth,
                         ),
                       ),
-                    ],
-                  ),
-                  SizedBox(height: 20),
-                  // Add text fields where user input is expected, and assign controllers
-                  if (_isDropdownVisible && _versionSelected != null)
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 4.0),
-                          child: Text(
-                            'SKU Description',
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 16, // Adjust as needed
-                            ),
-                          ),
+                      SizedBox(height: 10),
+                      Text(
+                        'Branch/Outlet',
+                        style: TextStyle(
+                            fontWeight: FontWeight.bold, fontSize: 16),
+                      ),
+                      TextField(
+                        controller: _accountNameController,
+                        readOnly: true,
+                        decoration: InputDecoration(
+                          hintText: widget.selectedAccount,
+                          border: OutlineInputBorder(),
+                          contentPadding: EdgeInsets.symmetric(horizontal: 12),
                         ),
-                        DropdownButtonFormField<String>(
-                          onChanged:
-                              _selectSKU, // Pass the method reference here
-                          items: _categoryToSkuDescriptions[_versionSelected]!
-                              .map<DropdownMenuItem<String>>((String value) {
-                            return DropdownMenuItem<String>(
-                              value: value,
-                              child: Container(
-                                width:
-                                    315, // Set a max width for the dropdown items
-                                child: Text(
-                                  value,
-                                  overflow: TextOverflow
-                                      .ellipsis, // Handle long text with ellipsis
-                                  softWrap:
-                                      false, // Prevent wrapping of long text
+                      ),
+                      SizedBox(height: 20),
+                      Text(
+                        'Category',
+                        style: TextStyle(
+                            fontWeight: FontWeight.bold, fontSize: 16),
+                      ),
+                      SizedBox(height: 10),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        children: [
+                          Expanded(
+                            child: OutlinedButton(
+                              onPressed: _versionSelected == 'V1' ||
+                                      _versionSelected == null
+                                  ? () => _toggleDropdown('V1')
+                                  : null,
+                              style: OutlinedButton.styleFrom(
+                                side: BorderSide(
+                                    width: 2.0,
+                                    color: _versionSelected == 'V1'
+                                        ? Colors.green
+                                        : Colors.blueGrey.shade200),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(4),
                                 ),
                               ),
-                            );
-                          }).toList(),
+                              child: Text(
+                                'V1',
+                                style: TextStyle(color: Colors.black),
+                              ),
+                            ),
+                          ),
+                          SizedBox(
+                              width:
+                                  8), // Add spacing between buttons if needed
+                          Expanded(
+                            child: OutlinedButton(
+                              onPressed: _versionSelected == 'V2' ||
+                                      _versionSelected == null
+                                  ? () => _toggleDropdown('V2')
+                                  : null,
+                              style: OutlinedButton.styleFrom(
+                                side: BorderSide(
+                                    width: 2.0,
+                                    color: _versionSelected == 'V2'
+                                        ? Colors.green
+                                        : Colors.blueGrey.shade200),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(4),
+                                ),
+                              ),
+                              child: Text(
+                                'V2',
+                                style: TextStyle(color: Colors.black),
+                              ),
+                            ),
+                          ),
+                          SizedBox(
+                              width:
+                                  8), // Add spacing between buttons if needed
+                          Expanded(
+                            child: OutlinedButton(
+                              onPressed: _versionSelected == 'V3' ||
+                                      _versionSelected == null
+                                  ? () => _toggleDropdown('V3')
+                                  : null,
+                              style: OutlinedButton.styleFrom(
+                                side: BorderSide(
+                                    width: 2.0,
+                                    color: _versionSelected == 'V3'
+                                        ? Colors.green
+                                        : Colors.blueGrey.shade200),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(4),
+                                ),
+                              ),
+                              child: Text(
+                                'V3',
+                                style: TextStyle(color: Colors.black),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      SizedBox(height: 20),
+                      // Add text fields where user input is expected, and assign controllers
+                      if (_isDropdownVisible && _versionSelected != null)
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Padding(
+                              padding:
+                                  const EdgeInsets.symmetric(vertical: 4.0),
+                              child: Text(
+                                'SKU Description',
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 16, // Adjust as needed
+                                ),
+                              ),
+                            ),
+                            DropdownButtonFormField<String>(
+                              onChanged:
+                                  _selectSKU, // Pass the method reference here
+                              items:
+                                  _categoryToSkuDescriptions[_versionSelected]!
+                                      .map<DropdownMenuItem<String>>(
+                                          (String value) {
+                                return DropdownMenuItem<String>(
+                                  value: value,
+                                  child: Container(
+                                    width:
+                                        315, // Set a max width for the dropdown items
+                                    child: Text(
+                                      value,
+                                      overflow: TextOverflow
+                                          .ellipsis, // Handle long text with ellipsis
+                                      softWrap:
+                                          false, // Prevent wrapping of long text
+                                    ),
+                                  ),
+                                );
+                              }).toList(),
+                              decoration: InputDecoration(
+                                labelText:
+                                    'Select SKU Description', // Label for the dropdown
+                                border:
+                                    OutlineInputBorder(), // Apply border to the TextField
+                                contentPadding:
+                                    EdgeInsets.symmetric(horizontal: 12),
+                              ),
+                            ),
+                            if (_productDetails != null) ...[
+                              SizedBox(height: 10),
+                              Text(
+                                'Products',
+                                style: TextStyle(
+                                    fontWeight: FontWeight.bold, fontSize: 16),
+                              ),
+                              TextField(
+                                controller:
+                                    _productsController, // Assigning controller
+                                readOnly: true,
+                                decoration: InputDecoration(
+                                  border:
+                                      OutlineInputBorder(), // Apply border to the TextField
+                                  contentPadding: EdgeInsets.symmetric(
+                                      horizontal:
+                                          12), // Padding inside the TextField
+                                  hintText: _productDetails,
+                                ),
+                              ),
+                              SizedBox(height: 10),
+                              Text(
+                                'SKU Code',
+                                style: TextStyle(
+                                    fontWeight: FontWeight.bold, fontSize: 16),
+                              ),
+                              TextField(
+                                readOnly: true,
+                                controller:
+                                    _skuCodeController, // Assigning controller
+                                decoration: InputDecoration(
+                                  border:
+                                      OutlineInputBorder(), // Apply border to the TextField
+                                  contentPadding: EdgeInsets.symmetric(
+                                      horizontal:
+                                          12), // Padding inside the TextField
+                                  hintText: _skuCode,
+                                ),
+                              ),
+                            ],
+                          ],
+                        ),
+
+                      SizedBox(height: 15),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        children: [
+                          if (_productDetails != null)
+                            SizedBox(
+                              width: 115, // Same fixed width
+                              child: OutlinedButton(
+                                onPressed: () {
+                                  _toggleCarriedTextField('Carried');
+                                  checkSaveEnabled(); // Call checkSaveEnabled when category changes
+                                },
+                                style: OutlinedButton.styleFrom(
+                                  side: BorderSide(
+                                    width: 2.0,
+                                    color: _statusSelected == 'Carried'
+                                        ? Colors.green
+                                        : Colors.blueGrey.shade200,
+                                  ),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(4),
+                                  ),
+                                ),
+                                child: Text(
+                                  'Carried',
+                                  style: TextStyle(color: Colors.black),
+                                ),
+                              ),
+                            ),
+                          if (_productDetails != null)
+                            SizedBox(
+                              width: 130, // Same fixed width
+                              child: OutlinedButton(
+                                onPressed: () {
+                                  _toggleNotCarriedTextField('Not Carried');
+                                  checkSaveEnabled(); // Call checkSaveEnabled when category changes
+                                },
+                                style: OutlinedButton.styleFrom(
+                                  side: BorderSide(
+                                    width: 2.0,
+                                    color: _statusSelected == 'Not Carried'
+                                        ? Colors.green
+                                        : Colors.blueGrey.shade200,
+                                  ),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(4),
+                                  ),
+                                ),
+                                child: Text(
+                                  'Not Carried',
+                                  style: TextStyle(color: Colors.black),
+                                ),
+                              ),
+                            ),
+                          if (_productDetails != null)
+                            SizedBox(
+                              width: 115, // Same fixed width
+                              child: OutlinedButton(
+                                onPressed: () {
+                                  _toggleDelistedTextField('Delisted');
+                                  checkSaveEnabled(); // Call checkSaveEnabled when category changes
+                                },
+                                style: OutlinedButton.styleFrom(
+                                  side: BorderSide(
+                                    width: 2.0,
+                                    color: _statusSelected == 'Delisted'
+                                        ? Colors.green
+                                        : Colors.blueGrey.shade200,
+                                  ),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(4),
+                                  ),
+                                ),
+                                child: Text(
+                                  'Delisted',
+                                  style: TextStyle(color: Colors.black),
+                                ),
+                              ),
+                            ),
+                        ],
+                      ),
+                      SizedBox(height: 15),
+                      // Conditionally showing the 'Beginning' field with its label
+                      if (_showCarriedTextField) ...[
+                        Text(
+                          'Beginning',
+                          style: TextStyle(
+                              fontWeight: FontWeight.bold, fontSize: 16),
+                        ),
+                        SizedBox(height: 10),
+                        TextField(
+                          controller: _beginningController,
+                          keyboardType: TextInputType.number,
+                          inputFormatters: [
+                            FilteringTextInputFormatter.digitsOnly
+                          ],
                           decoration: InputDecoration(
-                            labelText:
-                                'Select SKU Description', // Label for the dropdown
-                            border:
-                                OutlineInputBorder(), // Apply border to the TextField
+                            border: OutlineInputBorder(),
                             contentPadding:
                                 EdgeInsets.symmetric(horizontal: 12),
+                            labelStyle: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                            ),
                           ),
+                          onChanged: (_) => checkSaveEnabled(),
                         ),
-                        if (_productDetails != null) ...[
-                          SizedBox(height: 10),
-                          Text(
-                            'Products',
-                            style: TextStyle(
-                                fontWeight: FontWeight.bold, fontSize: 16),
-                          ),
-                          TextField(
-                            controller:
-                                _productsController, // Assigning controller
-                            readOnly: true,
-                            decoration: InputDecoration(
-                              border:
-                                  OutlineInputBorder(), // Apply border to the TextField
-                              contentPadding: EdgeInsets.symmetric(
-                                  horizontal:
-                                      12), // Padding inside the TextField
-                              hintText: _productDetails,
-                            ),
-                          ),
-                          SizedBox(height: 10),
-                          Text(
-                            'SKU Code',
-                            style: TextStyle(
-                                fontWeight: FontWeight.bold, fontSize: 16),
-                          ),
-                          TextField(
-                            readOnly: true,
-                            controller:
-                                _skuCodeController, // Assigning controller
-                            decoration: InputDecoration(
-                              border:
-                                  OutlineInputBorder(), // Apply border to the TextField
-                              contentPadding: EdgeInsets.symmetric(
-                                  horizontal:
-                                      12), // Padding inside the TextField
-                              hintText: _skuCode,
-                            ),
-                          ),
-                        ],
+                        SizedBox(height: 10),
                       ],
-                    ),
+// Conditionally showing the 'Delivery' field with its label
+                      if (_showCarriedTextField) ...[
+                        Text(
+                          'Delivery',
+                          style: TextStyle(
+                              fontWeight: FontWeight.bold, fontSize: 16),
+                        ),
+                        SizedBox(height: 10),
+                        TextField(
+                          controller: _deliveryController,
+                          keyboardType: TextInputType.number,
+                          inputFormatters: [
+                            FilteringTextInputFormatter.digitsOnly
+                          ],
+                          decoration: InputDecoration(
+                            border: OutlineInputBorder(),
+                            contentPadding:
+                                EdgeInsets.symmetric(horizontal: 12),
+                            labelStyle: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                            ),
+                          ),
+                          onChanged: (_) => checkSaveEnabled(),
+                        ),
+                        SizedBox(height: 10),
+                      ],
+// Conditionally showing the 'Ending' field with its label
+                      if (_showCarriedTextField) ...[
+                        Text(
+                          'Ending',
+                          style: TextStyle(
+                              fontWeight: FontWeight.bold, fontSize: 16),
+                        ),
+                        SizedBox(height: 10),
+                        TextField(
+                          controller: _endingController,
+                          keyboardType: TextInputType.number,
+                          inputFormatters: [
+                            FilteringTextInputFormatter.digitsOnly
+                          ],
+                          decoration: InputDecoration(
+                            border: OutlineInputBorder(),
+                            contentPadding:
+                                EdgeInsets.symmetric(horizontal: 12),
+                            labelStyle: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                            ),
+                          ),
+                          onChanged: (_) => checkSaveEnabled(),
+                        ),
+                        SizedBox(height: 10),
+                      ],
+                      SizedBox(height: 20),
+                      if (_showCarriedTextField) ...[
+                        Center(
+                          child: SizedBox(
+                            width: 450, // Set the width of the button
+                            child: OutlinedButton(
+                              onPressed: _addExpiryField,
+                              style: OutlinedButton.styleFrom(
+                                side:
+                                    BorderSide(width: 2.0, color: Colors.green),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(4),
+                                ),
+                              ),
+                              child: Text(
+                                'Add Expiry',
+                                style: TextStyle(color: Colors.black),
+                              ),
+                            ),
+                          ),
+                        ),
+                        SizedBox(height: 10),
+                        if (_expiryFields.isNotEmpty)
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              for (int i = 0; i < _expiryFields.length; i++)
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment
+                                      .center, // Align rows to center
+                                  children: [
+                                    Expanded(child: _expiryFields[i]),
+                                    IconButton(
+                                      icon: Icon(Icons.delete),
+                                      onPressed: () {
+                                        _removeExpiryField(i);
+                                      },
+                                    ),
+                                  ],
+                                ),
+                            ],
+                          ),
+                      ],
 
-                  SizedBox(height: 15),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      if (_productDetails != null)
-                        SizedBox(
-                          width: 115, // Same fixed width
-                          child: OutlinedButton(
-                            onPressed: () {
-                              _toggleCarriedTextField('Carried');
-                              checkSaveEnabled(); // Call checkSaveEnabled when category changes
-                            },
-                            style: OutlinedButton.styleFrom(
-                              side: BorderSide(
-                                width: 2.0,
-                                color: _statusSelected == 'Carried'
-                                    ? Colors.green
-                                    : Colors.blueGrey.shade200,
-                              ),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(4),
-                              ),
-                            ),
-                            child: Text(
-                              'Carried',
-                              style: TextStyle(color: Colors.black),
+                      SizedBox(height: 16),
+                      if (_showCarriedTextField) ...[
+                        Text(
+                          'Offtake',
+                          style: TextStyle(
+                              fontWeight: FontWeight.bold, fontSize: 16),
+                        ),
+                        SizedBox(height: 10),
+                        TextField(
+                          controller: _offtakeController,
+                          keyboardType: TextInputType.number,
+                          inputFormatters: [
+                            FilteringTextInputFormatter.digitsOnly
+                          ],
+                          readOnly: true,
+                          decoration: InputDecoration(
+                            border: OutlineInputBorder(),
+                            contentPadding:
+                                EdgeInsets.symmetric(horizontal: 12),
+                            labelStyle: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
                             ),
                           ),
                         ),
-                      if (_productDetails != null)
-                        SizedBox(
-                          width: 130, // Same fixed width
-                          child: OutlinedButton(
-                            onPressed: () {
-                              _toggleNotCarriedTextField('Not Carried');
-                              checkSaveEnabled(); // Call checkSaveEnabled when category changes
-                            },
-                            style: OutlinedButton.styleFrom(
-                              side: BorderSide(
-                                width: 2.0,
-                                color: _statusSelected == 'Not Carried'
-                                    ? Colors.green
-                                    : Colors.blueGrey.shade200,
-                              ),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(4),
-                              ),
-                            ),
-                            child: Text(
-                              'Not Carried',
-                              style: TextStyle(color: Colors.black),
+                        SizedBox(height: 10),
+                      ],
+// Conditionally showing the 'Inventory Days Level' field with its label
+                      if (_showCarriedTextField) ...[
+                        Text(
+                          'Inventory Days Level',
+                          style: TextStyle(
+                              fontWeight: FontWeight.bold, fontSize: 16),
+                        ),
+                        SizedBox(height: 10),
+                        TextField(
+                          controller: _inventoryDaysLevelController,
+                          keyboardType: TextInputType.number,
+                          inputFormatters: [
+                            FilteringTextInputFormatter.digitsOnly
+                          ],
+                          readOnly: true,
+                          decoration: InputDecoration(
+                            border: OutlineInputBorder(),
+                            contentPadding:
+                                EdgeInsets.symmetric(horizontal: 12),
+                            labelStyle: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
                             ),
                           ),
                         ),
-                      if (_productDetails != null)
-                        SizedBox(
-                          width: 115, // Same fixed width
-                          child: OutlinedButton(
-                            onPressed: () {
-                              _toggleDelistedTextField('Delisted');
-                              checkSaveEnabled(); // Call checkSaveEnabled when category changes
-                            },
-                            style: OutlinedButton.styleFrom(
-                              side: BorderSide(
-                                width: 2.0,
-                                color: _statusSelected == 'Delisted'
-                                    ? Colors.green
-                                    : Colors.blueGrey.shade200,
-                              ),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(4),
-                              ),
-                            ),
-                            child: Text(
-                              'Delisted',
-                              style: TextStyle(color: Colors.black),
+                        SizedBox(height: 10),
+                      ],
+
+                      SizedBox(height: 10),
+                      // Conditionally display 'No. of Days OOS' and the DropdownButtonFormField
+                      if (_showCarriedTextField) ...[
+                        Text(
+                          'No. of Days OOS',
+                          style: TextStyle(
+                              fontWeight: FontWeight.bold, fontSize: 16),
+                        ),
+                        SizedBox(height: 10),
+                        DropdownButtonFormField<int>(
+                          decoration: InputDecoration(
+                            border: OutlineInputBorder(),
+                            contentPadding:
+                                EdgeInsets.symmetric(horizontal: 12),
+                            labelStyle: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
                             ),
                           ),
+                          value: _selectedNumberOfDaysOOS,
+                          onChanged: (newValue) {
+                            setState(() {
+                              _selectedNumberOfDaysOOS = newValue;
+
+                              // Reset the remarks and reason when OOS changes
+                              _remarksOOS = null;
+                              _selectedNoDeliveryOption = null;
+                              _reasonOOS = null;
+
+                              // Check if Save button should be enabled
+                              checkSaveEnabled();
+                            });
+                          },
+                          items: List.generate(8, (index) {
+                            return DropdownMenuItem<int>(
+                              value: index,
+                              child: Text(index.toString()),
+                            );
+                          }),
+                        ),
+                        SizedBox(height: 10),
+                      ],
+                      SizedBox(height: 10),
+                      if (_selectedNumberOfDaysOOS != null &&
+                          _selectedNumberOfDaysOOS! > 0) ...[
+                        Text(
+                          'Remarks',
+                          style: TextStyle(
+                              fontWeight: FontWeight.bold, fontSize: 16),
+                        ),
+                        SizedBox(height: 10),
+                        DropdownButtonFormField<String>(
+                          decoration: _statusSelected == 'Carried'
+                              ? InputDecoration(
+                                  border: OutlineInputBorder(),
+                                  contentPadding:
+                                      EdgeInsets.symmetric(horizontal: 12),
+                                  labelStyle: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 16,
+                                  ),
+                                )
+                              : null, // No border or padding when status is not 'Carried'
+                          value: _remarksOOS, // Ensure the value is not null
+                          onChanged: (newValue) {
+                            setState(() {
+                              _remarksOOS = newValue;
+
+                              // Show or hide the Select Reason dropdown based on the Remarks selection
+                              if (_remarksOOS == 'No Delivery') {
+                                _showNoDeliveryDropdown = true;
+                              } else {
+                                _showNoDeliveryDropdown = false;
+                                _selectedNoDeliveryOption = null;
+                                _reasonOOS = null;
+                              }
+
+                              // Check if Save button should be enabled
+                              checkSaveEnabled();
+                            });
+                          },
+                          items: [
+                            DropdownMenuItem<String>(
+                              value: 'No P.O',
+                              child: Text('No P.O'),
+                            ),
+                            DropdownMenuItem<String>(
+                              value: 'Unserved',
+                              child: Text('Unserved'),
+                            ),
+                            DropdownMenuItem<String>(
+                              value: 'No Delivery',
+                              child: Text('No Delivery'),
+                            ),
+                          ],
+                        ),
+                      ],
+                      SizedBox(height: 10),
+                      if (_showNoDeliveryDropdown) ...[
+                        Text(
+                          'Reason',
+                          style: TextStyle(
+                              fontWeight: FontWeight.bold, fontSize: 16),
+                        ),
+                        SizedBox(height: 10),
+                        DropdownButtonFormField<String>(
+                          decoration: _statusSelected == 'Carried'
+                              ? InputDecoration(
+                                  border: OutlineInputBorder(),
+                                  contentPadding:
+                                      EdgeInsets.symmetric(horizontal: 12),
+                                  labelStyle: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 16,
+                                  ),
+                                )
+                              : null, // No border or padding when status is not
+                          value: _selectedNoDeliveryOption,
+                          onChanged: (newValue) {
+                            setState(() {
+                              _selectedNoDeliveryOption = newValue;
+                              _reasonOOS =
+                                  newValue; // Set the ReasonOOS value based on selection
+                              checkSaveEnabled(); // Check if Save button should be enabled
+                            });
+                          },
+                          items: [
+                            DropdownMenuItem<String>(
+                              value: 'With S.O but without P.O',
+                              child: Text('With S.O but without P.O'),
+                            ),
+                            DropdownMenuItem<String>(
+                              value: 'With P.O but without Delivery',
+                              child: Text('With P.O but without Delivery'),
+                            ),
+                            DropdownMenuItem<String>(
+                              value: 'AR ISSUES',
+                              child: Text('AR ISSUES'),
+                            ),
+                          ],
+                        ),
+                      ],
+                      SizedBox(height: 20),
+                      if (_showCarriedTextField ||
+                          _showNotCarriedTextField ||
+                          _showDelistedTextField)
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            ElevatedButton(
+                              onPressed: _isSaveEnabled
+                                  ? () async {
+                                      // Show confirmation dialog with preview
+                                      bool confirmed = await showDialog(
+                                        context: context,
+                                        builder: (BuildContext context) {
+                                          return AlertDialog(
+                                            title: Text('Save Confirmation'),
+                                            content: SingleChildScrollView(
+                                              child: Column(
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.start,
+                                                children: <Widget>[
+                                                  Text(
+                                                      'Preview Inventory Item:'),
+                                                  SizedBox(height: 10),
+                                                  Text.rich(
+                                                    TextSpan(
+                                                      children: [
+                                                        TextSpan(
+                                                          text: 'User Email: ',
+                                                          style: TextStyle(
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .bold),
+                                                        ),
+                                                        TextSpan(
+                                                            text: widget
+                                                                .userEmail),
+                                                      ],
+                                                    ),
+                                                  ),
+                                                  SizedBox(height: 10),
+                                                  Text.rich(
+                                                    TextSpan(
+                                                      children: [
+                                                        TextSpan(
+                                                          text: 'Date: ',
+                                                          style: TextStyle(
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .bold),
+                                                        ),
+                                                        TextSpan(
+                                                          text: DateFormat(
+                                                                  'yyyy-MM-dd')
+                                                              .format(DateTime
+                                                                  .now()),
+                                                        ),
+                                                      ],
+                                                    ),
+                                                  ),
+                                                  SizedBox(height: 10),
+                                                  Text.rich(
+                                                    TextSpan(
+                                                      children: [
+                                                        TextSpan(
+                                                          text: 'Input ID: ',
+                                                          style: TextStyle(
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .bold),
+                                                        ),
+                                                        TextSpan(
+                                                            text: _inputid),
+                                                      ],
+                                                    ),
+                                                  ),
+                                                  SizedBox(height: 10),
+                                                  Text.rich(
+                                                    TextSpan(
+                                                      children: [
+                                                        TextSpan(
+                                                          text: 'Name: ',
+                                                          style: TextStyle(
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .bold),
+                                                        ),
+                                                        TextSpan(
+                                                          text:
+                                                              '${widget.userName} ${widget.userLastName}',
+                                                        ),
+                                                      ],
+                                                    ),
+                                                  ),
+                                                  SizedBox(height: 10),
+                                                  Text.rich(
+                                                    TextSpan(
+                                                      children: [
+                                                        TextSpan(
+                                                          text:
+                                                              'Account Name Branch ',
+                                                          style: TextStyle(
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .bold),
+                                                        ),
+                                                        TextSpan(
+                                                            text: widget
+                                                                .selectedAccount),
+                                                      ],
+                                                    ),
+                                                  ),
+                                                  SizedBox(height: 10),
+                                                  Text.rich(
+                                                    TextSpan(
+                                                      children: [
+                                                        TextSpan(
+                                                          text: 'Period: ',
+                                                          style: TextStyle(
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .bold),
+                                                        ),
+                                                        TextSpan(
+                                                            text: widget
+                                                                .SelectedPeriod),
+                                                      ],
+                                                    ),
+                                                  ),
+                                                  SizedBox(height: 10),
+                                                  Text.rich(
+                                                    TextSpan(
+                                                      children: [
+                                                        TextSpan(
+                                                          text: 'Month: ',
+                                                          style: TextStyle(
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .bold),
+                                                        ),
+                                                        TextSpan(
+                                                            text: widget
+                                                                .selectedMonth),
+                                                      ],
+                                                    ),
+                                                  ),
+                                                  SizedBox(height: 10),
+                                                  Text.rich(
+                                                    TextSpan(
+                                                      children: [
+                                                        TextSpan(
+                                                          text: 'Week: ',
+                                                          style: TextStyle(
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .bold),
+                                                        ),
+                                                        TextSpan(
+                                                            text: widget
+                                                                .selectedWeek),
+                                                      ],
+                                                    ),
+                                                  ),
+                                                  SizedBox(height: 10),
+                                                  Text.rich(
+                                                    TextSpan(
+                                                      children: [
+                                                        TextSpan(
+                                                          text: 'Category: ',
+                                                          style: TextStyle(
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .bold),
+                                                        ),
+                                                        TextSpan(
+                                                            text:
+                                                                _versionSelected),
+                                                      ],
+                                                    ),
+                                                  ),
+                                                  SizedBox(height: 10),
+                                                  Text.rich(
+                                                    TextSpan(
+                                                      children: [
+                                                        TextSpan(
+                                                          text:
+                                                              'SKU Description: ',
+                                                          style: TextStyle(
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .bold),
+                                                        ),
+                                                        TextSpan(
+                                                            text:
+                                                                _selectedDropdownValue),
+                                                      ],
+                                                    ),
+                                                  ),
+                                                  SizedBox(height: 10),
+                                                  Text.rich(
+                                                    TextSpan(
+                                                      children: [
+                                                        TextSpan(
+                                                          text: 'Products: ',
+                                                          style: TextStyle(
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .bold),
+                                                        ),
+                                                        TextSpan(
+                                                            text:
+                                                                _productDetails),
+                                                      ],
+                                                    ),
+                                                  ),
+                                                  SizedBox(height: 10),
+                                                  Text.rich(
+                                                    TextSpan(
+                                                      children: [
+                                                        TextSpan(
+                                                          text: 'SKU Code: ',
+                                                          style: TextStyle(
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .bold),
+                                                        ),
+                                                        TextSpan(
+                                                            text: _skuCode),
+                                                      ],
+                                                    ),
+                                                  ),
+                                                  SizedBox(height: 10),
+                                                  Text.rich(
+                                                    TextSpan(
+                                                      children: [
+                                                        TextSpan(
+                                                          text: 'Status: ',
+                                                          style: TextStyle(
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .bold),
+                                                        ),
+                                                        TextSpan(
+                                                            text:
+                                                                _statusSelected),
+                                                      ],
+                                                    ),
+                                                  ),
+                                                  SizedBox(height: 10),
+                                                  Text.rich(
+                                                    TextSpan(
+                                                      children: [
+                                                        TextSpan(
+                                                          text:
+                                                              'Beginning Value: ',
+                                                          style: TextStyle(
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .bold),
+                                                        ),
+                                                        TextSpan(
+                                                          text:
+                                                              '${int.tryParse(_beginningController.text) ?? 0}',
+                                                        ),
+                                                      ],
+                                                    ),
+                                                  ),
+                                                  SizedBox(height: 10),
+                                                  Text.rich(
+                                                    TextSpan(
+                                                      children: [
+                                                        TextSpan(
+                                                          text:
+                                                              'Delivery Value: ',
+                                                          style: TextStyle(
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .bold),
+                                                        ),
+                                                        TextSpan(
+                                                          text:
+                                                              '${int.tryParse(_deliveryController.text) ?? 0}',
+                                                        ),
+                                                      ],
+                                                    ),
+                                                  ),
+                                                  SizedBox(height: 10),
+                                                  Text.rich(
+                                                    TextSpan(
+                                                      children: [
+                                                        TextSpan(
+                                                          text:
+                                                              'Ending Value: ',
+                                                          style: TextStyle(
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .bold),
+                                                        ),
+                                                        TextSpan(
+                                                          text:
+                                                              '${int.tryParse(_endingController.text) ?? 0}',
+                                                        ),
+                                                      ],
+                                                    ),
+                                                  ),
+                                                  SizedBox(height: 10),
+                                                  Text.rich(
+                                                    TextSpan(
+                                                      children: [
+                                                        TextSpan(
+                                                          text:
+                                                              'Offtake Value: ',
+                                                          style: TextStyle(
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .bold),
+                                                        ),
+                                                        TextSpan(
+                                                          text:
+                                                              '${double.tryParse(_offtakeController.text)?.toStringAsFixed(2) ?? '0.00'}',
+                                                        ),
+                                                      ],
+                                                    ),
+                                                  ),
+                                                  SizedBox(height: 10),
+                                                  Text.rich(
+                                                    TextSpan(
+                                                      children: [
+                                                        TextSpan(
+                                                          text:
+                                                              'Inventory Days Level: ',
+                                                          style: TextStyle(
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .bold),
+                                                        ),
+                                                        TextSpan(
+                                                          text:
+                                                              '${double.tryParse(_inventoryDaysLevelController.text)?.toStringAsFixed(2) ?? '0.00'}',
+                                                        ),
+                                                      ],
+                                                    ),
+                                                  ),
+                                                  SizedBox(height: 10),
+                                                  Text.rich(
+                                                    TextSpan(
+                                                      children: [
+                                                        TextSpan(
+                                                          text:
+                                                              'No of Days OOS: ',
+                                                          style: TextStyle(
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .bold),
+                                                        ),
+                                                        TextSpan(
+                                                            text:
+                                                                '$_selectedNumberOfDaysOOS'),
+                                                      ],
+                                                    ),
+                                                  ),
+                                                  SizedBox(height: 10),
+                                                  Text.rich(
+                                                    TextSpan(
+                                                      children: [
+                                                        TextSpan(
+                                                          text:
+                                                              'Expiry Fields: ',
+                                                          style: TextStyle(
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .bold),
+                                                        ),
+                                                        TextSpan(
+                                                            text:
+                                                                '$_expiryFieldsValues'),
+                                                      ],
+                                                    ),
+                                                  ),
+                                                  SizedBox(height: 10),
+                                                  Text.rich(
+                                                    TextSpan(
+                                                      children: [
+                                                        TextSpan(
+                                                          text: 'Remarks OOS: ',
+                                                          style: TextStyle(
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .bold),
+                                                        ),
+                                                        TextSpan(
+                                                            text:
+                                                                '$_remarksOOS'),
+                                                      ],
+                                                    ),
+                                                  ),
+                                                  SizedBox(height: 10),
+                                                  Text.rich(
+                                                    TextSpan(
+                                                      children: [
+                                                        TextSpan(
+                                                          text: 'Reason OOS: ',
+                                                          style: TextStyle(
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .bold),
+                                                        ),
+                                                        TextSpan(
+                                                            text:
+                                                                '$_reasonOOS'),
+                                                      ],
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                            actions: <Widget>[
+                                              TextButton(
+                                                onPressed: () {
+                                                  Navigator.of(context).pop(
+                                                      false); // Close dialog without saving
+                                                },
+                                                child: Text('Cancel'),
+                                              ),
+                                              TextButton(
+                                                onPressed: () {
+                                                  Navigator.of(context).pop(
+                                                      true); // Confirm saving
+                                                },
+                                                child: Text('Confirm'),
+                                              ),
+                                            ],
+                                          );
+                                        },
+                                      );
+
+                                      // Save the inventory item if confirmed
+                                      if (confirmed ?? false) {
+                                        _saveInventoryItem(); // Call your save function here
+                                        ScaffoldMessenger.of(context)
+                                            .showSnackBar(
+                                          SnackBar(
+                                            content:
+                                                Text('Inventory item saved'),
+                                            duration: Duration(seconds: 2),
+                                          ),
+                                        );
+                                        Navigator.of(context).push(
+                                          MaterialPageRoute(
+                                            builder: (context) => AddInventory(
+                                              userName: widget.userName,
+                                              userLastName: widget.userLastName,
+                                              userEmail: widget.userEmail,
+                                              userContactNum:
+                                                  widget.userContactNum,
+                                              userMiddleName:
+                                                  widget.userMiddleName,
+                                            ),
+                                          ),
+                                        ); // Close the current screen after saving
+                                      }
+                                    }
+                                  : null, // Disable button if !_isSaveEnabled
+                              style: ButtonStyle(
+                                padding: MaterialStateProperty.all<
+                                    EdgeInsetsGeometry>(
+                                  const EdgeInsets.symmetric(vertical: 15),
+                                ),
+                                minimumSize: MaterialStateProperty.all<Size>(
+                                  const Size(150, 50),
+                                ),
+                                backgroundColor:
+                                    MaterialStateProperty.all<Color>(
+                                        _isSaveEnabled
+                                            ? Colors.green
+                                            : Colors.grey),
+                              ),
+                              child: const Text(
+                                'Save',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
                     ],
                   ),
-                  SizedBox(height: 15),
-                  // Conditionally showing the 'Beginning' field with its label
-                  if (_showCarriedTextField) ...[
-                    Text(
-                      'Beginning',
-                      style:
-                          TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                    ),
-                    SizedBox(height: 10),
-                    TextField(
-                      controller: _beginningController,
-                      keyboardType: TextInputType.number,
-                      inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                      decoration: InputDecoration(
-                        border: OutlineInputBorder(),
-                        contentPadding: EdgeInsets.symmetric(horizontal: 12),
-                        labelStyle: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
-                        ),
-                      ),
-                      onChanged: (_) => checkSaveEnabled(),
-                    ),
-                    SizedBox(height: 10),
-                  ],
-// Conditionally showing the 'Delivery' field with its label
-                  if (_showCarriedTextField) ...[
-                    Text(
-                      'Delivery',
-                      style:
-                          TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                    ),
-                    SizedBox(height: 10),
-                    TextField(
-                      controller: _deliveryController,
-                      keyboardType: TextInputType.number,
-                      inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                      decoration: InputDecoration(
-                        border: OutlineInputBorder(),
-                        contentPadding: EdgeInsets.symmetric(horizontal: 12),
-                        labelStyle: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
-                        ),
-                      ),
-                      onChanged: (_) => checkSaveEnabled(),
-                    ),
-                    SizedBox(height: 10),
-                  ],
-// Conditionally showing the 'Ending' field with its label
-                  if (_showCarriedTextField) ...[
-                    Text(
-                      'Ending',
-                      style:
-                          TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                    ),
-                    SizedBox(height: 10),
-                    TextField(
-                      controller: _endingController,
-                      keyboardType: TextInputType.number,
-                      inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                      decoration: InputDecoration(
-                        border: OutlineInputBorder(),
-                        contentPadding: EdgeInsets.symmetric(horizontal: 12),
-                        labelStyle: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
-                        ),
-                      ),
-                      onChanged: (_) => checkSaveEnabled(),
-                    ),
-                    SizedBox(height: 10),
-                  ],
-                  SizedBox(height: 20),
-                  if (_showCarriedTextField) ...[
-                    Center(
-                      child: SizedBox(
-                        width: 450, // Set the width of the button
-                        child: OutlinedButton(
-                          onPressed: _addExpiryField,
-                          style: OutlinedButton.styleFrom(
-                            side: BorderSide(width: 2.0, color: Colors.green),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(4),
-                            ),
-                          ),
-                          child: Text(
-                            'Add Expiry',
-                            style: TextStyle(color: Colors.black),
-                          ),
-                        ),
-                      ),
-                    ),
-                    SizedBox(height: 10),
-                    if (_expiryFields.isNotEmpty)
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          for (int i = 0; i < _expiryFields.length; i++)
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment
-                                  .center, // Align rows to center
-                              children: [
-                                Expanded(child: _expiryFields[i]),
-                                IconButton(
-                                  icon: Icon(Icons.delete),
-                                  onPressed: () {
-                                    _removeExpiryField(i);
-                                  },
-                                ),
-                              ],
-                            ),
-                        ],
-                      ),
-                  ],
-
-                  SizedBox(height: 16),
-                  if (_showCarriedTextField) ...[
-                    Text(
-                      'Offtake',
-                      style:
-                          TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                    ),
-                    SizedBox(height: 10),
-                    TextField(
-                      controller: _offtakeController,
-                      keyboardType: TextInputType.number,
-                      inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                      readOnly: true,
-                      decoration: InputDecoration(
-                        border: OutlineInputBorder(),
-                        contentPadding: EdgeInsets.symmetric(horizontal: 12),
-                        labelStyle: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
-                        ),
-                      ),
-                    ),
-                    SizedBox(height: 10),
-                  ],
-// Conditionally showing the 'Inventory Days Level' field with its label
-                  if (_showCarriedTextField) ...[
-                    Text(
-                      'Inventory Days Level',
-                      style:
-                          TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                    ),
-                    SizedBox(height: 10),
-                    TextField(
-                      controller: _inventoryDaysLevelController,
-                      keyboardType: TextInputType.number,
-                      inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                      readOnly: true,
-                      decoration: InputDecoration(
-                        border: OutlineInputBorder(),
-                        contentPadding: EdgeInsets.symmetric(horizontal: 12),
-                        labelStyle: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
-                        ),
-                      ),
-                    ),
-                    SizedBox(height: 10),
-                  ],
-
-                  SizedBox(height: 10),
-                  // Conditionally display 'No. of Days OOS' and the DropdownButtonFormField
-                  if (_showCarriedTextField) ...[
-                    Text(
-                      'No. of Days OOS',
-                      style:
-                          TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                    ),
-                    SizedBox(height: 10),
-                    DropdownButtonFormField<int>(
-                      decoration: InputDecoration(
-                        border: OutlineInputBorder(),
-                        contentPadding: EdgeInsets.symmetric(horizontal: 12),
-                        labelStyle: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
-                        ),
-                      ),
-                      value: _selectedNumberOfDaysOOS,
-                      onChanged: (newValue) {
-                        setState(() {
-                          _selectedNumberOfDaysOOS = newValue;
-
-                          // Reset the remarks and reason when OOS changes
-                          _remarksOOS = null;
-                          _selectedNoDeliveryOption = null;
-                          _reasonOOS = null;
-
-                          // Check if Save button should be enabled
-                          checkSaveEnabled();
-                        });
-                      },
-                      items: List.generate(8, (index) {
-                        return DropdownMenuItem<int>(
-                          value: index,
-                          child: Text(index.toString()),
-                        );
-                      }),
-                    ),
-                    SizedBox(height: 10),
-                  ],
-                  SizedBox(height: 10),
-                  if (_selectedNumberOfDaysOOS != null &&
-                      _selectedNumberOfDaysOOS! > 0) ...[
-                    Text(
-                      'Remarks',
-                      style:
-                          TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                    ),
-                    SizedBox(height: 10),
-                    DropdownButtonFormField<String>(
-                      decoration: _statusSelected == 'Carried'
-                          ? InputDecoration(
-                              border: OutlineInputBorder(),
-                              contentPadding:
-                                  EdgeInsets.symmetric(horizontal: 12),
-                              labelStyle: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 16,
-                              ),
-                            )
-                          : null, // No border or padding when status is not 'Carried'
-                      value: _remarksOOS, // Ensure the value is not null
-                      onChanged: (newValue) {
-                        setState(() {
-                          _remarksOOS = newValue;
-
-                          // Show or hide the Select Reason dropdown based on the Remarks selection
-                          if (_remarksOOS == 'No Delivery') {
-                            _showNoDeliveryDropdown = true;
-                          } else {
-                            _showNoDeliveryDropdown = false;
-                            _selectedNoDeliveryOption = null;
-                            _reasonOOS = null;
-                          }
-
-                          // Check if Save button should be enabled
-                          checkSaveEnabled();
-                        });
-                      },
-                      items: [
-                        DropdownMenuItem<String>(
-                          value: 'No P.O',
-                          child: Text('No P.O'),
-                        ),
-                        DropdownMenuItem<String>(
-                          value: 'Unserved',
-                          child: Text('Unserved'),
-                        ),
-                        DropdownMenuItem<String>(
-                          value: 'No Delivery',
-                          child: Text('No Delivery'),
-                        ),
-                      ],
-                    ),
-                  ],
-                  SizedBox(height: 10),
-                  if (_showNoDeliveryDropdown) ...[
-                    Text(
-                      'Reason',
-                      style:
-                          TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                    ),
-                    SizedBox(height: 10),
-                    DropdownButtonFormField<String>(
-                      decoration: _statusSelected == 'Carried'
-                          ? InputDecoration(
-                              border: OutlineInputBorder(),
-                              contentPadding:
-                                  EdgeInsets.symmetric(horizontal: 12),
-                              labelStyle: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 16,
-                              ),
-                            )
-                          : null, // No border or padding when status is not
-                      value: _selectedNoDeliveryOption,
-                      onChanged: (newValue) {
-                        setState(() {
-                          _selectedNoDeliveryOption = newValue;
-                          _reasonOOS =
-                              newValue; // Set the ReasonOOS value based on selection
-                          checkSaveEnabled(); // Check if Save button should be enabled
-                        });
-                      },
-                      items: [
-                        DropdownMenuItem<String>(
-                          value: 'With S.O but without P.O',
-                          child: Text('With S.O but without P.O'),
-                        ),
-                        DropdownMenuItem<String>(
-                          value: 'With P.O but without Delivery',
-                          child: Text('With P.O but without Delivery'),
-                        ),
-                        DropdownMenuItem<String>(
-                          value: 'AR ISSUES',
-                          child: Text('AR ISSUES'),
-                        ),
-                      ],
-                    ),
-                  ],
-                  SizedBox(height: 20),
-                  if (_showCarriedTextField ||
-                      _showNotCarriedTextField ||
-                      _showDelistedTextField)
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        ElevatedButton(
-                          onPressed: _isSaveEnabled
-                              ? () async {
-                                  // Show confirmation dialog with preview
-                                  bool confirmed = await showDialog(
-                                    context: context,
-                                    builder: (BuildContext context) {
-                                      return AlertDialog(
-                                        title: Text('Save Confirmation'),
-                                        content: SingleChildScrollView(
-                                          child: Column(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.start,
-                                            children: <Widget>[
-                                              Text('Preview Inventory Item:'),
-                                              SizedBox(height: 10),
-                                              Text.rich(
-                                                TextSpan(
-                                                  children: [
-                                                    TextSpan(
-                                                      text: 'User Email: ',
-                                                      style: TextStyle(
-                                                          fontWeight:
-                                                              FontWeight.bold),
-                                                    ),
-                                                    TextSpan(
-                                                        text: widget.userEmail),
-                                                  ],
-                                                ),
-                                              ),
-                                              SizedBox(height: 10),
-                                              Text.rich(
-                                                TextSpan(
-                                                  children: [
-                                                    TextSpan(
-                                                      text: 'Date: ',
-                                                      style: TextStyle(
-                                                          fontWeight:
-                                                              FontWeight.bold),
-                                                    ),
-                                                    TextSpan(
-                                                      text: DateFormat(
-                                                              'yyyy-MM-dd')
-                                                          .format(
-                                                              DateTime.now()),
-                                                    ),
-                                                  ],
-                                                ),
-                                              ),
-                                              SizedBox(height: 10),
-                                              Text.rich(
-                                                TextSpan(
-                                                  children: [
-                                                    TextSpan(
-                                                      text: 'Input ID: ',
-                                                      style: TextStyle(
-                                                          fontWeight:
-                                                              FontWeight.bold),
-                                                    ),
-                                                    TextSpan(
-                                                        text: widget.inputid),
-                                                  ],
-                                                ),
-                                              ),
-                                              SizedBox(height: 10),
-                                              Text.rich(
-                                                TextSpan(
-                                                  children: [
-                                                    TextSpan(
-                                                      text: 'Name: ',
-                                                      style: TextStyle(
-                                                          fontWeight:
-                                                              FontWeight.bold),
-                                                    ),
-                                                    TextSpan(
-                                                      text:
-                                                          '${widget.userName} ${widget.userLastName}',
-                                                    ),
-                                                  ],
-                                                ),
-                                              ),
-                                              SizedBox(height: 10),
-                                              Text.rich(
-                                                TextSpan(
-                                                  children: [
-                                                    TextSpan(
-                                                      text:
-                                                          'Account Name Branch ',
-                                                      style: TextStyle(
-                                                          fontWeight:
-                                                              FontWeight.bold),
-                                                    ),
-                                                    TextSpan(
-                                                        text: widget
-                                                            .selectedAccount),
-                                                  ],
-                                                ),
-                                              ),
-                                              SizedBox(height: 10),
-                                              Text.rich(
-                                                TextSpan(
-                                                  children: [
-                                                    TextSpan(
-                                                      text: 'Period: ',
-                                                      style: TextStyle(
-                                                          fontWeight:
-                                                              FontWeight.bold),
-                                                    ),
-                                                    TextSpan(
-                                                        text: widget
-                                                            .SelectedPeriod),
-                                                  ],
-                                                ),
-                                              ),
-                                              SizedBox(height: 10),
-                                              Text.rich(
-                                                TextSpan(
-                                                  children: [
-                                                    TextSpan(
-                                                      text: 'Month: ',
-                                                      style: TextStyle(
-                                                          fontWeight:
-                                                              FontWeight.bold),
-                                                    ),
-                                                    TextSpan(
-                                                        text: widget
-                                                            .selectedMonth),
-                                                  ],
-                                                ),
-                                              ),
-                                              SizedBox(height: 10),
-                                              Text.rich(
-                                                TextSpan(
-                                                  children: [
-                                                    TextSpan(
-                                                      text: 'Week: ',
-                                                      style: TextStyle(
-                                                          fontWeight:
-                                                              FontWeight.bold),
-                                                    ),
-                                                    TextSpan(
-                                                        text: widget
-                                                            .selectedWeek),
-                                                  ],
-                                                ),
-                                              ),
-                                              SizedBox(height: 10),
-                                              Text.rich(
-                                                TextSpan(
-                                                  children: [
-                                                    TextSpan(
-                                                      text: 'Category: ',
-                                                      style: TextStyle(
-                                                          fontWeight:
-                                                              FontWeight.bold),
-                                                    ),
-                                                    TextSpan(
-                                                        text: _versionSelected),
-                                                  ],
-                                                ),
-                                              ),
-                                              SizedBox(height: 10),
-                                              Text.rich(
-                                                TextSpan(
-                                                  children: [
-                                                    TextSpan(
-                                                      text: 'SKU Description: ',
-                                                      style: TextStyle(
-                                                          fontWeight:
-                                                              FontWeight.bold),
-                                                    ),
-                                                    TextSpan(
-                                                        text:
-                                                            _selectedDropdownValue),
-                                                  ],
-                                                ),
-                                              ),
-                                              SizedBox(height: 10),
-                                              Text.rich(
-                                                TextSpan(
-                                                  children: [
-                                                    TextSpan(
-                                                      text: 'Products: ',
-                                                      style: TextStyle(
-                                                          fontWeight:
-                                                              FontWeight.bold),
-                                                    ),
-                                                    TextSpan(
-                                                        text: _productDetails),
-                                                  ],
-                                                ),
-                                              ),
-                                              SizedBox(height: 10),
-                                              Text.rich(
-                                                TextSpan(
-                                                  children: [
-                                                    TextSpan(
-                                                      text: 'SKU Code: ',
-                                                      style: TextStyle(
-                                                          fontWeight:
-                                                              FontWeight.bold),
-                                                    ),
-                                                    TextSpan(text: _skuCode),
-                                                  ],
-                                                ),
-                                              ),
-                                              SizedBox(height: 10),
-                                              Text.rich(
-                                                TextSpan(
-                                                  children: [
-                                                    TextSpan(
-                                                      text: 'Status: ',
-                                                      style: TextStyle(
-                                                          fontWeight:
-                                                              FontWeight.bold),
-                                                    ),
-                                                    TextSpan(
-                                                        text: _statusSelected),
-                                                  ],
-                                                ),
-                                              ),
-                                              SizedBox(height: 10),
-                                              Text.rich(
-                                                TextSpan(
-                                                  children: [
-                                                    TextSpan(
-                                                      text: 'Beginning Value: ',
-                                                      style: TextStyle(
-                                                          fontWeight:
-                                                              FontWeight.bold),
-                                                    ),
-                                                    TextSpan(
-                                                      text:
-                                                          '${int.tryParse(_beginningController.text) ?? 0}',
-                                                    ),
-                                                  ],
-                                                ),
-                                              ),
-                                              SizedBox(height: 10),
-                                              Text.rich(
-                                                TextSpan(
-                                                  children: [
-                                                    TextSpan(
-                                                      text: 'Delivery Value: ',
-                                                      style: TextStyle(
-                                                          fontWeight:
-                                                              FontWeight.bold),
-                                                    ),
-                                                    TextSpan(
-                                                      text:
-                                                          '${int.tryParse(_deliveryController.text) ?? 0}',
-                                                    ),
-                                                  ],
-                                                ),
-                                              ),
-                                              SizedBox(height: 10),
-                                              Text.rich(
-                                                TextSpan(
-                                                  children: [
-                                                    TextSpan(
-                                                      text: 'Ending Value: ',
-                                                      style: TextStyle(
-                                                          fontWeight:
-                                                              FontWeight.bold),
-                                                    ),
-                                                    TextSpan(
-                                                      text:
-                                                          '${int.tryParse(_endingController.text) ?? 0}',
-                                                    ),
-                                                  ],
-                                                ),
-                                              ),
-                                              SizedBox(height: 10),
-                                              Text.rich(
-                                                TextSpan(
-                                                  children: [
-                                                    TextSpan(
-                                                      text: 'Offtake Value: ',
-                                                      style: TextStyle(
-                                                          fontWeight:
-                                                              FontWeight.bold),
-                                                    ),
-                                                    TextSpan(
-                                                      text:
-                                                          '${double.tryParse(_offtakeController.text)?.toStringAsFixed(2) ?? '0.00'}',
-                                                    ),
-                                                  ],
-                                                ),
-                                              ),
-                                              SizedBox(height: 10),
-                                              Text.rich(
-                                                TextSpan(
-                                                  children: [
-                                                    TextSpan(
-                                                      text:
-                                                          'Inventory Days Level: ',
-                                                      style: TextStyle(
-                                                          fontWeight:
-                                                              FontWeight.bold),
-                                                    ),
-                                                    TextSpan(
-                                                      text:
-                                                          '${double.tryParse(_inventoryDaysLevelController.text)?.toStringAsFixed(2) ?? '0.00'}',
-                                                    ),
-                                                  ],
-                                                ),
-                                              ),
-                                              SizedBox(height: 10),
-                                              Text.rich(
-                                                TextSpan(
-                                                  children: [
-                                                    TextSpan(
-                                                      text: 'No of Days OOS: ',
-                                                      style: TextStyle(
-                                                          fontWeight:
-                                                              FontWeight.bold),
-                                                    ),
-                                                    TextSpan(
-                                                        text:
-                                                            '$_selectedNumberOfDaysOOS'),
-                                                  ],
-                                                ),
-                                              ),
-                                              SizedBox(height: 10),
-                                              Text.rich(
-                                                TextSpan(
-                                                  children: [
-                                                    TextSpan(
-                                                      text: 'Expiry Fields: ',
-                                                      style: TextStyle(
-                                                          fontWeight:
-                                                              FontWeight.bold),
-                                                    ),
-                                                    TextSpan(
-                                                        text:
-                                                            '$_expiryFieldsValues'),
-                                                  ],
-                                                ),
-                                              ),
-                                              SizedBox(height: 10),
-                                              Text.rich(
-                                                TextSpan(
-                                                  children: [
-                                                    TextSpan(
-                                                      text: 'Remarks OOS: ',
-                                                      style: TextStyle(
-                                                          fontWeight:
-                                                              FontWeight.bold),
-                                                    ),
-                                                    TextSpan(
-                                                        text: '$_remarksOOS'),
-                                                  ],
-                                                ),
-                                              ),
-                                              SizedBox(height: 10),
-                                              Text.rich(
-                                                TextSpan(
-                                                  children: [
-                                                    TextSpan(
-                                                      text: 'Reason OOS: ',
-                                                      style: TextStyle(
-                                                          fontWeight:
-                                                              FontWeight.bold),
-                                                    ),
-                                                    TextSpan(
-                                                        text: '$_reasonOOS'),
-                                                  ],
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                        actions: <Widget>[
-                                          TextButton(
-                                            onPressed: () {
-                                              Navigator.of(context).pop(
-                                                  false); // Close dialog without saving
-                                            },
-                                            child: Text('Cancel'),
-                                          ),
-                                          TextButton(
-                                            onPressed: () {
-                                              Navigator.of(context)
-                                                  .pop(true); // Confirm saving
-                                            },
-                                            child: Text('Confirm'),
-                                          ),
-                                        ],
-                                      );
-                                    },
-                                  );
-
-                                  // Save the inventory item if confirmed
-                                  if (confirmed ?? false) {
-                                    _saveInventoryItem(); // Call your save function here
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(
-                                        content: Text('Inventory item saved'),
-                                        duration: Duration(seconds: 2),
-                                      ),
-                                    );
-                                    Navigator.pop(
-                                        context); // Close the current screen after saving
-                                  }
-                                }
-                              : null, // Disable button if !_isSaveEnabled
-                          style: ButtonStyle(
-                            padding:
-                                MaterialStateProperty.all<EdgeInsetsGeometry>(
-                              const EdgeInsets.symmetric(vertical: 15),
-                            ),
-                            minimumSize: MaterialStateProperty.all<Size>(
-                              const Size(150, 50),
-                            ),
-                            backgroundColor: MaterialStateProperty.all<Color>(
-                                _isSaveEnabled ? Colors.green : Colors.grey),
-                          ),
-                          child: const Text(
-                            'Save',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                ],
+                ),
               ),
-            ),
-          ),
-        ));
+            )));
   }
 
   Widget _buildDropdown(
@@ -3062,6 +3218,7 @@ class _ExpiryFieldState extends State<ExpiryField> {
   @override
   void initState() {
     super.initState();
+
     _selectedMonth = widget.initialMonth;
     if (widget.initialPcs != null) {
       _expiryController.text = widget.initialPcs.toString();

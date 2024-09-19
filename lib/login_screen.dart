@@ -20,8 +20,14 @@ class _LoginPageState extends State<LoginPage> {
   String usernameErrorText = '';
   String passwordErrorText = '';
   bool _obscureText = true;
+  bool _isLoading = false;
 
   Future<void> _login(BuildContext context) async {
+    // Start loading
+    setState(() {
+      _isLoading = true;
+    });
+
     final String username = usernameController.text.trim();
     final String password = passwordController.text.trim();
 
@@ -30,6 +36,7 @@ class _LoginPageState extends State<LoginPage> {
       setState(() {
         usernameErrorText = username.isEmpty ? 'Input username' : '';
         passwordErrorText = password.isEmpty ? 'Input password' : '';
+        _isLoading = false; // Stop loading if there's an error
       });
       return; // Exit the method if either field is empty
     }
@@ -43,18 +50,16 @@ class _LoginPageState extends State<LoginPage> {
 
         // Check if the user is activated
         if (!isActivated) {
-          // User is deactivated, prevent login
           setState(() {
             usernameErrorText = '';
             passwordErrorText = 'Account deactivated. Please contact admin.';
+            _isLoading = false; // Stop loading if account is deactivated
           });
-          return; // Exit the method
+          return;
         }
 
         // Validate the password using the validatePassword function
         if (await validatePassword(password, storedPasswordHash)) {
-          // Passwords match, proceed with login
-          print("Login successful");
           // Save login state and user details
           final prefs = await SharedPreferences.getInstance();
           prefs.setBool('isLoggedIn', true);
@@ -64,7 +69,7 @@ class _LoginPageState extends State<LoginPage> {
           prefs.setString('userContactNum', userDetails['contactNum'] ?? '');
           prefs.setString('userEmail', userDetails['emailAddress'] ?? '');
 
-          // Use pushReplacement to navigate to Dashboard or perform any other actions after successful login
+          // Navigate to Dashboard
           Navigator.of(context).pushAndRemoveUntil(
             MaterialPageRoute(
               builder: (context) => SideBarLayout(
@@ -89,11 +94,13 @@ class _LoginPageState extends State<LoginPage> {
         } else {
           setState(() {
             passwordErrorText = 'Invalid password';
+            _isLoading = false; // Stop loading if the password is invalid
           });
         }
       } else {
         setState(() {
           usernameErrorText = 'Account does not exist';
+          _isLoading = false; // Stop loading if the account doesn't exist
         });
       }
     } catch (e) {
@@ -114,6 +121,9 @@ class _LoginPageState extends State<LoginPage> {
           );
         },
       );
+      setState(() {
+        _isLoading = false; // Stop loading if an error occurs
+      });
     }
   }
 
@@ -280,34 +290,40 @@ class _LoginPageState extends State<LoginPage> {
                         height: 40,
                       ),
                       ElevatedButton(
-                        onPressed: () {
-                          _login(context); // Call the login method
-                        },
+                        onPressed: _isLoading
+                            ? null
+                            : () {
+                                _login(context); // Call the login method
+                              },
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.green[900],
+                          backgroundColor: _isLoading
+                              ? Colors.grey
+                              : Colors.green[900], // Grey if loading
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(50),
                           ),
                         ),
                         child: SizedBox(
-                          width: 200, // Set a fixed width for the button
+                          width: 200,
                           height: 50,
                           child: Center(
-                            child: Text(
-                              "Login",
-                              style: GoogleFonts.roboto(
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
+                            child: _isLoading
+                                ? CircularProgressIndicator(
+                                    color:
+                                        Colors.white) // Show spinner if loading
+                                : Text(
+                                    'LOGIN',
+                                    style: TextStyle(
+                                        color: Colors.white, fontSize: 18),
+                                  ),
                           ),
                         ),
                       ),
                       SizedBox(
-                        height: 20,
+                        height: 40,
                       ),
-                      GestureDetector(
-                        onTap: () {
+                      ElevatedButton(
+                        onPressed: () {
                           // Navigate to sign-up page
                           Navigator.push(
                             context,
@@ -316,19 +332,33 @@ class _LoginPageState extends State<LoginPage> {
                             ),
                           );
                         },
-                        child: Text(
-                          'SIGN UP',
-                          style: GoogleFonts.roboto(
-                            color: Colors.blueAccent[200],
-                            fontWeight: FontWeight.bold,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.green[900], // Button color
+                          shape: RoundedRectangleBorder(
+                            borderRadius:
+                                BorderRadius.circular(50), // Rounded corners
+                          ),
+                        ),
+                        child: SizedBox(
+                          width: 50,
+                          height: 20,
+                          child: Center(
+                            child: Text(
+                              'SIGN UP',
+                              style: GoogleFonts.roboto(
+                                color: Colors.white, // Text color
+                                fontWeight: FontWeight.bold,
+                                fontSize: 12,
+                              ),
+                            ),
                           ),
                         ),
                       ),
                       SizedBox(
-                        height: 20,
+                        height: 15,
                       ),
-                      GestureDetector(
-                        onTap: () {
+                      ElevatedButton(
+                        onPressed: () {
                           // Navigate to forgot password page
                           Navigator.push(
                             context,
@@ -337,14 +367,28 @@ class _LoginPageState extends State<LoginPage> {
                             ),
                           );
                         },
-                        child: Text(
-                          'FORGOT PASSWORD',
-                          style: GoogleFonts.roboto(
-                            color: Colors.blueAccent[200],
-                            fontWeight: FontWeight.bold,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.green[900], // Button color
+                          shape: RoundedRectangleBorder(
+                            borderRadius:
+                                BorderRadius.circular(50), // Rounded corners
                           ),
                         ),
-                      ),
+                        child: SizedBox(
+                          width: 115,
+                          height: 20,
+                          child: Center(
+                            child: Text(
+                              'FORGOT PASSWORD',
+                              style: GoogleFonts.roboto(
+                                color: Colors.white, // Text color
+                                fontWeight: FontWeight.bold,
+                                fontSize: 12,
+                              ),
+                            ),
+                          ),
+                        ),
+                      )
                     ],
                   ),
                 ),

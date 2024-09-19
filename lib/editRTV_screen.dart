@@ -232,224 +232,234 @@ class _EditRTVScreenState extends State<EditRTVScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          'Edit RTV',
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-        ),
-        backgroundColor: Colors.green[600],
-        elevation: 0,
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Form(
-          key: _formKey,
-          child: ListView(
-            children: [
-              Text(
-                'Input ID',
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-              ),
-              TextFormField(
-                controller: _inputId,
-                readOnly: true,
-                keyboardType: TextInputType.number,
-                decoration: InputDecoration(
-                  border: OutlineInputBorder(),
-                  contentPadding: EdgeInsets.symmetric(horizontal: 12),
-                ),
-              ),
-              SizedBox(height: 16),
-              Text(
-                'Merchandiser',
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-              ),
-              TextFormField(
-                controller: _merchandiserNameController,
-                readOnly: true,
-                decoration: InputDecoration(
-                  border: OutlineInputBorder(),
-                  contentPadding: EdgeInsets.symmetric(horizontal: 12),
-                ),
-              ),
-              SizedBox(height: 16),
-              Text(
-                'Outlet',
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-              ),
-              TextFormField(
-                controller: _outletController,
-                readOnly: true,
-                decoration: InputDecoration(
-                  border: OutlineInputBorder(),
-                  contentPadding: EdgeInsets.symmetric(horizontal: 12),
-                ),
-              ),
-              SizedBox(height: 16),
-              Text(
-                'Category',
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-              ),
-              SizedBox(height: 10),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children:
-                    _categoryToSkuDescriptions.keys.map((String category) {
-                  return OutlinedButton(
-                    onPressed: null, // Disable button interaction
-                    style: OutlinedButton.styleFrom(
-                      side: BorderSide(
-                        width: 2.0,
-                        color: selectedCategory == category
-                            ? Colors.green
-                            : Colors.blueGrey.shade200,
-                      ),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(4),
-                      ),
+    return new WillPopScope(
+        onWillPop: () async => false,
+        child: Scaffold(
+          appBar: AppBar(
+            leading: IconButton(
+              icon: Icon(Icons.arrow_back), // Use arrow_back icon
+              onPressed: () {
+                Navigator.pop(context); // Return to the previous screen
+              },
+            ),
+            title: Text(
+              'Edit RTV',
+              style:
+                  TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+            ),
+            backgroundColor: Colors.green[600],
+            elevation: 0,
+          ),
+          body: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Form(
+              key: _formKey,
+              child: ListView(
+                children: [
+                  Text(
+                    'Input ID',
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                  ),
+                  TextFormField(
+                    controller: _inputId,
+                    readOnly: true,
+                    keyboardType: TextInputType.number,
+                    decoration: InputDecoration(
+                      border: OutlineInputBorder(),
+                      contentPadding: EdgeInsets.symmetric(horizontal: 12),
                     ),
-                    child: Text(
-                      category,
-                      style: TextStyle(color: Colors.black),
+                  ),
+                  SizedBox(height: 16),
+                  Text(
+                    'Merchandiser',
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                  ),
+                  TextFormField(
+                    controller: _merchandiserNameController,
+                    readOnly: true,
+                    decoration: InputDecoration(
+                      border: OutlineInputBorder(),
+                      contentPadding: EdgeInsets.symmetric(horizontal: 12),
                     ),
-                  );
-                }).toList(),
-              ),
-              SizedBox(height: 16),
-              Text(
-                'SKU Description',
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-              ),
-              SizedBox(height: 10),
-              DropdownButtonFormField<String>(
-                value: selectedItem,
-                items: itemOptions.map((String item) {
-                  return DropdownMenuItem<String>(
-                    value: item,
-                    child: SizedBox(
-                      width: 350,
-                      child: Tooltip(
-                        message: item,
+                  ),
+                  SizedBox(height: 16),
+                  Text(
+                    'Outlet',
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                  ),
+                  TextFormField(
+                    controller: _outletController,
+                    readOnly: true,
+                    decoration: InputDecoration(
+                      border: OutlineInputBorder(),
+                      contentPadding: EdgeInsets.symmetric(horizontal: 12),
+                    ),
+                  ),
+                  SizedBox(height: 16),
+                  Text(
+                    'Category',
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                  ),
+                  SizedBox(height: 10),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children:
+                        _categoryToSkuDescriptions.keys.map((String category) {
+                      return OutlinedButton(
+                        onPressed: null, // Disable button interaction
+                        style: OutlinedButton.styleFrom(
+                          side: BorderSide(
+                            width: 2.0,
+                            color: selectedCategory == category
+                                ? Colors.green
+                                : Colors.blueGrey.shade200,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                        ),
                         child: Text(
-                          item,
-                          overflow: TextOverflow.ellipsis,
+                          category,
+                          style: TextStyle(color: Colors.black),
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                  SizedBox(height: 16),
+                  Text(
+                    'SKU Description',
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                  ),
+                  SizedBox(height: 10),
+                  DropdownButtonFormField<String>(
+                    value: selectedItem,
+                    items: itemOptions.map((String item) {
+                      return DropdownMenuItem<String>(
+                        value: item,
+                        child: SizedBox(
+                          width: 350,
+                          child: Tooltip(
+                            message: item,
+                            child: Text(
+                              item,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ),
+                      );
+                    }).toList(),
+                    onChanged: null, // Disable the dropdown interaction
+                    decoration: InputDecoration(
+                      border: OutlineInputBorder(),
+                      contentPadding: EdgeInsets.symmetric(horizontal: 12),
+                      enabled:
+                          false, // Optionally adjust the decoration to indicate read-only state
+                    ),
+                  ),
+                  SizedBox(height: 16),
+                  Text(
+                    'Quantity',
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                  ),
+                  TextFormField(
+                    decoration: InputDecoration(
+                      border: OutlineInputBorder(),
+                      contentPadding: EdgeInsets.symmetric(horizontal: 12),
+                    ),
+                    controller: _quantityController,
+                    keyboardType: TextInputType.number,
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Please enter quantity';
+                      }
+                      return null;
+                    },
+                  ),
+                  SizedBox(height: 16),
+                  Text(
+                    'Driver Name',
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                  ),
+                  TextFormField(
+                    decoration: InputDecoration(
+                      border: OutlineInputBorder(),
+                      contentPadding: EdgeInsets.symmetric(horizontal: 12),
+                    ),
+                    controller: _driverNameController,
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Please enter driver name';
+                      }
+                      return null;
+                    },
+                  ),
+                  SizedBox(height: 16),
+                  Text(
+                    'Plate Number',
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                  ),
+                  TextFormField(
+                    decoration: InputDecoration(
+                      border: OutlineInputBorder(),
+                      contentPadding: EdgeInsets.symmetric(horizontal: 12),
+                    ),
+                    controller: _plateNumberController,
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Please enter plate number';
+                      }
+                      return null;
+                    },
+                  ),
+                  SizedBox(height: 16),
+                  Text(
+                    'Pull Out Reason',
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                  ),
+                  TextFormField(
+                    decoration: InputDecoration(
+                      border: OutlineInputBorder(),
+                      contentPadding: EdgeInsets.symmetric(horizontal: 12),
+                    ),
+                    controller: _pullOutReasonController,
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Please enter pull out reason';
+                      }
+                      return null;
+                    },
+                  ),
+                  SizedBox(height: 50),
+                  Align(
+                    alignment: Alignment.bottomCenter,
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor:
+                            isSaveButtonEnabled ? Colors.green : Colors.grey,
+                        padding: EdgeInsets.all(
+                            20), // Increase padding to make the button larger
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(
+                              100), // Increased from 50 to 100 for a larger curve
+                        ),
+                      ),
+                      onPressed: isSaveButtonEnabled
+                          ? _confirmSaveReturnToVendor
+                          : null,
+                      child: Text(
+                        "Save Changes",
+                        style: GoogleFonts.roboto(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
                         ),
                       ),
                     ),
-                  );
-                }).toList(),
-                onChanged: null, // Disable the dropdown interaction
-                decoration: InputDecoration(
-                  border: OutlineInputBorder(),
-                  contentPadding: EdgeInsets.symmetric(horizontal: 12),
-                  enabled:
-                      false, // Optionally adjust the decoration to indicate read-only state
-                ),
-              ),
-              SizedBox(height: 16),
-              Text(
-                'Quantity',
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-              ),
-              TextFormField(
-                decoration: InputDecoration(
-                  border: OutlineInputBorder(),
-                  contentPadding: EdgeInsets.symmetric(horizontal: 12),
-                ),
-                controller: _quantityController,
-                keyboardType: TextInputType.number,
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter quantity';
-                  }
-                  return null;
-                },
-              ),
-              SizedBox(height: 16),
-              Text(
-                'Driver Name',
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-              ),
-              TextFormField(
-                decoration: InputDecoration(
-                  border: OutlineInputBorder(),
-                  contentPadding: EdgeInsets.symmetric(horizontal: 12),
-                ),
-                controller: _driverNameController,
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter driver name';
-                  }
-                  return null;
-                },
-              ),
-              SizedBox(height: 16),
-              Text(
-                'Plate Number',
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-              ),
-              TextFormField(
-                decoration: InputDecoration(
-                  border: OutlineInputBorder(),
-                  contentPadding: EdgeInsets.symmetric(horizontal: 12),
-                ),
-                controller: _plateNumberController,
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter plate number';
-                  }
-                  return null;
-                },
-              ),
-              SizedBox(height: 16),
-              Text(
-                'Pull Out Reason',
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-              ),
-              TextFormField(
-                decoration: InputDecoration(
-                  border: OutlineInputBorder(),
-                  contentPadding: EdgeInsets.symmetric(horizontal: 12),
-                ),
-                controller: _pullOutReasonController,
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter pull out reason';
-                  }
-                  return null;
-                },
-              ),
-              SizedBox(height: 50),
-              Align(
-                alignment: Alignment.bottomCenter,
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor:
-                        isSaveButtonEnabled ? Colors.green : Colors.grey,
-                    padding: EdgeInsets.all(
-                        20), // Increase padding to make the button larger
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(
-                          100), // Increased from 50 to 100 for a larger curve
-                    ),
                   ),
-                  onPressed:
-                      isSaveButtonEnabled ? _confirmSaveReturnToVendor : null,
-                  child: Text(
-                    "Save Changes",
-                    style: GoogleFonts.roboto(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
+                ],
               ),
-            ],
+            ),
           ),
-        ),
-      ),
-    );
+        ));
   }
 
   void _showItemPicker() {
