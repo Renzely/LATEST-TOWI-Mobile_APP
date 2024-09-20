@@ -702,7 +702,7 @@ class _InventoryState extends State<Inventory> {
                                       print(
                                           'Item ${item.inputId} isEditing: $isEditing');
 
-                                      // Disable the button permanently if `isEditing` is true
+                                      // Disable the button permanently if isEditing is true
                                       return ListTile(
                                         title: Row(
                                           mainAxisAlignment:
@@ -715,15 +715,14 @@ class _InventoryState extends State<Inventory> {
                                                           'Carried' &&
                                                       !isEditing
                                                   ? () async {
-                                                      // Set editing status to false initially
+                                                      // Set editing status to true
                                                       await _updateEditingStatus(
                                                           item.inputId,
                                                           widget.userEmail,
                                                           false);
 
-                                                      // Navigate to Edit screen and wait for result
-                                                      final bool? didSave =
-                                                          await Navigator.push(
+                                                      // Navigate to the Edit screen
+                                                      await Navigator.push(
                                                         context,
                                                         MaterialPageRoute(
                                                           builder: (context) =>
@@ -735,24 +734,16 @@ class _InventoryState extends State<Inventory> {
                                                         ),
                                                       );
 
-                                                      // If the user saved changes (didSave is true), set editing status to true
-                                                      if (didSave == true) {
-                                                        await _updateEditingStatus(
-                                                            item.inputId,
-                                                            widget.userEmail,
-                                                            true);
-                                                      } else {
-                                                        // If the user didn't save, reset to the original state
-                                                        await _updateEditingStatus(
-                                                            item.inputId,
-                                                            widget.userEmail,
-                                                            false);
-                                                      }
+                                                      // After editing, reset editing status to false
+                                                      await _updateEditingStatus(
+                                                          item.inputId,
+                                                          widget.userEmail,
+                                                          true);
 
                                                       setState(
-                                                          () {}); // Refresh UI after editing or cancelling
+                                                          () {}); // Refresh UI after editing
                                                     }
-                                                  : null, // Button disabled if isEditing is true
+                                                  : null, // Button permanently disabled if isEditing is true
                                             ),
                                           ],
                                         ),
