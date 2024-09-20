@@ -58,7 +58,6 @@ class _EditInventoryScreenState extends State<EditInventoryScreen> {
   String? selectedMonth;
   String currentStatus = ''; // Variable to hold the current status
   bool editing = false;
-  bool hasChanges = false;
 
   @override
   void initState() {
@@ -238,10 +237,6 @@ class _EditInventoryScreenState extends State<EditInventoryScreen> {
   }
 
   void _saveChanges() async {
-    setState(() {
-      hasChanges = true;
-    });
-
     mongo.Db? db;
 
     try {
