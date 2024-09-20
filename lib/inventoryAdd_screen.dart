@@ -2004,6 +2004,7 @@ class _SKUInventoryState extends State<SKUInventory> {
                   ),
                   leading: IconButton(
                     icon: Icon(Icons.arrow_back),
+                    color: Colors.white,
                     onPressed: () {
                       Navigator.push(
                         context,

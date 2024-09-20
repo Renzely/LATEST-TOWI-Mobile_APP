@@ -560,12 +560,22 @@ class _InventoryState extends State<Inventory> {
           results.map((data) => InventoryItem.fromJson(data)).toList();
       // Sort inventory items based on _sortByLatest flag
       inventoryItems.sort((a, b) {
+        // Extract the numeric part from the 'week' string using RegExp
+        int weekA =
+            int.tryParse(RegExp(r'\d+').firstMatch(b.week)?.group(0) ?? '0') ??
+                0;
+        int weekB =
+            int.tryParse(RegExp(r'\d+').firstMatch(a.week)?.group(0) ?? '0') ??
+                0;
+
         if (_sortByLatest) {
-          return a.week.compareTo(b.week); // Sort by latest to oldest
+          return weekB
+              .compareTo(weekA); // Sort by latest to oldest (descending)
         } else {
-          return b.week.compareTo(a.week); // Sort by oldest to latest
+          return weekA.compareTo(weekB); // Sort by oldest to latest (ascending)
         }
       });
+
       return inventoryItems;
     } catch (e) {
       print('Error fetching inventory data: $e');
@@ -705,14 +715,15 @@ class _InventoryState extends State<Inventory> {
                                                           'Carried' &&
                                                       !isEditing
                                                   ? () async {
-                                                      // Set editing status to true
+                                                      // Set editing status to false initially
                                                       await _updateEditingStatus(
                                                           item.inputId,
                                                           widget.userEmail,
                                                           false);
 
-                                                      // Navigate to the Edit screen
-                                                      await Navigator.push(
+                                                      // Navigate to Edit screen and wait for result
+                                                      final bool? didSave =
+                                                          await Navigator.push(
                                                         context,
                                                         MaterialPageRoute(
                                                           builder: (context) =>
@@ -724,16 +735,24 @@ class _InventoryState extends State<Inventory> {
                                                         ),
                                                       );
 
-                                                      // After editing, reset editing status to false
-                                                      await _updateEditingStatus(
-                                                          item.inputId,
-                                                          widget.userEmail,
-                                                          true);
+                                                      // If the user saved changes (didSave is true), set editing status to true
+                                                      if (didSave == true) {
+                                                        await _updateEditingStatus(
+                                                            item.inputId,
+                                                            widget.userEmail,
+                                                            true);
+                                                      } else {
+                                                        // If the user didn't save, reset to the original state
+                                                        await _updateEditingStatus(
+                                                            item.inputId,
+                                                            widget.userEmail,
+                                                            false);
+                                                      }
 
                                                       setState(
-                                                          () {}); // Refresh UI after editing
+                                                          () {}); // Refresh UI after editing or cancelling
                                                     }
-                                                  : null, // Button permanently disabled if isEditing is true
+                                                  : null, // Button disabled if isEditing is true
                                             ),
                                           ],
                                         ),
