@@ -2694,23 +2694,6 @@ class _SKUInventoryState extends State<SKUInventory> {
                                                     TextSpan(
                                                       children: [
                                                         TextSpan(
-                                                          text: 'User Email: ',
-                                                          style: TextStyle(
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .bold),
-                                                        ),
-                                                        TextSpan(
-                                                            text: widget
-                                                                .userEmail),
-                                                      ],
-                                                    ),
-                                                  ),
-                                                  SizedBox(height: 10),
-                                                  Text.rich(
-                                                    TextSpan(
-                                                      children: [
-                                                        TextSpan(
                                                           text: 'Date: ',
                                                           style: TextStyle(
                                                               fontWeight:

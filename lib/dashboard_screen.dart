@@ -680,7 +680,6 @@ class _InventoryState extends State<Inventory> {
                                     future: _getEditingStatus(
                                         item.inputId, widget.userEmail),
                                     builder: (context, snapshot) {
-                                      // If there's an error, show error icon and disable the edit button
                                       if (snapshot.hasError) {
                                         return ListTile(
                                           title: Row(
@@ -695,14 +694,11 @@ class _InventoryState extends State<Inventory> {
                                         );
                                       }
 
-                                      // Use false as default for isEditing to avoid premature disabling
-                                      bool isEditing = snapshot.data ?? true;
-
-                                      // Debugging line to check the isEditing value
+                                      bool isEditing = snapshot.data ??
+                                          true; // Use false as default
                                       print(
                                           'Item ${item.inputId} isEditing: $isEditing');
 
-                                      // Disable the button permanently if isEditing is true
                                       return ListTile(
                                         title: Row(
                                           mainAxisAlignment:
@@ -715,13 +711,13 @@ class _InventoryState extends State<Inventory> {
                                                           'Carried' &&
                                                       !isEditing
                                                   ? () async {
-                                                      // Set editing status to true
                                                       await _updateEditingStatus(
                                                           item.inputId,
                                                           widget.userEmail,
-                                                          false);
+                                                          false); // Start editing
+                                                      bool hasSavedChanges =
+                                                          false; // Track if changes are saved
 
-                                                      // Navigate to the Edit screen
                                                       await Navigator.push(
                                                         context,
                                                         MaterialPageRoute(
@@ -730,20 +726,44 @@ class _InventoryState extends State<Inventory> {
                                                             inventoryItem: item,
                                                             userEmail: widget
                                                                 .userEmail,
+                                                            userContactNum: widget
+                                                                .userContactNum,
+                                                            userLastName: widget
+                                                                .userLastName,
+                                                            userMiddleName: widget
+                                                                .userMiddleName,
+                                                            userName:
+                                                                widget.userName,
+                                                            onCancel: () async {
+                                                              // Reset editing status back to false (not editing anymore)
+                                                              await _updateEditingStatus(
+                                                                  item.inputId,
+                                                                  widget
+                                                                      .userEmail,
+                                                                  false);
+                                                              setState(
+                                                                  () {}); // Refresh UI after cancel
+                                                            },
+                                                            onSave: () async {
+                                                              hasSavedChanges =
+                                                                  true; // Indicate that changes have been saved
+                                                            },
                                                           ),
                                                         ),
                                                       );
 
-                                                      // After editing, reset editing status to false
-                                                      await _updateEditingStatus(
-                                                          item.inputId,
-                                                          widget.userEmail,
-                                                          true);
+                                                      // Only update editing status to true if changes were saved
+                                                      if (hasSavedChanges) {
+                                                        await _updateEditingStatus(
+                                                            item.inputId,
+                                                            widget.userEmail,
+                                                            true);
+                                                      }
 
                                                       setState(
                                                           () {}); // Refresh UI after editing
                                                     }
-                                                  : null, // Button permanently disabled if isEditing is true
+                                                  : null, // Disable button if isEditing is true
                                             ),
                                           ],
                                         ),
@@ -1167,9 +1187,9 @@ class _RTVState extends State<RTV> {
 
       rtvItems.sort((a, b) {
         if (_sortByLatest) {
-          return a.date.compareTo(b.date); // Sort by latest to oldest
+          return b.date.compareTo(a.date); // Sort by latest to oldest
         } else {
-          return b.date.compareTo(a.date); // Sort by oldest to latest
+          return a.date.compareTo(b.date); // Sort by oldest to latest
         }
       });
       return rtvItems;
