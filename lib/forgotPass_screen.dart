@@ -3,6 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:demo_app/changePass_screen.dart';
 import 'package:demo_app/login_screen.dart';
 import 'package:http/http.dart' as http;
+import 'dart:async';
 import 'dart:convert';
 
 class ForgotPassword extends StatefulWidget {
@@ -17,6 +18,48 @@ class _ForgotPasswordState extends State<ForgotPassword> {
   bool isOtpSent = false;
   String? otpMessage;
   String? otpErrorMessage;
+
+  bool _isLoading = false;
+  bool _isCooldown = false;
+  int _cooldownTime = 30; // 30 seconds cooldown
+  Timer? _timer;
+
+  void _startCooldown() {
+    setState(() {
+      _isCooldown = true;
+      _cooldownTime = 30; // Set cooldown to 30 seconds
+    });
+
+    _timer = Timer.periodic(Duration(seconds: 1), (timer) {
+      setState(() {
+        _cooldownTime--;
+        if (_cooldownTime == 0) {
+          _isCooldown = false;
+          _timer?.cancel();
+        }
+      });
+    });
+  }
+
+  void _sendOtp() {
+    setState(() {
+      _isLoading = true;
+    });
+
+    // Simulate sending OTP and waiting for response
+    Future.delayed(Duration(seconds: 3), () {
+      setState(() {
+        _isLoading = false;
+        _startCooldown(); // Start cooldown after sending OTP
+      });
+    });
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel(); // Cancel the timer when the widget is disposed
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -95,26 +138,43 @@ class _ForgotPasswordState extends State<ForgotPassword> {
                           SizedBox(height: 20),
                           // Send OTP Button
                           ElevatedButton(
-                            onPressed: () {
-                              _sendOtpForgotPass(emailController.text.trim());
-                            },
+                            onPressed: _isLoading || _isCooldown
+                                ? null
+                                : () {
+                                    _sendOtp();
+                                    _sendOtpForgotPass(
+                                        emailController.text.trim());
+                                  },
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.green[900],
+                              backgroundColor: _isLoading || _isCooldown
+                                  ? Colors.grey
+                                  : Colors.green[
+                                      900], // Grey if loading or cooldown
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(50),
                               ),
                             ),
                             child: SizedBox(
-                              width: 200, // Set a fixed width for the button
+                              width: 200,
                               height: 50,
                               child: Center(
-                                child: Text(
-                                  "Send OTP",
-                                  style: GoogleFonts.roboto(
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
+                                child: _isLoading
+                                    ? CircularProgressIndicator(
+                                        color: Colors
+                                            .white) // Show spinner if loading
+                                    : _isCooldown
+                                        ? Text(
+                                            'Wait $_cooldownTime s',
+                                            style: TextStyle(
+                                                color: Colors.white,
+                                                fontSize: 18),
+                                          ) // Show countdown
+                                        : Text(
+                                            'SEND OTP',
+                                            style: TextStyle(
+                                                color: Colors.white,
+                                                fontSize: 18),
+                                          ),
                               ),
                             ),
                           ),
