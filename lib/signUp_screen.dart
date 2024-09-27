@@ -434,17 +434,42 @@ class _SignUpState extends State<SignUp> {
 
   bool _validateFields() {
     setState(() {
+      // First Name validation
       fnameError =
           fnameController.text.isEmpty ? "First Name is required" : null;
+
+      // Last Name validation
       lnameError =
           lnameController.text.isEmpty ? "Last Name is required" : null;
-      contactNumError = contactNumController.text.isEmpty
-          ? "Contact Number is required"
-          : null;
-      usernameError =
-          usernameController.text.isEmpty ? "Username is required" : null;
-      passwordError =
-          passwordController.text.isEmpty ? "Password is required" : null;
+
+      // Contact Number validation (must be 11 digits)
+      if (contactNumController.text.isEmpty) {
+        contactNumError = "Contact Number is required";
+      } else if (contactNumController.text.length != 11) {
+        contactNumError = "Contact Number must be 11 digits";
+      } else {
+        contactNumError = null;
+      }
+
+      // Username validation (minimum 4 characters)
+      if (usernameController.text.isEmpty) {
+        usernameError = "Username is required";
+      } else if (usernameController.text.length < 4) {
+        usernameError = "Username must be at least 4 characters";
+      } else {
+        usernameError = null;
+      }
+
+      // Password validation (minimum 6 characters)
+      if (passwordController.text.isEmpty) {
+        passwordError = "Password is required";
+      } else if (passwordController.text.length < 6) {
+        passwordError = "Password must be at least 6 characters";
+      } else {
+        passwordError = null;
+      }
+
+      // Confirm Password validation
       confirmPassError = confirmPassController.text.isEmpty
           ? "Confirm Password is required"
           : null;
