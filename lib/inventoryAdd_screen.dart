@@ -2525,7 +2525,7 @@ class _SKUInventoryState extends State<SKUInventory> {
                       ],
 
                       SizedBox(height: 10),
-                      // Conditionally display 'No. of Days OOS' and the DropdownButtonFormField
+// Conditionally display 'No. of Days OOS' and the DropdownButtonFormField
                       if (_showCarriedTextField) ...[
                         Text(
                           'No. of Days OOS',
@@ -2552,6 +2552,11 @@ class _SKUInventoryState extends State<SKUInventory> {
                               _remarksOOS = null;
                               _selectedNoDeliveryOption = null;
                               _reasonOOS = null;
+
+                              // Hide the No Delivery dropdown if OOS Days is 0
+                              if (_selectedNumberOfDaysOOS == 0) {
+                                _showNoDeliveryDropdown = false;
+                              }
 
                               // Check if Save button should be enabled
                               checkSaveEnabled();
@@ -2593,7 +2598,8 @@ class _SKUInventoryState extends State<SKUInventory> {
                               _remarksOOS = newValue;
 
                               // Show or hide the Select Reason dropdown based on the Remarks selection
-                              if (_remarksOOS == 'No Delivery') {
+                              if (_remarksOOS == 'No Delivery' &&
+                                  _selectedNumberOfDaysOOS! > 0) {
                                 _showNoDeliveryDropdown = true;
                               } else {
                                 _showNoDeliveryDropdown = false;
@@ -2622,7 +2628,9 @@ class _SKUInventoryState extends State<SKUInventory> {
                         ),
                       ],
                       SizedBox(height: 10),
-                      if (_showNoDeliveryDropdown) ...[
+// Conditionally display the Reason dropdown if OOS days is greater than 0 and No Delivery is selected
+                      if (_showNoDeliveryDropdown &&
+                          _selectedNumberOfDaysOOS! > 0) ...[
                         Text(
                           'Reason',
                           style: TextStyle(
@@ -2640,7 +2648,7 @@ class _SKUInventoryState extends State<SKUInventory> {
                                     fontSize: 16,
                                   ),
                                 )
-                              : null, // No border or padding when status is not
+                              : null, // No border or padding when status is not 'Carried'
                           value: _selectedNoDeliveryOption,
                           onChanged: (newValue) {
                             setState(() {
