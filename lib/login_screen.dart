@@ -154,247 +154,243 @@ class _LoginPageState extends State<LoginPage> {
             ],
           ),
         ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: <Widget>[
-            SizedBox(height: 80),
-            Padding(
-              padding: EdgeInsets.all(20),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: <Widget>[
-                  Text(
-                    "Login",
-                    style:
-                        GoogleFonts.roboto(color: Colors.white, fontSize: 40),
-                  ),
-                  SizedBox(height: 10),
-                  Text(
-                    "Welcome to TOWI",
-                    style:
-                        GoogleFonts.roboto(color: Colors.white, fontSize: 18),
-                  ),
-                ],
-              ),
-            ),
-            SizedBox(height: 20),
-            Expanded(
-              child: Container(
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.only(
-                    topLeft: Radius.circular(60),
-                    topRight: Radius.circular(60),
-                  ),
-                ),
-                child: Padding(
-                  padding: EdgeInsets.all(30),
+        child: SingleChildScrollView(
+          // Added SingleChildScrollView
+          child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                SizedBox(height: 80),
+                Padding(
+                  padding: EdgeInsets.all(20),
                   child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: <Widget>[
-                      SizedBox(
-                        height: 60,
+                      Text(
+                        "Login",
+                        style: GoogleFonts.roboto(
+                            color: Colors.white, fontSize: 40),
                       ),
-                      Container(
-                        padding: EdgeInsets.all(20),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(10),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Color.fromRGBO(63, 172, 48, 0.808),
-                              blurRadius: 20,
-                              offset: Offset(0, 10),
-                            ),
-                          ],
-                        ),
-                        child: Column(
-                          children: <Widget>[
-                            // Username Text Field with Title
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  'Username',
-                                  style: GoogleFonts.roboto(
-                                    color: Colors.green[900],
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                                TextFormField(
-                                  controller: usernameController,
-                                  onChanged: (_) {
-                                    setState(() {
-                                      usernameErrorText = '';
-                                    });
-                                  },
-                                  decoration: InputDecoration(
-                                    hintText: 'Enter your username',
-                                    border: InputBorder.none,
-                                    prefixIcon: Icon(Icons.account_box),
-                                    errorText: usernameErrorText.isNotEmpty
-                                        ? usernameErrorText
-                                        : null,
-                                  ),
-                                ),
-                              ],
-                            ),
-                            SizedBox(height: 20), // Adjust spacing as needed
-                            // Password Text Field with Title
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  'Password',
-                                  style: GoogleFonts.roboto(
-                                    color: Colors.green[900],
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                                TextFormField(
-                                  controller: passwordController,
-                                  onChanged: (_) {
-                                    setState(() {
-                                      passwordErrorText = '';
-                                    });
-                                  },
-                                  obscureText:
-                                      _obscureText, // Controls password visibility
-                                  decoration: InputDecoration(
-                                    hintText: 'Enter your password',
-                                    prefixIcon: Icon(Icons.lock),
-                                    border: InputBorder.none,
-                                    errorText: passwordErrorText.isNotEmpty
-                                        ? passwordErrorText
-                                        : null,
-                                    suffixIcon: IconButton(
-                                      icon: Icon(
-                                        _obscureText
-                                            ? Icons.visibility_off
-                                            : Icons.visibility,
-                                      ),
-                                      onPressed: () {
-                                        setState(() {
-                                          _obscureText =
-                                              !_obscureText; // Toggle password visibility
-                                        });
-                                      },
-                                    ),
-                                  ),
-                                )
-                              ],
-                            ),
-                          ],
-                        ),
+                      SizedBox(height: 10),
+                      Text(
+                        "Welcome to TOWI",
+                        style: GoogleFonts.roboto(
+                            color: Colors.white, fontSize: 18),
                       ),
-                      SizedBox(
-                        height: 40,
-                      ),
-                      ElevatedButton(
-                        onPressed: _isLoading
-                            ? null
-                            : () {
-                                _login(context); // Call the login method
-                              },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: _isLoading
-                              ? Colors.grey
-                              : Colors.green[900], // Grey if loading
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(50),
-                          ),
-                        ),
-                        child: SizedBox(
-                          width: 200,
-                          height: 50,
-                          child: Center(
-                            child: _isLoading
-                                ? CircularProgressIndicator(
-                                    color:
-                                        Colors.white) // Show spinner if loading
-                                : Text(
-                                    'LOGIN',
-                                    style: TextStyle(
-                                        color: Colors.white, fontSize: 18),
-                                  ),
-                          ),
-                        ),
-                      ),
-                      SizedBox(
-                        height: 40,
-                      ),
-                      ElevatedButton(
-                        onPressed: () {
-                          // Navigate to sign-up page
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => SignUp(),
-                            ),
-                          );
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.green[900], // Button color
-                          shape: RoundedRectangleBorder(
-                            borderRadius:
-                                BorderRadius.circular(50), // Rounded corners
-                          ),
-                        ),
-                        child: SizedBox(
-                          width: 50,
-                          height: 20,
-                          child: Center(
-                            child: Text(
-                              'SIGN UP',
-                              style: GoogleFonts.roboto(
-                                color: Colors.white, // Text color
-                                fontWeight: FontWeight.bold,
-                                fontSize: 12,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                      SizedBox(
-                        height: 15,
-                      ),
-                      ElevatedButton(
-                        onPressed: () {
-                          // Navigate to forgot password page
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => ForgotPassword(),
-                            ),
-                          );
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.green[900], // Button color
-                          shape: RoundedRectangleBorder(
-                            borderRadius:
-                                BorderRadius.circular(50), // Rounded corners
-                          ),
-                        ),
-                        child: SizedBox(
-                          width: 115,
-                          height: 20,
-                          child: Center(
-                            child: Text(
-                              'FORGOT PASSWORD',
-                              style: GoogleFonts.roboto(
-                                color: Colors.white, // Text color
-                                fontWeight: FontWeight.bold,
-                                fontSize: 12,
-                              ),
-                            ),
-                          ),
-                        ),
-                      )
                     ],
                   ),
                 ),
-              ),
-            ),
-          ],
+                SizedBox(height: 20),
+                Container(
+                  height: MediaQuery.of(context).size.height *
+                      0.90, // Adjust height to fit the screen
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.only(
+                      topLeft: Radius.circular(60),
+                      topRight: Radius.circular(60),
+                    ),
+                  ),
+                  child: Padding(
+                    padding: EdgeInsets.all(30),
+                    child: Column(
+                      children: <Widget>[
+                        SizedBox(height: 60),
+                        Container(
+                          padding: EdgeInsets.all(20),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(10),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Color.fromRGBO(63, 172, 48, 0.808),
+                                blurRadius: 20,
+                                offset: Offset(0, 10),
+                              ),
+                            ],
+                          ),
+                          child: Column(
+                            children: <Widget>[
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'Username',
+                                    style: GoogleFonts.roboto(
+                                      color: Colors.green[900],
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  TextFormField(
+                                    controller: usernameController,
+                                    onChanged: (_) {
+                                      setState(() {
+                                        usernameErrorText = '';
+                                      });
+                                    },
+                                    decoration: InputDecoration(
+                                      hintText: 'Enter your username',
+                                      border: InputBorder.none,
+                                      prefixIcon: Icon(Icons.account_box),
+                                      errorText: usernameErrorText.isNotEmpty
+                                          ? usernameErrorText
+                                          : null,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              SizedBox(height: 20),
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'Password',
+                                    style: GoogleFonts.roboto(
+                                      color: Colors.green[900],
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  TextFormField(
+                                    controller: passwordController,
+                                    onChanged: (_) {
+                                      setState(() {
+                                        passwordErrorText = '';
+                                      });
+                                    },
+                                    obscureText: _obscureText,
+                                    decoration: InputDecoration(
+                                      hintText: 'Enter your password',
+                                      prefixIcon: Icon(Icons.lock),
+                                      border: InputBorder.none,
+                                      errorText: passwordErrorText.isNotEmpty
+                                          ? passwordErrorText
+                                          : null,
+                                      suffixIcon: IconButton(
+                                        icon: Icon(
+                                          _obscureText
+                                              ? Icons.visibility_off
+                                              : Icons.visibility,
+                                        ),
+                                        onPressed: () {
+                                          setState(() {
+                                            _obscureText = !_obscureText;
+                                          });
+                                        },
+                                      ),
+                                    ),
+                                  )
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                        SizedBox(
+                          height: 40,
+                        ),
+                        ElevatedButton(
+                          onPressed: _isLoading
+                              ? null
+                              : () {
+                                  _login(context); // Call the login method
+                                },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: _isLoading
+                                ? Colors.grey
+                                : Colors.green[900], // Grey if loading
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(50),
+                            ),
+                          ),
+                          child: SizedBox(
+                            width: 200,
+                            height: 50,
+                            child: Center(
+                              child: _isLoading
+                                  ? CircularProgressIndicator(
+                                      color: Colors
+                                          .white) // Show spinner if loading
+                                  : Text(
+                                      'LOGIN',
+                                      style: TextStyle(
+                                          color: Colors.white, fontSize: 18),
+                                    ),
+                            ),
+                          ),
+                        ),
+                        SizedBox(
+                          height: 40,
+                        ),
+                        ElevatedButton(
+                          onPressed: () {
+                            // Navigate to sign-up page
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => SignUp(),
+                              ),
+                            );
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.green[900], // Button color
+                            shape: RoundedRectangleBorder(
+                              borderRadius:
+                                  BorderRadius.circular(50), // Rounded corners
+                            ),
+                          ),
+                          child: SizedBox(
+                            width: 50,
+                            height: 20,
+                            child: Center(
+                              child: Text(
+                                'SIGN UP',
+                                style: GoogleFonts.roboto(
+                                  color: Colors.white, // Text color
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 12,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                        SizedBox(
+                          height: 15,
+                        ),
+                        ElevatedButton(
+                          onPressed: () {
+                            // Navigate to forgot password page
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => ForgotPassword(),
+                              ),
+                            );
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.green[900], // Button color
+                            shape: RoundedRectangleBorder(
+                              borderRadius:
+                                  BorderRadius.circular(50), // Rounded corners
+                            ),
+                          ),
+                          child: SizedBox(
+                            width: 130,
+                            height: 20,
+                            child: Center(
+                              child: Text(
+                                'FORGOT PASSWORD',
+                                style: GoogleFonts.roboto(
+                                  color: Colors.white, // Text color
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 12,
+                                ),
+                              ),
+                            ),
+                          ),
+                        )
+                      ],
+                    ),
+                  ),
+                ),
+              ]),
         ),
       ),
     );
