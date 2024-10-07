@@ -1367,382 +1367,353 @@ class _SKUInventoryState extends State<SKUInventory> {
 
   Map<String, List<String>> _categoryToSkuDescriptions = {
     'V1': [
-      'KOPIKO COFFEE CANDY 24X175G',
-      'KOPIKO COFFEE CANDY JAR 6X560G',
-      'KOPIKO CAPPUCCINO CANDY 24X175G',
-      'FRES BARLEY MINT 24X50X3G',
-      'FRES MINT BARLEY JAR 12X2003G',
-      'FRES MINT BARLEY CANDY BIGPACK 6X1350G',
-      'FRES CHERRY CANDY, 24 X 50 X 3G',
-      'FRES CHERRY JAR, 12X 200 X 3G',
-      'FRES MINT CHERRY CANDY BIGPACK 6X1350G',
-      'FRES CANDY CANDY BIGPACK 24 X 50 X 3G',
-      'FRES GRAPE JAR, 12 X 200 X 3G',
-      'FRES APPLE PEACH 24 X 50 X 3G',
-      'FRES APPLEPEACH CANDY BIGPACK 6X1350G',
-      'FRES MIXED CANDY JAR 12 X 600G',
-      'BENG BENG CHOCOLATE 12 X 10 X 26.5G',
-      'BENG BENG SHARE IT 16 X 95G',
-      'CAL CHEESE 10X20X8.5G',
-      'CAL CHEESE 60X35G',
-      'CAL CHEESE 60X53.5G',
-      'CAL CHEESE CHEESE CHOCO 60X53.5G',
-      'CAL CHEESE CHEESE CHOCO 60X35G',
-      'MALKIST CHOCOLATE 30X10X24G',
-      'ROMA CREAM CRACKERS',
-      'WAFELLO CHOCOLATE WAFER 60X53.5G',
-      'WAFELLO CHOCOLATE WAFER 60X35G',
-      'WAFELLO BUTTER CARAMEL 60X35G',
-      'WAFELLO COCO CREME 60X35G',
-      'WAFELLO CREAMY VANILLA 20X10X20.5G PH',
-      'VALMER CHOCOLATE 12X10X54G',
-      'SUPERSTAR TRIPLE CHOCOLATE 12 X10 X 18G',
-      'DANISA BUTTER COOKIES 12X454G',
-      'WAFELLO BUTTER CARAMEL 60X53.5G',
-      'WAFELLO COCO CREME 60X53.5G',
-      'WAFELLO CREAMY VANILLA 60X48G PH',
-      'WAFELLO CHOCOLATE 48G X 60',
-      'WAFELLO CHOCOLATE 21G X 10 X 20',
-      'WAFELLO BUTTER CARAMEL 48G X 60',
-      'WAFELLO BUTTER CARAMEL 20.5G X 10 X 20',
-      'WAFELLO COCO CRÈME 48G X 60',
-      'WAFELLO COCONUT CRÈME 20.5G X 10 X 20',
-      'CAL CHEESE 60 X 48G',
-      'CAL CHEESE 20 X 10 X 20G',
-      'CAL CHEESE 20 X 20 X 8.5G',
-      'CAL CHEESE CHOCO 60 X 48G',
-      'CAL CHEESE CHOCO 20 X 10 X 20.5G',
-      'VALMER SANDWICH CHOCOLATE 12X10X36G',
-      'MALKIST CAPPUCCINO 30X10X23G PH',
+      "KOPIKO COFFEE CANDY 24X175G",
+      "KOPIKO COFFEE CANDY JAR 6X560G",
+      "KOPIKO CAPPUCCINO CANDY 24X175G",
+      "FRES BARLEY MINT 24X50X3G",
+      "FRES MINT BARLEY JAR 12X200X3G",
+      "FRES CHERRY CANDY, 24 X 50 X 3G",
+      "FRES CHERRY JAR, 12X 200 X 3G",
+      "FRES GRAPE CANDY, 24 X 50 X 3G",
+      "FRES GRAPE JAR, 12 X 200 X 3G",
+      "FRES APPLE PEACH 24 X 50 X 3G",
+      "BENG BENG CHOCOLATE 12 X 10 X 26.5G",
+      "BENG BENG SHARE IT 16 X 95G",
+      "CAL CHEESE 10X20X8.5G",
+      "CAL CHEESE 60X35G",
+      "CAL CHEESE 60X53.5G",
+      "CAL CHEESE CHEESE CHOCO 60X53.5G",
+      "CAL CHEESE CHEESE CHOCO 60X35G",
+      "MALKIST CHOCOLATE 30X10X18G",
+      "WAFELLO CHOCOLATE WAFER 60X53.5G",
+      "WAFELLO CHOCOLATE WAFER 60X35G",
+      "WAFELLO BUTTER CARAMEL 60X35G",
+      "WAFELLO COCO CREME 60X35G",
+      "WAFELLO CREAMY VANILLA 20X10X20.5G PH",
+      "VALMER CHOCOLATE 12X10X54G",
+      "SUPERSTAR TRIPLE CHOCOLATE 12 X10 X 18G",
+      "DANISA BUTTER COOKIES 12X454G",
+      "WAFELLO BUTTER CARAMEL 60X53.5G",
+      "WAFELLO COCO CREME 60X53.5G",
+      "WAFELLO CHOCOLATE 48G X 60",
+      "WAFELLO CHOCOLATE 21G X 10 X 20",
+      "WAFELLO BUTTER CARAMEL 48G X 60",
+      "WAFELLO BUTTER CARAMEL 20.5G X 10 X 20",
+      "WAFELLO COCO CRÈME 48G X 60",
+      "WAFELLO COCONUT CRÈME 20.5G X 10 X 20",
+      "CAL CHEESE 60 X 48G",
+      "CAL CHEESE 20 X 10 X 20G",
+      "CAL CHEESE 20 X 20 X 8.5G",
+      "CAL CHEESE CHOCO 60 X 48G",
+      "CAL CHEESE CHOCO 20 X 10 X 20.5G",
+      "VALMER SANDWICH CHOCOLATE 12X10X36G",
+      "MALKIST CAPPUCCINO 30X10X18G PH",
+      "FRES CHERRY JAR PROMO",
+      "FRES BARLEY JAR PROMO",
+      "FRES GRAPE JAR PROMO",
+      "FRES MIX CANDY JAR PROMO",
+      "CAL CHEESE 20G (9+1 PROMO)",
+      "WAFELLO CHOCOLATE 21G (9+1 PROMO)",
+      "WAFELLO COCO CREME 20.5G (9+1 PROMO)",
+      "WAFELLO BUTTER CARAMEL 20.5G (9+1 PROMO)",
+      "FRES MIXED CANDY JAR 12 X 600G",
+      "WAFELLO CREAMY VANILLA 60X48G PH",
+      "MALKIST SWEET GLAZED 12X10X28G PH",
+      "MALKIST BARBECUE 12X10X28G PH"
     ],
     'V2': [
-      'KOPIKO BLACK 3 IN ONE HANGER 24 X 10 X 30G',
-      'KOPIKO BLACK 3 IN ONE POUCH 24 X 10 X 30G',
-      'KOPIKO BLACK 3 IN ONE BAG 8 X 30 X 30G',
-      'KOPIKO BLACK 3 IN ONE PROMO TWIN 12 X 10 X 2 X 30G',
-      'KOPIKO BROWN COFFEE HG 27.5G 24 X 10 X 27.5G',
-      'KOPIKO BROWN COFFEE POUCH 24 X 10 X 27.GG',
-      'KOPIKO BROWN COFFEE BAG 8 X 30 X 27.5G',
-      'KOPIKO BROWN PROMO TWIN 12 X 10 X 53G',
-      'KOPIKO CAPPUCCINO HANGER 24 X 10 X 25G',
-      'KOPIKO CAPPUCCINO POUCH 24 X 10 X 25G',
-      'KOPIKO CAPPUCCINO BAG 8 X 30 X 25G',
-      'KOPIKO L.A. COFFEE HANGER 24 X 10 X 25G',
-      'KOPIKO L.A. COFFEE POUCH 24 X 10 X 25G',
-      'KOPIKO BLANCA HANGER 24 X 10 X 25G',
-      'KOPIKO BLANCA POUCH 24 X 10 X 30G',
-      'KOPIKO BLANCA BAG 8 X 30 X 30G',
-      'KOPIKO BLANCA TWINPACK 12 X 10 X 2 X 26G',
-      'TORACAFE WHITE AND CREAMY 12 X (10 X 2) X 25G',
-      'KOPIKO CREAMY CARAMELO 12 X (10 X 2) X 25G',
-      'ENERGEN CHOCOLATE HANGER 24 X 10 X 40G',
-      'ENERGEN CHOCOLATE POUCH 24 X 10 X 40G',
-      'ENERGEN CHOCOLATE BAG 8 X 30 X 40G',
-      'ENERGEN CHOCOLATE VANILLA HANGER 24 X 10 X 40G',
-      'ENERGEN CHOCOLATE VANILLA POUCH 24 X 10 X 40G',
-      'ENERGEN CHOCOLATE VANILLA BAG 8 X 30 X 40G',
-      'ENERGEN CHAMPION NBA HANGER 24 X 10 X 35G',
-      'ENERGEN PADESAL MATE 24 X 10 X 30G',
-      'ENERGEN CHAMPION 12 X 10 X 2 X 35G PH',
-      'KOPIKO CAFE MOCHA TP 12 X 10 X (2 X 25.5G) PH',
-      'ENERGEN CHAMPION NBA TP 15 X 8 X 2 X 30G PH',
-      'BLACK 420011 KOPIKO BLACK 3IN1 TWINPACK 12 X 10 X 2 X 28G',
+      "Kopiko Black 3 in One Hanger 24 x 10 x 30g",
+      "KOPIKO BLACK 3-IN-1 BAG 8 X 30 X 30G",
+      "Kopiko Black 3 in One Promo Twin 12 x 10 x 2 x 30g",
+      "Kopiko Brown Coffee hg 27.5g 24x10x27.5g",
+      "Kopiko Brown Coffee Pouch 24x10x27.5g",
+      "Kopiko Brown Coffee Bag 8x30x27.5g",
+      "Kopiko Brown Promo Twin 12 x 10 x 53g",
+      "Kopiko Cappuccino Hanger 24 x 10 x 25g",
+      "Kopiko Cappuccino Pouch 24x10x25g",
+      "Kopiko Cappuccino Bag 8x30x25g",
+      "Kopiko L.A. Coffee hanger 24x10x25g",
+      "Kopiko LA Coffee Pouch 24x10x25g",
+      "Kopiko Blanca hanger 24x10x30g",
+      "KOPIKO BLANCA, POUCH 24 X 10 X 30G",
+      "KOPIKO BLANCA, BAG 8 X 30 X 30G",
+      "Kopiko Blanca Twinpack 12 X 10 X 2 X 29G",
+      "Toracafe White and Creamy 12 X (10 X 2) X 26G",
+      "Kopiko Creamy Caramelo 12 x (10 x 2) x 25g",
+      "Kopiko Double Cups 24 x 10 x 36g",
+      "ENERGEN CHOCOLATE HANGER 24 X 10 X 40G",
+      "Energen Chocolate Pouch 24x10x40g",
+      "Energen Chocolate Bag 8x30x40g",
+      "ENERGEN VANILLA HANGER 24 X 10 X 40G",
+      "Energen Vanilla Pouch 24x10x40g",
+      "Energen Vanilla Bag 8x30x40g",
+      "Energen Champion NBA Hanger 24 x 10 x 35g",
+      "Energen Pandesal Mate 24 x 10 x 30g",
+      "ENERGEN CHAMPION 12X10X2X35G PH",
+      "Kopiko Cafe Mocha TP 12X10X(2X25.5G) PH",
+      "Energen Champion NBA TP 15 x 8 x 2 x30g ph",
+      "KOPIKO BLACK 3IN1 TWINPACK 12X10X2X28G",
+      "KOPIKO BLACK 3IN1 HANGER 24X10X30G UNLI",
+      "KOPIKO BLACK 3IN1 TP 12X10X2X28G UNLI",
+      "KOPIKO BROWN HANGER 24X10X27.5G UNLI",
+      "KOPIKO BROWN TP 12X10X2X26.5G UNLI",
+      "CHAMPION HANGER 17+3",
+      "Champion Twin Pack 13+3",
+      "Kopiko Blanca TP Banded 6 x (18 + 2) x 2 x 29g",
+      "KOPIKO BROWN COFFEE TWINPACK BUY 12 SAVE 13 PROMO",
+      "KOPIKO BLACK TWIN BUY 10 SAVE 13",
+      "KOPIKO BLANCA HANGER GSK 12 X 2 X 10 X 30G",
+      "BLANCA TP 10+1",
+      "Champion Hanger 20x(10+2) x 35g/30g",
+      "ENERGEN CHAMPION 40X345G",
+      "KOPIKO BLACK 3-IN-1 POUCH 24 X 10 X 30G"
     ],
     'V3': [
-      'LE MINERALE 24x330ML',
-      'LE MINERALE 24x600ML',
-      'LE MINERALE 12x1500ML',
-      'LE MINERALE 4 X 5000ML',
-      'KOPIKO LUCKY DAY 24BTL X 180ML'
+      "Le Minerale 24x330ml",
+      "Le Minerale 24x600ml",
+      "Le Minerale 12x1500ml",
+      "LE MINERALE 4 X 5000ML",
+      "KOPIKO LUCKY DAY 24BTL X 180ML",
+      "KLD 5+1 Bundling"
     ],
   };
 
   Map<String, Map<String, String>> _skuToProductSkuCode = {
     //CATEGORY V1
 
-    'KOPIKO COFFEE CANDY 24X175G': {
-      'Product': 'COFFEE SHOT',
-      'SKU Code': '326924'
-    },
-    'KOPIKO COFFEE CANDY JAR 6X560G': {
-      'Product': 'COFFEE SHOT',
-      'SKU Code': '326926'
-    },
-    'KOPIKO CAPPUCCINO CANDY 24X175G': {
-      'Product': 'COFFEE SHOT',
-      'SKU Code': '326925'
-    },
-    'FRES BARLEY MINT 24X50X3G': {'Product': 'FRES', 'SKU Code': '326446'},
-    'FRES MINT BARLEY JAR 12X2003G': {'Product': 'FRES', 'SKU Code': '329136'},
-    'FRES MINT BARLEY CANDY BIGPACK 6X1350G': {
-      'Product': 'FRES',
-      'SKU Code': ''
-    },
-    'FRES CHERRY CANDY, 24 X 50 X 3G': {
-      'Product': 'FRES',
-      'SKU Code': '326447'
-    },
-    'FRES CHERRY JAR, 12X 200 X 3G': {'Product': 'FRES', 'SKU Code': '329135'},
-    'FRES MINT CHERRY CANDY BIGPACK 6X1350G': {
-      'Product': 'FRES',
-      'SKU Code': ''
-    },
-
-    //LATEST
-
-    'FRES CANDY CANDY BIGPACK 24 X 50 X 3G': {
-      'Product': 'FRES',
-      'SKU Code': '326448'
-    },
-    'FRES GRAPE JAR, 12 X 200 X 3G': {'Product': 'FRES', 'SKU Code': '329137'},
-    'FRES APPLE PEACH 24 X 50 X 3G': {'Product': 'FRES', 'SKU Code': '329545'},
-    'FRES APPLEPEACH CANDY BIGPACK 6X1350G': {
-      'Product': 'FRES',
-      'SKU Code': ''
-    },
-    'FRES MIXED CANDY JAR 12 X 600G': {'Product': 'FRES', 'SKU Code': '320015'},
+    'KOPIKO COFFEE CANDY 24X175G': {'Product': ' ', 'SKU Code': '326924'},
+    'KOPIKO COFFEE CANDY JAR 6X560G': {'Product': ' ', 'SKU Code': '329106'},
+    'KOPIKO CAPPUCCINO CANDY 24X175G': {'Product': ' ', 'SKU Code': '326925'},
+    'FRES BARLEY MINT 24X50X3G': {'Product': ' ', 'SKU Code': '326446'},
+    'FRES MINT BARLEY JAR 12X200X3G': {'Product': ' ', 'SKU Code': '329136'},
+    'FRES CHERRY CANDY, 24 X 50 X 3G': {'Product': ' ', 'SKU Code': '326447'},
+    'FRES CHERRY JAR, 12X 200 X 3G': {'Product': ' ', 'SKU Code': '329135'},
+    'FRES GRAPE CANDY, 24 X 50 X 3G': {'Product': ' ', 'SKU Code': '326448'},
+    'FRES GRAPE JAR, 12 X 200 X 3G': {'Product': ' ', 'SKU Code': '329137'},
+    'FRES APPLE PEACH 24 X 50 X 3G': {'Product': ' ', 'SKU Code': '329545'},
     'BENG BENG CHOCOLATE 12 X 10 X 26.5G': {
-      'Product': 'BENG BENG',
+      'Product': ' ',
       'SKU Code': '329067'
     },
-    'BENG BENG SHARE IT 16 X 95G': {
-      'Product': 'BENG BENG',
-      'SKU Code': '322583'
-    },
-    'CAL CHEESE 10X20X8.5G': {'Product': 'CAL CHEESE', 'SKU Code': '329809'},
-    'CAL CHEESE 60X35G': {'Product': 'CAL CHEESE', 'SKU Code': '322571'},
-    'CAL CHEESE 60X53.5G': {'Product': 'CAL CHEESE', 'SKU Code': '329808'},
-    'CAL CHEESE CHEESE CHOCO 60X53.5G': {
-      'Product': 'CAL CHEESE',
-      'SKU Code': '322866'
-    },
-    'CAL CHEESE CHEESE CHOCO 60X35G': {
-      'Product': 'CAL CHEESE',
-      'SKU Code': '322867'
-    },
-    'MALKIST CHOCOLATE 30X10X24G': {'Product': 'MALKIST', 'SKU Code': '321036'},
-    'ROMA CREAM CRACKERS': {'Product': 'ROMA', 'SKU Code': ''},
-    'WAFELLO CHOCOLATE WAFER 60X53.5G': {
-      'Product': 'WAFELLO',
-      'SKU Code': '330016'
-    },
-    'WAFELLO CHOCOLATE WAFER 60X35G': {
-      'Product': 'WAFELLO',
-      'SKU Code': '330025'
-    },
-    'WAFELLO BUTTER CARAMEL 60X35G': {
-      'Product': 'WAFELLO',
-      'SKU Code': '322871'
-    },
-    'WAFELLO COCO CREME 60X35G': {'Product': 'WAFELLO', 'SKU Code': '322868'},
+    'BENG BENG SHARE IT 16 X 95G': {'Product': ' ', 'SKU Code': '322583'},
+    'CAL CHEESE 10X20X8.5G': {'Product': ' ', 'SKU Code': '330071'},
+    'CAL CHEESE 60X35G': {'Product': ' ', 'SKU Code': '322571'},
+    'CAL CHEESE 60X53.5G': {'Product': ' ', 'SKU Code': '329808'},
+    'CAL CHEESE CHEESE CHOCO 60X53.5G': {'Product': ' ', 'SKU Code': '322866'},
+    'CAL CHEESE CHEESE CHOCO 60X35G': {'Product': ' ', 'SKU Code': '322867'},
+    'MALKIST CHOCOLATE 30X10X18G': {'Product': ' ', 'SKU Code': '321036'},
+    'WAFELLO CHOCOLATE WAFER 60X53.5G': {'Product': ' ', 'SKU Code': '330016'},
+    'WAFELLO CHOCOLATE WAFER 60X35G': {'Product': ' ', 'SKU Code': '330025'},
+    'WAFELLO BUTTER CARAMEL 60X35G': {'Product': ' ', 'SKU Code': '322871'},
+    'WAFELLO COCO CREME 60X35G': {'Product': ' ', 'SKU Code': '322868'},
     'WAFELLO CREAMY VANILLA 20X10X20.5G PH': {
-      'Product': 'WAFELLO',
+      'Product': ' ',
       'SKU Code': '330073'
     },
-    'VALMER CHOCOLATE 12X10X54G': {'Product': 'VALMER', 'SKU Code': '321038'},
+    'VALMER CHOCOLATE 12X10X54G': {'Product': ' ', 'SKU Code': '321038'},
     'SUPERSTAR TRIPLE CHOCOLATE 12 X10 X 18G': {
-      'Product': 'SUPERSTAR',
+      'Product': ' ',
       'SKU Code': '322894'
     },
-    'DANISA BUTTER COOKIES 12X454G': {
-      'Product': 'DANISA',
-      'SKU Code': '329650'
-    },
-    'WAFELLO BUTTER CARAMEL 60X53.5G': {
-      'Product': 'WAFELLO',
-      'SKU Code': '322870'
-    },
-    'WAFELLO COCO CREME 60X53.5G': {'Product': 'WAFELLO', 'SKU Code': '322869'},
-    'WAFELLO CREAMY VANILLA 60X48G PH': {
-      'Product': 'WAFELLO',
-      'SKU Code': '330060'
-    },
-    'WAFELLO CHOCOLATE 48G X 60': {'Product': 'WAFELLO', 'SKU Code': '330050'},
-    'WAFELLO CHOCOLATE 21G X 10 X 20': {
-      'Product': 'WAFELLO',
-      'SKU Code': '330051'
-    },
-    'WAFELLO BUTTER CARAMEL 48G X 60': {
-      'Product': 'WAFELLO',
-      'SKU Code': '330056'
-    },
+    'DANISA BUTTER COOKIES 12X454G': {'Product': ' ', 'SKU Code': '329650'},
+    'WAFELLO BUTTER CARAMEL 60X53.5G': {'Product': ' ', 'SKU Code': '322870'},
+    'WAFELLO COCO CREME 60X53.5G': {'Product': ' ', 'SKU Code': '322869'},
+    'WAFELLO CHOCOLATE 48G X 60': {'Product': ' ', 'SKU Code': '330050'},
+    'WAFELLO CHOCOLATE 21G X 10 X 20': {'Product': ' ', 'SKU Code': '330051'},
+    'WAFELLO BUTTER CARAMEL 48G X 60': {'Product': ' ', 'SKU Code': '330056'},
     'WAFELLO BUTTER CARAMEL 20.5G X 10 X 20': {
-      'Product': 'WAFELLO',
+      'Product': ' ',
       'SKU Code': '330057'
     },
-    'WAFELLO COCO CRÈME 48G X 60': {'Product': 'WAFELLO', 'SKU Code': '330058'},
-
+    'WAFELLO COCO CRÈME 48G X 60': {'Product': ' ', 'SKU Code': '330058'},
     'WAFELLO COCONUT CRÈME 20.5G X 10 X 20': {
-      'Product': 'WAFELLO',
+      'Product': ' ',
       'SKU Code': '330059'
     },
-    'CAL CHEESE 60 X 48G': {'Product': 'CAL CHEESE', 'SKU Code': '330052'},
-
-    'CAL CHEESE 20 X 10 X 20G': {'Product': 'CAL CHEESE', 'SKU Code': '330053'},
-
-    'CAL CHEESE 20 X 20 X 8.5G': {
-      'Product': 'CAL CHEESE',
-      'SKU Code': '330071'
-    },
-    'CAL CHEESE CHOCO 60 X 48G': {
-      'Product': 'CAL CHEESE',
-      'SKU Code': '330054'
-    },
-    'CAL CHEESE CHOCO 20 X 10 X 20.5G': {
-      'Product': 'CAL CHEESE',
-      'SKU Code': '330055'
-    },
+    'CAL CHEESE 60 X 48G': {'Product': ' ', 'SKU Code': '330052'},
+    'CAL CHEESE 20 X 10 X 20G': {'Product': ' ', 'SKU Code': '330053'},
+    'CAL CHEESE 20 X 20 X 8.5G': {'Product': ' ', 'SKU Code': '330071'},
+    'CAL CHEESE CHOCO 60 X 48G': {'Product': ' ', 'SKU Code': '330054'},
+    'CAL CHEESE CHOCO 20 X 10 X 20.5G': {'Product': ' ', 'SKU Code': '330055'},
     'VALMER SANDWICH CHOCOLATE 12X10X36G': {
-      'Product': 'VALMER',
+      'Product': ' ',
       'SKU Code': '321475'
     },
-    'MALKIST CAPPUCCINO 30X10X23G PH': {
-      'Product': 'MALKIST',
-      'SKU Code': '321446'
+    'MALKIST CAPPUCCINO 30X10X18G PH': {'Product': ' ', 'SKU Code': '31446'},
+    'FRES CHERRY JAR PROMO': {'Product': ' ', 'SKU Code': 'P-2023-07-329135'},
+    'FRES BARLEY JAR PROMO': {'Product': ' ', 'SKU Code': 'P-2023-07-329106'},
+    'FRES GRAPE JAR PROMO': {'Product': ' ', 'SKU Code': 'P-2023-07-329137'},
+    'FRES MIX CANDY JAR PROMO': {
+      'Product': ' ',
+      'SKU Code': 'P-2023-07-320015'
     },
+    'CAL CHEESE 20G (9+1 PROMO)': {
+      'Product': ' ',
+      'SKU Code': 'P-2022-12-322571'
+    },
+    'WAFELLO CHOCOLATE 21G (9+1 PROMO)': {
+      'Product': ' ',
+      'SKU Code': 'P-2022-12-330051'
+    },
+    'WAFELLO COCO CREME 20.5G (9+1 PROMO)': {
+      'Product': ' ',
+      'SKU Code': 'P-2022-12-330059'
+    },
+    'WAFELLO BUTTER CARAMEL 20.5G (9+1 PROMO)': {
+      'Product': ' ',
+      'SKU Code': 'P-2022-12-330057'
+    },
+    'FRES MIXED CANDY JAR 12 X 600G': {'Product': ' ', 'SKU Code': '320015'},
+    'WAFELLO CREAMY VANILLA 60X48G PH': {'Product': ' ', 'SKU Code': '330060'},
+    'MALKIST SWEET GLAZED 12X10X28G PH': {'Product': ' ', 'SKU Code': '420559'},
+    'MALKIST BARBECUE 12X10X28G PH': {'Product': ' ', 'SKU Code': '420558'},
 
     //CATEGORY V2
 
-    'KOPIKO BLACK 3 IN ONE HANGER 24 X 10 X 30G': {
-      'Product': 'BLACK',
+    'Kopiko Black 3 in One Hanger 24 x 10 x 30g': {
+      'Product': ' ',
       'SKU Code': '322628'
     },
-    'KOPIKO BLACK 3 IN ONE POUCH 24 X 10 X 30G': {
-      'Product': 'BLACK',
-      'SKU Code': '322630'
-    },
-    'KOPIKO BLACK 3 IN ONE BAG 8 X 30 X 30G': {
-      'Product': 'BLACK',
+    'KOPIKO BLACK 3-IN-1 BAG 8 X 30 X 30G': {
+      'Product': ' ',
       'SKU Code': '322629'
     },
-    'KOPIKO BLACK 3 IN ONE PROMO TWIN 12 X 10 X 2 X 30G': {
-      'Product': 'BLACK',
+    'Kopiko Black 3 in One Promo Twin 12 x 10 x 2 x 30g': {
+      'Product': ' ',
       'SKU Code': '322627'
     },
-
-    'KOPIKO BROWN COFFEE HG 27.5G 24 X 10 X 27.5G': {
-      'Product': 'BROWN',
+    'Kopiko Brown Coffee hg 27.5g 24x10x27.5g': {
+      'Product': ' ',
       'SKU Code': '328890'
     },
-    'KOPIKO BROWN COFFEE POUCH 24 X 10 X 27.GG': {
-      'Product': 'BROWN',
-      'SKU Code': '329958'
+    'Kopiko Brown Coffee Pouch 24x10x27.5g': {
+      'Product': ' ',
+      'SKU Code': '328883'
     },
-    'KOPIKO BROWN COFFEE BAG 8 X 30 X 27.5G': {
-      'Product': 'BROWN',
-      'SKU Code': '329959'
+    'Kopiko Brown Coffee Bag 8x30x27.5g': {
+      'Product': ' ',
+      'SKU Code': '328882'
     },
-    'KOPIKO BROWN PROMO TWIN 12 X 10 X 53G': {
-      'Product': 'BROWN',
-      'SKU Code': '329940'
+    'Kopiko Brown Promo Twin 12 x 10 x 53g': {
+      'Product': ' ',
+      'SKU Code': '329479'
     },
-
-    'KOPIKO CAPPUCCINO HANGER 24 X 10 X 25G': {
-      'Product': 'CAPPUCCINO',
+    'Kopiko Cappuccino Hanger 24 x 10 x 25g': {
+      'Product': ' ',
       'SKU Code': '329701'
     },
-    'KOPIKO CAPPUCCINO POUCH 24 X 10 X 25G': {
-      'Product': 'CAPPUCCINO',
-      'SKU Code': '329703'
-    },
-    'KOPIKO CAPPUCCINO BAG 8 X 30 X 25G': {
-      'Product': 'CAPPUCCINO',
-      'SKU Code': '329704'
-    },
-
-    'KOPIKO L.A. COFFEE HANGER 24 X 10 X 25G': {
-      'Product': 'L.A.',
+    'Kopiko Cappuccino Pouch 24x10x25g': {'Product': ' ', 'SKU Code': '329703'},
+    'Kopiko Cappuccino Bag 8x30x25g': {'Product': ' ', 'SKU Code': '329704'},
+    'Kopiko L.A. Coffee hanger 24x10x25g': {
+      'Product': ' ',
       'SKU Code': '325666'
     },
-    'KOPIKO L.A. COFFEE POUCH 24 X 10 X 25G': {
-      'Product': 'L.A.',
-      'SKU Code': '325667'
-    },
-
-    'KOPIKO BLANCA HANGER 24 X 10 X 30G': {
-      'Product': 'BLANCA',
-      'SKU Code': '328888'
-    },
-    'KOPIKO BLANCA POUCH 24 X 10 X 30G': {
-      'Product': 'BLANCA',
+    'Kopiko LA Coffee Pouch 24x10x25g': {'Product': ' ', 'SKU Code': '325667'},
+    'Kopiko Blanca hanger 24x10x30g': {'Product': ' ', 'SKU Code': '328888'},
+    'KOPIKO BLANCA, POUCH 24 X 10 X 30G': {
+      'Product': ' ',
       'SKU Code': '328887'
     },
-    'KOPIKO BLANCA BAG 8 X 30 X 30G': {
-      'Product': 'BLANCA',
-      'SKU Code': '328889'
-    },
-    'KOPIKO BLANCA TWINPACK 12 X 10 X 2 X 29G': {
-      'Product': 'BLANCA',
+    'KOPIKO BLANCA, BAG 8 X 30 X 30G': {'Product': ' ', 'SKU Code': '328889'},
+    'Kopiko Blanca Twinpack 12 X 10 X 2 X 29G': {
+      'Product': ' ',
       'SKU Code': '322711'
     },
-    'TORACAFE WHITE AND CREAMY 12 X (10 X 2) X 26G': {
-      'Product': 'TORA',
+    'Toracafe White and Creamy 12 X (10 X 2) X 26G': {
+      'Product': ' ',
       'SKU Code': '322731'
     },
-    'KOPIKO CREAMY CARAMELO 12 X (10 X 2) X 25G': {
-      'Product': 'CARAMELO',
+    'Kopiko Creamy Caramelo 12 x (10 x 2) x 25g': {
+      'Product': ' ',
       'SKU Code': '322725'
     },
-    'KOPIKO DOUBLE CUPS 24 X 10 X 36G': {
-      'Product': 'DOUBLE CUPS',
-      'SKU Code': '329744'
-    },
+    'Kopiko Double Cups 24 x 10 x 36g': {'Product': ' ', 'SKU Code': '329744'},
     'ENERGEN CHOCOLATE HANGER 24 X 10 X 40G': {
-      'Product': 'ENERGEN',
+      'Product': ' ',
       'SKU Code': '328497'
     },
-    'ENERGEN CHOCOLATE POUCH 24 X 10 X 40G': {
-      'Product': 'ENERGEN',
-      'SKU Code': '328492'
-    },
-    'ENERGEN CHOCOLATE BAG 8 X 30 X 40G': {
-      'Product': 'ENERGEN',
-      'SKU Code': '328493'
-    },
-    'ENERGEN CHOCOLATE VANILLA HANGER 24 X 10 X 40G': {
-      'Product': 'ENERGEN',
+    'Energen Chocolate Pouch 24x10x40g': {'Product': ' ', 'SKU Code': '328492'},
+    'Energen Chocolate Bag 8x30x40g': {'Product': ' ', 'SKU Code': '328493'},
+    'ENERGEN VANILLA HANGER 24 X 10 X 40G': {
+      'Product': ' ',
       'SKU Code': '328494'
     },
-    'ENERGEN CHOCOLATE VANILLA POUCH 24 X 10 X 40G': {
-      'Product': 'ENERGEN',
-      'SKU Code': '328495'
-    },
-    'ENERGEN CHOCOLATE VANILLA BAG 8 X 30 X 40G': {
-      'Product': 'ENERGEN',
-      'SKU Code': '328496'
-    },
-    'ENERGEN CHAMPION NBA HANGER 24 X 10 X 35G': {
-      'Product': 'CHAMPION',
+    'Energen Vanilla Pouch 24x10x40g': {'Product': ' ', 'SKU Code': '328495'},
+    'Energen Vanilla Bag 8x30x40g': {'Product': ' ', 'SKU Code': '328496'},
+    'Energen Champion NBA Hanger 24 x 10 x 35g': {
+      'Product': ' ',
       'SKU Code': '325945'
     },
-    'ENERGEN PADESAL MATE 24 X 10 X 30G': {
-      'Product': 'EPM',
-      'SKU Code': '325920'
+    'Energen Pandesal Mate 24 x 10 x 30g': {
+      'Product': ' ',
+      'SKU Code': '325899'
     },
-    'ENERGEN CHAMPION 12 X 10 X 2 X 35G PH': {
-      'Product': 'CHAMPION',
-      'SKU Code': '325944'
-    },
-    'KOPIKO CAFE MOCHA TP 12 X 10 X (2 X 25.5G) PH': {
-      'Product': 'CAFÉ MOCHA',
+    'ENERGEN CHAMPION 12X10X2X35G PH': {'Product': ' ', 'SKU Code': '325934'},
+    'Kopiko Cafe Mocha TP 12X10X(2X25.5G) PH': {
+      'Product': ' ',
       'SKU Code': '324149'
     },
-    'ENERGEN CHAMPION NBA TP 15 X 8 X 2 X 30G PH': {
-      'Product': 'CHAMPION',
+    'Energen Champion NBA TP 15 x 8 x 2 x30g ph': {
+      'Product': ' ',
       'SKU Code': '325965'
     },
-    'BLACK 420011 KOPIKO BLACK 3IN1 TWINPACK 12 X 10 X 2 X 28G': {
-      'Product': 'BLACK',
+    'KOPIKO BLACK 3IN1 TWINPACK 12X10X2X28G': {
+      'Product': ' ',
       'SKU Code': '420011'
+    },
+    'KOPIKO BLACK 3IN1 HANGER 24X10X30G UNLI': {
+      'Product': ' ',
+      'SKU Code': '420203'
+    },
+    'KOPIKO BLACK 3IN1 TP 12X10X2X28G UNLI': {
+      'Product': ' ',
+      'SKU Code': '420202'
+    },
+    'KOPIKO BROWN HANGER 24X10X27.5G UNLI': {
+      'Product': ' ',
+      'SKU Code': '420205'
+    },
+    'KOPIKO BROWN TP 12X10X2X26.5G UNLI': {
+      'Product': ' ',
+      'SKU Code': '420204'
+    },
+    'CHAMPION HANGER 17+3': {'Product': ' ', 'SKU Code': '900082'},
+    'Champion Twin Pack 13+3': {'Product': ' ', 'SKU Code': '900083'},
+    'Kopiko Blanca TP Banded 6 x (18 + 2) x 2 x 29g': {
+      'Product': ' ',
+      'SKU Code': '322789'
+    },
+    'KOPIKO BROWN COFFEE TWINPACK BUY 12 SAVE 13 PROMO': {
+      'Product': ' ',
+      'SKU Code': 'P-2022-09-329479'
+    },
+    'KOPIKO BLACK TWIN BUY 10 SAVE 13': {
+      'Product': ' ',
+      'SKU Code': 'P-2022-09-322627'
+    },
+    'KOPIKO BLANCA HANGER GSK 12 X 2 X 10 X 30G': {
+      'Product': ' ',
+      'SKU Code': 'P-2022-11-328888'
+    },
+    'BLANCA TP 10+1': {'Product': ' ', 'SKU Code': 'PROMO-2023-08-322711'},
+    'Champion Hanger 20x(10+2) x 35g/30g': {
+      'Product': ' ',
+      'SKU Code': 'P-2023-09-900084'
+    },
+    'ENERGEN CHAMPION 40X345G': {'Product': ' ', 'SKU Code': '420373'},
+    'KOPIKO BLACK 3-IN-1 POUCH 24 X 10 X 30G': {
+      'Product': ' ',
+      'SKU Code': '322630'
     },
 
     //CATEGORY V3
 
-    'LE MINERALE 24x330ML': {'Product': 'WATER', 'SKU Code': '328566'},
-    'LE MINERALE 24x600ML': {'Product': 'WATER', 'SKU Code': '328565'},
-    'LE MINERALE 12x1500ML': {'Product': 'WATER', 'SKU Code': '326770'},
-    'LE MINERALE 4 X 5000ML': {'Product': 'WATER', 'SKU Code': '324045'},
-    'KOPIKO LUCKY DAY 24BTL X 180ML': {'Product': 'KLD', 'SKU Code': '324046'},
+    'Le Minerale 24x330ml': {'Product': ' ', 'SKU Code': '328566'},
+    'Le Minerale 24x600ml': {'Product': ' ', 'SKU Code': '328565'},
+    'Le Minerale 12x1500ml': {'Product': ' ', 'SKU Code': '326770'},
+    'LE MINERALE 4 X 5000ML': {'Product': ' ', 'SKU Code': '324045'},
+    'KOPIKO LUCKY DAY 24BTL X 180ML': {'Product': ' ', 'SKU Code': '324046'},
+    'KLD 5+1 Bundling': {'Product': ' ', 'SKU Code': 'P-2022-10-324046'}
   };
 
   // List<String> getSkuDescriptions(List<String> savedSkus) {
