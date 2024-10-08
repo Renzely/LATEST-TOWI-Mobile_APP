@@ -921,6 +921,54 @@ class _InventoryState extends State<Inventory> {
                                               ),
                                               SizedBox(height: 10),
                                               Text(
+                                                'Beginning (Selling Area): ',
+                                                style: TextStyle(
+                                                    fontWeight: FontWeight.bold,
+                                                    color: Colors.black),
+                                              ),
+                                              Text(
+                                                '${item.beginningSA}',
+                                                style: TextStyle(
+                                                    color: Colors.black),
+                                              ),
+                                              SizedBox(height: 10),
+                                              Text(
+                                                'Beginning (Warehouse Area): ',
+                                                style: TextStyle(
+                                                    fontWeight: FontWeight.bold,
+                                                    color: Colors.black),
+                                              ),
+                                              Text(
+                                                '${item.beginningWA}',
+                                                style: TextStyle(
+                                                    color: Colors.black),
+                                              ),
+                                              SizedBox(height: 10),
+                                              Text(
+                                                'Ending (Selling Area): ',
+                                                style: TextStyle(
+                                                    fontWeight: FontWeight.bold,
+                                                    color: Colors.black),
+                                              ),
+                                              Text(
+                                                '${item.endingWA}',
+                                                style: TextStyle(
+                                                    color: Colors.black),
+                                              ),
+                                              SizedBox(height: 10),
+                                              Text(
+                                                'Ending (Warehouse Area): ',
+                                                style: TextStyle(
+                                                    fontWeight: FontWeight.bold,
+                                                    color: Colors.black),
+                                              ),
+                                              Text(
+                                                '${item.endingWA}',
+                                                style: TextStyle(
+                                                    color: Colors.black),
+                                              ),
+                                              SizedBox(height: 10),
+                                              Text(
                                                 'Beginning: ',
                                                 style: TextStyle(
                                                     fontWeight: FontWeight.bold,

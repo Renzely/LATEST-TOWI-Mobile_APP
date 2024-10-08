@@ -146,9 +146,13 @@ class InventoryItem {
   String status; // Carried, Not Carried, Delisted
   String remarksOOS;
   String reasonOOS;
+  dynamic beginningSA;
+  dynamic beginningWA;
   dynamic beginning;
   dynamic delivery;
   dynamic ending;
+  dynamic endingSA;
+  dynamic endingWA;
   dynamic offtake;
   final double inventoryDaysLevel;
   dynamic noOfDaysOOS;
@@ -171,8 +175,12 @@ class InventoryItem {
     required this.skuCode,
     required this.status,
     required this.beginning,
+    required this.beginningSA,
+    required this.beginningWA,
     required this.delivery,
     required this.ending,
+    required this.endingSA,
+    required this.endingWA,
     required this.offtake,
     required this.inventoryDaysLevel,
     required this.noOfDaysOOS,
@@ -198,8 +206,12 @@ class InventoryItem {
         skuCode: json['skuCode'] ?? '',
         status: json['status'] ?? '',
         beginning: json['beginning'] ?? 0,
+        beginningSA: json['beginningSA'] ?? 0,
+        beginningWA: json['beginningWA'] ?? 0,
         delivery: json['delivery'] ?? 0,
         ending: json['ending'] ?? 0,
+        endingSA: json['endingSA'] ?? 0,
+        endingWA: json['endingWA'] ?? 0,
         offtake: json['offtake'] ?? 0,
         inventoryDaysLevel: (json['inventoryDaysLevel'] != null)
             ? double.parse(json['inventoryDaysLevel'].toStringAsFixed(2))
@@ -230,8 +242,12 @@ class InventoryItem {
         'skuCode': skuCode,
         'status': status,
         'beginning': beginning,
+        'beginningSA': beginningSA,
+        'beginningWA': beginningWA,
         'delivery': delivery,
         'ending': ending,
+        'endingSA': endingSA,
+        'endingWA': endingWA,
         'offtake': offtake,
         'inventoryDaysLevel': inventoryDaysLevel,
         'noOfDaysOOS': noOfDaysOOS,

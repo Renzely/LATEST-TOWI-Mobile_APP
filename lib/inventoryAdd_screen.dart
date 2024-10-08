@@ -1147,6 +1147,10 @@ class _SKUInventoryState extends State<SKUInventory> {
   bool _showDelistedTextField = false;
   bool _isSaveEnabled = false;
   bool _isEditing = true;
+  TextEditingController _beginningSAController = TextEditingController();
+  TextEditingController _beginningWAController = TextEditingController();
+  TextEditingController _endingSAController = TextEditingController();
+  TextEditingController _endingWAController = TextEditingController();
   TextEditingController _beginningController = TextEditingController();
   TextEditingController _deliveryController = TextEditingController();
   TextEditingController _endingController = TextEditingController();
@@ -1209,6 +1213,16 @@ class _SKUInventoryState extends State<SKUInventory> {
     bool edit = _isEditing;
     int numberOfDaysOOS = _selectedNumberOfDaysOOS ?? 0;
 
+    int beginningSA = int.tryParse(_beginningSAController.text) ?? 0;
+    int beginningWA = int.tryParse(_beginningWAController.text) ?? 0;
+
+    int newBeginning = beginningSA + beginningWA;
+
+    int endingSA = int.tryParse(_endingSAController.text) ?? 0;
+    int endingWA = int.tryParse(_endingWAController.text) ?? 0;
+
+    int newEnding = endingSA + endingWA;
+
     int beginning = int.tryParse(_beginningController.text) ?? 0;
     int delivery = int.tryParse(_deliveryController.text) ?? 0;
     int ending = int.tryParse(_endingController.text) ?? 0;
@@ -1225,15 +1239,23 @@ class _SKUInventoryState extends State<SKUInventory> {
     dynamic ncValue = 'NC';
     dynamic delistedValue = 'Delisted';
     dynamic beginningValue = beginning;
+    dynamic beginningSAValue = beginningSA;
+    dynamic beginningWAValue = beginningWA;
     dynamic deliveryValue = delivery;
     dynamic endingValue = ending;
+    dynamic endingSAValue = endingSA;
+    dynamic endingWAValue = endingWA;
     dynamic offtakeValue = offtake;
     dynamic noOfDaysOOSValue = numberOfDaysOOS;
 
     if (status == 'Delisted') {
       beginningValue = delistedValue;
+      beginningSAValue = deliveryValue;
+      beginningWAValue = delistedValue;
       deliveryValue = delistedValue;
       endingValue = delistedValue;
+      endingSAValue = delistedValue;
+      endingWAValue = deliveryValue;
       offtakeValue = delistedValue;
       noOfDaysOOSValue = delistedValue;
       _expiryFieldsValues = [
@@ -1241,8 +1263,12 @@ class _SKUInventoryState extends State<SKUInventory> {
       ];
     } else if (status == 'Not Carried') {
       beginningValue = ncValue;
+      beginningSAValue = ncValue;
+      beginningWAValue = ncValue;
       deliveryValue = ncValue;
       endingValue = ncValue;
+      endingSAValue = ncValue;
+      endingWAValue = ncValue;
       offtakeValue = ncValue;
       noOfDaysOOSValue = ncValue;
       _expiryFieldsValues = [
@@ -1266,8 +1292,12 @@ class _SKUInventoryState extends State<SKUInventory> {
       skuCode: skucode,
       status: status,
       beginning: beginningValue,
+      beginningSA: beginningSAValue,
+      beginningWA: beginningWAValue,
       delivery: deliveryValue,
       ending: endingValue,
+      endingSA: endingSAValue,
+      endingWA: endingWAValue,
       offtake: offtakeValue,
       inventoryDaysLevel: inventoryDaysLevel.toDouble(),
       noOfDaysOOS: noOfDaysOOSValue,
@@ -1839,8 +1869,12 @@ class _SKUInventoryState extends State<SKUInventory> {
       _showNoPOTextField = false;
       _showUnservedTextField = false;
       _beginningController.clear();
+      _beginningSAController.clear();
+      _beginningWAController.clear();
       _deliveryController.clear();
       _endingController.clear();
+      _endingSAController.clear();
+      _endingWAController.clear();
       _offtakeController.clear();
       _expiryFields.clear(); // Clear expiry fields when switching categories
 
@@ -1859,9 +1893,13 @@ class _SKUInventoryState extends State<SKUInventory> {
       _showNoDeliveryDropdown = false;
       _showNoPOTextField = false;
       _showUnservedTextField = false;
+      _beginningSAController.clear();
+      _beginningWAController.clear();
       _beginningController.clear();
       _deliveryController.clear();
       _endingController.clear();
+      _endingSAController.clear();
+      _endingWAController.clear();
       _offtakeController.clear();
       _expiryFields.clear(); // Clear expiry fields when switching categories
       if (status == 'Not Carried' || status == 'Delisted') {
@@ -1875,6 +1913,8 @@ class _SKUInventoryState extends State<SKUInventory> {
     super.initState();
     _inputid = generateInputID();
     // loadSkuDescriptions(selectedBranch);
+    _beginningController.addListener(_calculateBeginning);
+
     _beginningController.addListener(_calculateOfftake);
     _deliveryController.addListener(_calculateOfftake);
     _endingController.addListener(_calculateOfftake);
@@ -1885,6 +1925,7 @@ class _SKUInventoryState extends State<SKUInventory> {
   @override
   void dispose() {
     _beginningController.dispose();
+    _beginningController.dispose();
     _deliveryController.dispose();
     _endingController.dispose();
     _offtakeController.dispose();
@@ -1893,6 +1934,40 @@ class _SKUInventoryState extends State<SKUInventory> {
     _unservedController.dispose();
     _nodeliveryController.dispose();
     super.dispose();
+  }
+
+  void _calculateBeginning() {
+    try {
+      // Parse input values, default to 0 if empty
+      int beginningSA = int.tryParse(_beginningSAController.text) ?? 0;
+      int beginningWA = int.tryParse(_beginningWAController.text) ?? 0;
+
+      // Calculate new beginning value
+      int newBeginning = beginningSA + beginningWA;
+
+      // Update the beginning controller with formatted integer value
+      _beginningController.text = newBeginning.toString();
+    } catch (e) {
+      print('Error calculating beginning: $e');
+      // Handle error appropriately (e.g., show an error message to the user)
+    }
+  }
+
+  void _calculateEnding() {
+    try {
+      // Parse input values, default to 0 if empty
+      int endingSA = int.tryParse(_endingSAController.text) ?? 0;
+      int endingWA = int.tryParse(_endingWAController.text) ?? 0;
+
+      // Calculate new beginning value
+      int newEnding = endingSA + endingWA;
+
+      // Update the beginning controller with formatted integer value
+      _endingController.text = newEnding.toString();
+    } catch (e) {
+      print('Error calculating beginning: $e');
+      // Handle error appropriately (e.g., show an error message to the user)
+    }
   }
 
   void _calculateOfftake() {
@@ -1928,15 +2003,23 @@ class _SKUInventoryState extends State<SKUInventory> {
         if (_selectedNumberOfDaysOOS == 0) {
           // Enable Save button when "0" is selected, but only if other fields are filled
           _isSaveEnabled = _endingController.text.isNotEmpty &&
-              _deliveryController.text.isNotEmpty;
+              _deliveryController.text.isNotEmpty &&
+              _beginningSAController.text.isNotEmpty &&
+              _beginningWAController.text.isNotEmpty &&
+              _endingSAController.text.isNotEmpty &&
+              _endingWAController.text.isNotEmpty;
         } else {
           // Existing logic for when _selectedNumberOfDaysOOS is not 0
           _isSaveEnabled = _endingController.text.isNotEmpty &&
               _deliveryController.text.isNotEmpty &&
-              (_remarksOOS == "No P.O" ||
-                  _remarksOOS == "Unserved" ||
-                  (_remarksOOS == "No Delivery" &&
-                      _selectedNoDeliveryOption != null));
+              _beginningSAController.text.isNotEmpty &&
+              _beginningWAController.text.isNotEmpty &&
+              _endingSAController.text.isNotEmpty &&
+              _endingWAController.text.isNotEmpty;
+          (_remarksOOS == "No P.O" ||
+              _remarksOOS == "Unserved" ||
+              (_remarksOOS == "No Delivery" &&
+                  _selectedNoDeliveryOption != null));
         }
       } else {
         // Enable Save button for "Not Carried" and "Delisted" categories
@@ -2318,12 +2401,136 @@ class _SKUInventoryState extends State<SKUInventory> {
                       // Conditionally showing the 'Beginning' field with its label
                       if (_showCarriedTextField) ...[
                         Text(
+                          'Beginning PCS (Selling Area)',
+                          style: TextStyle(
+                              fontWeight: FontWeight.bold, fontSize: 16),
+                        ),
+                        SizedBox(height: 10),
+                        TextField(
+                          controller: _beginningSAController,
+                          keyboardType: TextInputType.number,
+                          inputFormatters: [
+                            FilteringTextInputFormatter.digitsOnly
+                          ],
+                          decoration: InputDecoration(
+                            border: OutlineInputBorder(),
+                            contentPadding:
+                                EdgeInsets.symmetric(horizontal: 12),
+                            labelStyle: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                            ),
+                          ),
+                          onChanged: (_) {
+                            _calculateBeginning(); // Calculate on change
+                            checkSaveEnabled();
+                          },
+                        ),
+                        SizedBox(height: 10),
+                      ],
+                      SizedBox(height: 15),
+                      // Conditionally showing the 'BeginningWA' field with its label
+                      if (_showCarriedTextField) ...[
+                        Text(
+                          'Beginning PCS (Warehouse Area)',
+                          style: TextStyle(
+                              fontWeight: FontWeight.bold, fontSize: 16),
+                        ),
+                        SizedBox(height: 10),
+                        TextField(
+                          controller: _beginningWAController,
+                          keyboardType: TextInputType.number,
+                          inputFormatters: [
+                            FilteringTextInputFormatter.digitsOnly
+                          ],
+                          decoration: InputDecoration(
+                            border: OutlineInputBorder(),
+                            contentPadding:
+                                EdgeInsets.symmetric(horizontal: 12),
+                            labelStyle: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                            ),
+                          ),
+                          onChanged: (_) {
+                            _calculateBeginning(); // Calculate on change
+                            checkSaveEnabled();
+                          },
+                        ),
+                        SizedBox(height: 10),
+                      ],
+                      SizedBox(height: 15),
+                      if (_showCarriedTextField) ...[
+                        Text(
+                          'Ending PCS (Selling Area)',
+                          style: TextStyle(
+                              fontWeight: FontWeight.bold, fontSize: 16),
+                        ),
+                        SizedBox(height: 10),
+                        TextField(
+                          controller: _endingSAController,
+                          keyboardType: TextInputType.number,
+                          inputFormatters: [
+                            FilteringTextInputFormatter.digitsOnly
+                          ],
+                          decoration: InputDecoration(
+                            border: OutlineInputBorder(),
+                            contentPadding:
+                                EdgeInsets.symmetric(horizontal: 12),
+                            labelStyle: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                            ),
+                          ),
+                          onChanged: (_) {
+                            _calculateEnding(); // Calculate on change
+                            checkSaveEnabled();
+                          },
+                        ),
+                        SizedBox(height: 10),
+                      ],
+                      SizedBox(height: 15),
+                      // Conditionally showing the 'BeginningWA' field with its label
+                      if (_showCarriedTextField) ...[
+                        Text(
+                          'Ending PCS (Warehouse Area)',
+                          style: TextStyle(
+                              fontWeight: FontWeight.bold, fontSize: 16),
+                        ),
+                        SizedBox(height: 10),
+                        TextField(
+                          controller: _endingWAController,
+                          keyboardType: TextInputType.number,
+                          inputFormatters: [
+                            FilteringTextInputFormatter.digitsOnly
+                          ],
+                          decoration: InputDecoration(
+                            border: OutlineInputBorder(),
+                            contentPadding:
+                                EdgeInsets.symmetric(horizontal: 12),
+                            labelStyle: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                            ),
+                          ),
+                          onChanged: (_) {
+                            _calculateEnding(); // Calculate on change
+                            checkSaveEnabled();
+                          },
+                        ),
+                        SizedBox(height: 10),
+                      ],
+                      SizedBox(height: 15),
+                      // Conditionally showing the 'Beginning' field with its label
+                      if (_showCarriedTextField) ...[
+                        Text(
                           'Beginning',
                           style: TextStyle(
                               fontWeight: FontWeight.bold, fontSize: 16),
                         ),
                         SizedBox(height: 10),
                         TextField(
+                          readOnly: true,
                           controller: _beginningController,
                           keyboardType: TextInputType.number,
                           inputFormatters: [
@@ -2342,10 +2549,11 @@ class _SKUInventoryState extends State<SKUInventory> {
                         ),
                         SizedBox(height: 10),
                       ],
+
 // Conditionally showing the 'Delivery' field with its label
                       if (_showCarriedTextField) ...[
                         Text(
-                          'Delivery',
+                          'Delivery PCS',
                           style: TextStyle(
                               fontWeight: FontWeight.bold, fontSize: 16),
                         ),
@@ -2378,6 +2586,7 @@ class _SKUInventoryState extends State<SKUInventory> {
                         ),
                         SizedBox(height: 10),
                         TextField(
+                          readOnly: true,
                           controller: _endingController,
                           keyboardType: TextInputType.number,
                           inputFormatters: [
@@ -2873,6 +3082,82 @@ class _SKUInventoryState extends State<SKUInventory> {
                                                         TextSpan(
                                                             text:
                                                                 _statusSelected),
+                                                      ],
+                                                    ),
+                                                  ),
+                                                  SizedBox(height: 10),
+                                                  Text.rich(
+                                                    TextSpan(
+                                                      children: [
+                                                        TextSpan(
+                                                          text:
+                                                              'Beginning (Selling Area): ',
+                                                          style: TextStyle(
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .bold),
+                                                        ),
+                                                        TextSpan(
+                                                          text:
+                                                              '${int.tryParse(_beginningSAController.text) ?? 0}',
+                                                        ),
+                                                      ],
+                                                    ),
+                                                  ),
+                                                  SizedBox(height: 10),
+                                                  Text.rich(
+                                                    TextSpan(
+                                                      children: [
+                                                        TextSpan(
+                                                          text:
+                                                              'Beginning (Warehouse Area): ',
+                                                          style: TextStyle(
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .bold),
+                                                        ),
+                                                        TextSpan(
+                                                          text:
+                                                              '${int.tryParse(_beginningWAController.text) ?? 0}',
+                                                        ),
+                                                      ],
+                                                    ),
+                                                  ),
+                                                  SizedBox(height: 10),
+                                                  Text.rich(
+                                                    TextSpan(
+                                                      children: [
+                                                        TextSpan(
+                                                          text:
+                                                              'Ending (Selling Area): ',
+                                                          style: TextStyle(
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .bold),
+                                                        ),
+                                                        TextSpan(
+                                                          text:
+                                                              '${int.tryParse(_endingSAController.text) ?? 0}',
+                                                        ),
+                                                      ],
+                                                    ),
+                                                  ),
+                                                  SizedBox(height: 10),
+                                                  Text.rich(
+                                                    TextSpan(
+                                                      children: [
+                                                        TextSpan(
+                                                          text:
+                                                              'Ending (WAREHOUSE AREA): ',
+                                                          style: TextStyle(
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .bold),
+                                                        ),
+                                                        TextSpan(
+                                                          text:
+                                                              '${int.tryParse(_endingWAController.text) ?? 0}',
+                                                        ),
                                                       ],
                                                     ),
                                                   ),

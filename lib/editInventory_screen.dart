@@ -52,6 +52,8 @@ class _EditInventoryScreenState extends State<EditInventoryScreen> {
   late TextEditingController _beginningController;
   late TextEditingController _deliveryController;
   late TextEditingController _endingController;
+  late TextEditingController _endingSAController;
+  late TextEditingController _endingWAController;
   late TextEditingController _offtakeController;
   late TextEditingController _IDLController;
   late TextEditingController _OOSController;
@@ -75,6 +77,14 @@ class _EditInventoryScreenState extends State<EditInventoryScreen> {
   @override
   void initState() {
     super.initState();
+
+    _endingSAController = TextEditingController();
+    _endingWAController = TextEditingController();
+
+    int endingSA = int.tryParse(_endingSAController.text) ?? 0;
+    int endingWA = int.tryParse(_endingWAController.text) ?? 0;
+
+    int newEnding = endingSA + endingWA;
 
     // Set the current date and generate a new Input ID
     String todayDate = DateFormat('yyyy-MM-dd').format(DateTime.now());
@@ -121,6 +131,7 @@ class _EditInventoryScreenState extends State<EditInventoryScreen> {
     _deliveryController.addListener(_calculateOfftake);
     _endingController.addListener(_calculateOfftake);
     _offtakeController.addListener(_calculateInventoryDaysLevel);
+    _endingController.addListener(_calculateEnding);
 
     _statusController.addListener(() {
       checkSaveEnabled();
@@ -143,6 +154,23 @@ class _EditInventoryScreenState extends State<EditInventoryScreen> {
     checkSaveEnabled();
   }
 
+  void _calculateEnding() {
+    try {
+      // Parse input values, default to 0 if empty
+      int endingSA = int.tryParse(_endingSAController.text) ?? 0;
+      int endingWA = int.tryParse(_endingWAController.text) ?? 0;
+
+      // Calculate new ending value
+      int newEnding = endingSA + endingWA;
+
+      // Update the ending controller with the total
+      _endingController.text = newEnding.toString();
+    } catch (e) {
+      print('Error calculating ending: $e');
+      // Handle error appropriately (e.g., show an error message to the user)
+    }
+  }
+
   @override
   void dispose() {
     // Dispose controllers
@@ -161,6 +189,8 @@ class _EditInventoryScreenState extends State<EditInventoryScreen> {
     _beginningController.dispose();
     _deliveryController.dispose();
     _endingController.dispose();
+    _endingSAController.dispose();
+    _endingWAController.dispose();
     _offtakeController.dispose();
     _IDLController.dispose();
     _OOSController.dispose();
@@ -233,7 +263,9 @@ class _EditInventoryScreenState extends State<EditInventoryScreen> {
           _isSaveEnabled = _beginningController.text.isNotEmpty &&
               _deliveryController.text.isNotEmpty &&
               _endingController.text.isNotEmpty &&
-              _remarksOOS != null && // Ensure remarksOOS is not null
+              _endingSAController.text.isNotEmpty &&
+              _endingWAController.text.isNotEmpty;
+          _remarksOOS != null && // Ensure remarksOOS is not null
               (_remarksOOS == "No P.O" ||
                   _remarksOOS == "Unserved" ||
                   (_remarksOOS == "No Delivery" &&
@@ -261,6 +293,8 @@ class _EditInventoryScreenState extends State<EditInventoryScreen> {
       final collection = db.collection(USER_INVENTORY);
 
       // Prepare the data for insertion
+      String endingSA = _endingSAController.text;
+      String endingWA = _endingWAController.text;
       String accountManning = _branchController.text;
       String status = _statusController.text;
       int beginning = int.tryParse(_beginningController.text) ?? 0;
@@ -277,6 +311,8 @@ class _EditInventoryScreenState extends State<EditInventoryScreen> {
         beginningvalue = 'Delisted';
         deliveryValue = 'Delisted';
         endingValue = 'Delisted';
+        endingWA = 'Delisted';
+        endingSA = 'Delisted';
         remarksOOSValue = 'Delisted';
         reasonOOSValue = 'Delisted';
       } else {
@@ -336,6 +372,8 @@ class _EditInventoryScreenState extends State<EditInventoryScreen> {
         'beginning': beginningValue.toString(),
         'delivery': deliveryValue,
         'ending': endingValue,
+        'endingSA': endingSA,
+        'endingWA': endingWA,
         'offtake': offtake.toString(),
         'inventoryDaysLevel': inventoryDaysLevel,
         'noOfDaysOOS': noOfDaysOOSValue,
@@ -379,6 +417,8 @@ class _EditInventoryScreenState extends State<EditInventoryScreen> {
     _deliveryController.clear();
     _endingController.clear();
     _offtakeController.clear();
+    _endingSAController.clear();
+    _endingWAController.clear();
     // _selectedPeriod = null;
     // _monthController.clear();
     // _weekController.clear();
@@ -1035,6 +1075,46 @@ class _EditInventoryScreenState extends State<EditInventoryScreen> {
                     ),
                     SizedBox(height: 16),
                     Text(
+                      'Ending (Selling Area)',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                      ),
+                    ),
+                    SizedBox(height: 16),
+                    TextField(
+                      controller: _endingSAController,
+                      decoration: InputDecoration(
+                        border: OutlineInputBorder(),
+                        contentPadding: EdgeInsets.symmetric(horizontal: 12),
+                      ),
+                      keyboardType: TextInputType.number,
+                      enabled: _isFieldsEnabled(),
+                      onChanged: (_) =>
+                          _calculateEnding(), // Call calculate on change
+                    ),
+                    SizedBox(height: 16),
+                    Text(
+                      'Ending (Warehouse Area)',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                      ),
+                    ),
+                    SizedBox(height: 16),
+                    TextField(
+                      controller: _endingWAController,
+                      decoration: InputDecoration(
+                        border: OutlineInputBorder(),
+                        contentPadding: EdgeInsets.symmetric(horizontal: 12),
+                      ),
+                      keyboardType: TextInputType.number,
+                      enabled: _isFieldsEnabled(),
+                      onChanged: (_) =>
+                          _calculateEnding(), // Call calculate on change
+                    ),
+                    SizedBox(height: 16),
+                    Text(
                       'Ending',
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
@@ -1045,12 +1125,13 @@ class _EditInventoryScreenState extends State<EditInventoryScreen> {
                     TextField(
                       controller: _endingController,
                       decoration: InputDecoration(
-                          border: OutlineInputBorder(),
-                          contentPadding: EdgeInsets.symmetric(horizontal: 12)),
+                        border: OutlineInputBorder(),
+                        contentPadding: EdgeInsets.symmetric(horizontal: 12),
+                      ),
                       keyboardType: TextInputType.number,
-                      enabled:
-                          _isFieldsEnabled(), // Enable or disable based on status
+                      enabled: _isFieldsEnabled(),
                     ),
+                    SizedBox(height: 20),
                     SizedBox(height: 20),
                     Text(
                       'Expiry Pcs',
